@@ -25,6 +25,7 @@ máxima sobre qualquer outro.
 | 07 | [Módulo 1 — UX • Interface • Fluxo da Entrevista](07-modulo-1-ux-interface-entrevista.md) | ✅ V1.0 — Engineering PRD |
 | 08 | [Master Software Architecture (MSA)](08-master-software-architecture.md) | ✅ V1.0 — Master Architecture |
 | 09 | [Main Workspace (Central de Decisão)](09-main-workspace-central-decisao.md) | ✅ V1.0 — Engineering PRD (Core UI) |
+| 10 | [Database Architecture V1](10-database-architecture-v1.md) | ✅ V1.0 — Engineering PRD (Database) |
 
 ## Módulos previstos
 
