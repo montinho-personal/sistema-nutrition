@@ -51,7 +51,7 @@ export function computeStudentJourney(input: StudentJourneyInput): StudentJourne
       student,
       stage: "needs_diagnosis",
       phaseTitle: "Diagnóstico",
-      nextAction: { label: "Fazer diagnóstico", href: `/diagnosis/${id}` },
+      nextAction: { label: "Fazer anamnese", href: `/diagnosis/${id}` },
       weightChangeKg: null,
       evolutionStatus: null,
     };

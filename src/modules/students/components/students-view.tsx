@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRightIcon, PlusIcon, UserRoundIcon, UsersIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRightIcon, PlusIcon, StethoscopeIcon, UserRoundIcon, UsersIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -12,11 +13,22 @@ import { PageHeader } from "@/shared/components/page-header";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import { useStudents } from "@/modules/students/hooks/use-students";
 import { StudentFormDialog } from "@/modules/students/components/student-form-dialog";
+import type { StudentInput } from "@/modules/students/types";
 
 /** Tela de gestão de alunos: lista + cadastro (persistência local). */
 export function StudentsView() {
   const { students, add } = useStudents();
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = React.useState(false);
+
+  // Ao cadastrar, já leva o treinador direto para a anamnese do novo aluno.
+  const handleCreate = React.useCallback(
+    (input: StudentInput) => {
+      const student = add(input);
+      router.push(`/diagnosis/${student.id}`);
+    },
+    [add, router],
+  );
 
   return (
     <>
@@ -63,7 +75,8 @@ export function StudentsView() {
                 </div>
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/diagnosis/${student.id}`}>
-                    Diagnóstico
+                    <StethoscopeIcon className="size-4" />
+                    Fazer anamnese
                     <ArrowRightIcon className="size-4" />
                   </Link>
                 </Button>
@@ -73,7 +86,7 @@ export function StudentsView() {
         </div>
       )}
 
-      <StudentFormDialog open={dialogOpen} onOpenChange={setDialogOpen} onSubmit={add} />
+      <StudentFormDialog open={dialogOpen} onOpenChange={setDialogOpen} onSubmit={handleCreate} />
     </>
   );
 }
