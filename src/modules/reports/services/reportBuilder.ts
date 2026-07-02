@@ -18,9 +18,9 @@ import {
   computeScoreMap,
   computeScores,
 } from "@/modules/diagnosis/services";
-import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
+import { DEFAULT_MACRO_PARAMS, SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
-import type { MacroContext, StrategyRecord } from "@/modules/strategy/types";
+import type { MacroContext, MacroParams, StrategyRecord } from "@/modules/strategy/types";
 import type { Food } from "@/modules/foods/types";
 import { buildMealPlan, type MealPlanContext } from "@/modules/meal-plan/services";
 import type { FollowUp } from "@/modules/follow-ups/types";
@@ -40,6 +40,8 @@ export interface BuildReportInput {
   foods: Food[];
   /** Data de geração (yyyy-mm-dd) — injetada para manter o builder puro. */
   generatedAt: string;
+  /** Parâmetros de macro (Configurações); padrão quando omitido. */
+  macroParams?: MacroParams;
 }
 
 /**
@@ -48,6 +50,7 @@ export interface BuildReportInput {
  */
 export function buildStudentReport(input: BuildReportInput): ReportModel | null {
   const { student, session, record, followUps, foods, generatedAt } = input;
+  const macroParams = input.macroParams ?? DEFAULT_MACRO_PARAMS;
   if (!student.mainGoal || !session || session.status !== "completed" || !record) return null;
 
   const goal = student.mainGoal;
@@ -71,7 +74,7 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
     activity: (answers.activity as string | undefined) ?? null,
     trains: (answers.trains as string | undefined) ?? null,
   };
-  const macros = computeMacros(goal, strategy.direction, strategy.velocity, macroCtx);
+  const macros = computeMacros(goal, strategy.direction, strategy.velocity, macroCtx, macroParams);
 
   const restrictions = Array.isArray(answers.restrictions)
     ? (answers.restrictions as string[])

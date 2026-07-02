@@ -18,6 +18,7 @@ import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services"
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
+import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import type { MacroContext } from "@/modules/strategy/types";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import { buildMealPlan, type MealPlanContext } from "@/modules/meal-plan/services";
@@ -35,6 +36,7 @@ export function MealPlanView({ studentId }: { studentId: string }) {
   const students = useLocalCollection<Student[]>("students", EMPTY_STUDENTS);
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
   const { input } = useStrategyInput(studentId);
+  const macroParams = useMacroParams();
   const { variant, next } = useMealPlanVariant(studentId);
 
   const student = React.useMemo(
@@ -63,7 +65,13 @@ export function MealPlanView({ studentId }: { studentId: string }) {
       activity: (session.answers.activity as string | undefined) ?? null,
       trains: (session.answers.trains as string | undefined) ?? null,
     };
-    const macros = computeMacros(student.mainGoal, strategy.direction, strategy.velocity, macroCtx);
+    const macros = computeMacros(
+      student.mainGoal,
+      strategy.direction,
+      strategy.velocity,
+      macroCtx,
+      macroParams,
+    );
     const restrictions = Array.isArray(session.answers.restrictions)
       ? (session.answers.restrictions as string[])
       : [];
@@ -83,7 +91,7 @@ export function MealPlanView({ studentId }: { studentId: string }) {
       variant,
     };
     return buildMealPlan(curatedFoods, ctx);
-  }, [student, session, input, variant]);
+  }, [student, session, input, variant, macroParams]);
 
   if (typeof window === "undefined") {
     return <LoadingScreen messages={["Montando o cardápio..."]} />;

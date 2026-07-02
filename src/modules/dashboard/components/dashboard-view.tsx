@@ -28,6 +28,7 @@ import {
   type JourneyStage,
   type StudentJourney,
 } from "@/modules/dashboard/services";
+import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 
 const EMPTY_STUDENTS: Student[] = [];
 const EMPTY_SESSIONS: DiagnosisSession[] = [];
@@ -112,6 +113,7 @@ export function DashboardView() {
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
   const records = useLocalCollection<StrategyRecord[]>("strategy_records", EMPTY_RECORDS);
   const followUps = useLocalCollection<FollowUp[]>("followups", EMPTY_FOLLOWUPS);
+  const macroParams = useMacroParams();
 
   const journeys = React.useMemo(() => {
     const today = todayIso();
@@ -130,9 +132,10 @@ export function DashboardView() {
             .sort((a, b) => a.date.localeCompare(b.date)),
           foods: curatedFoods,
           today,
+          macroParams,
         }),
       );
-  }, [students, sessions, records, followUps]);
+  }, [students, sessions, records, followUps, macroParams]);
 
   const stats = React.useMemo(
     () => ({

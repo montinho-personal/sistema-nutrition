@@ -11,6 +11,7 @@ import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
 import type { Food } from "@/modules/foods/types";
+import type { MacroParams } from "@/modules/strategy/types";
 import type { EvolutionStatus } from "@/modules/follow-ups/types";
 import { buildStudentReport } from "@/modules/reports/services";
 
@@ -34,11 +35,13 @@ export interface StudentJourneyInput {
   foods: Food[];
   /** Data de referência (yyyy-mm-dd). */
   today: string;
+  /** Parâmetros de macro (Configurações); padrão quando omitido. */
+  macroParams?: MacroParams;
 }
 
 /** Computa a jornada do aluno e a próxima ação recomendada. */
 export function computeStudentJourney(input: StudentJourneyInput): StudentJourney {
-  const { student, session, record, followUps, foods, today } = input;
+  const { student, session, record, followUps, foods, today, macroParams } = input;
   const id = student.id;
   const hasDiagnosis = session?.status === "completed";
   const hasStrategy = Boolean(record) && Boolean(student.mainGoal) && hasDiagnosis;
@@ -65,7 +68,15 @@ export function computeStudentJourney(input: StudentJourneyInput): StudentJourne
     };
   }
 
-  const report = buildStudentReport({ student, session, record, followUps, foods, generatedAt: today });
+  const report = buildStudentReport({
+    student,
+    session,
+    record,
+    followUps,
+    foods,
+    generatedAt: today,
+    macroParams,
+  });
   const currentPhase = report?.roadmap.phases.find((p) => p.status === "current");
   const phaseTitle = currentPhase?.title ?? "Implementação";
 

@@ -11,6 +11,7 @@ import type {
   EnergyDirection,
   FlexibilityLevel,
   FoodPhilosophy,
+  MacroParams,
   StrategyVelocity,
 } from "@/modules/strategy/types";
 
@@ -92,6 +93,18 @@ export const PROTEIN_G_PER_KG: Record<StudentGoal, number> = {
 
 /** Gordura mínima (g por kg de peso) — piso hormonal/saciedade. */
 export const FAT_G_PER_KG = 0.8;
+
+/**
+ * Conjunto padrão dos parâmetros de macro configuráveis (Documento 08).
+ * A tela de Configurações sobrescreve isto por usuário; o motor de macros lê
+ * daqui quando nada é sobrescrito.
+ */
+export const DEFAULT_MACRO_PARAMS: MacroParams = {
+  proteinGPerKg: PROTEIN_G_PER_KG,
+  fatGPerKg: FAT_G_PER_KG,
+  velocityDeficitPct: VELOCITY_DEFICIT_PCT,
+  velocitySurplusPct: VELOCITY_SURPLUS_PCT,
+};
 
 /** Arredondamentos (múltiplos) para números "redondos" e realistas. */
 export const CALORIE_ROUNDING = 10;

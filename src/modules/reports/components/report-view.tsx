@@ -15,6 +15,7 @@ import type { StrategyRecord } from "@/modules/strategy/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import { buildStudentReport } from "@/modules/reports/services";
+import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { ReportDocument } from "@/modules/reports/components/report-document";
 
 const EMPTY_STUDENTS: Student[] = [];
@@ -32,6 +33,7 @@ export function ReportView({ studentId }: { studentId: string }) {
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
   const records = useLocalCollection<StrategyRecord[]>("strategy_records", EMPTY_RECORDS);
   const allFollowUps = useLocalCollection<FollowUp[]>("followups", EMPTY_FOLLOWUPS);
+  const macroParams = useMacroParams();
 
   const student = React.useMemo(
     () => students.find((s) => s.id === studentId) ?? null,
@@ -65,8 +67,9 @@ export function ReportView({ studentId }: { studentId: string }) {
       followUps,
       foods: curatedFoods,
       generatedAt: todayIso(),
+      macroParams,
     });
-  }, [student, session, record, followUps]);
+  }, [student, session, record, followUps, macroParams]);
 
   if (typeof window === "undefined") {
     return <LoadingScreen messages={["Preparando o relatório..."]} />;

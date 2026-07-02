@@ -11,22 +11,20 @@ import {
   ACTIVITY_FACTORS,
   CALORIE_ROUNDING,
   DEFAULT_ACTIVITY_FACTOR,
+  DEFAULT_MACRO_PARAMS,
   FALLBACK_KCAL_PER_KG,
-  FAT_G_PER_KG,
   KATCH,
   KCAL_PER_GRAM,
   MAX_ACTIVITY_FACTOR,
   MIFFLIN,
-  PROTEIN_G_PER_KG,
   TRAINING_BONUS,
-  VELOCITY_DEFICIT_PCT,
-  VELOCITY_SURPLUS_PCT,
 } from "@/modules/strategy/constants/parameters";
 import type { StudentGoal } from "@/modules/students/types";
 import type {
   BmrMethod,
   EnergyDirection,
   MacroContext,
+  MacroParams,
   MacroTargets,
   StrategyVelocity,
 } from "@/modules/strategy/types";
@@ -78,20 +76,25 @@ export function computeMacros(
   direction: EnergyDirection,
   velocity: StrategyVelocity,
   ctx: MacroContext,
+  params: MacroParams = DEFAULT_MACRO_PARAMS,
 ): MacroTargets {
   const { bmr, method } = computeBmr(ctx);
   const activityFactor = computeActivityFactor(ctx);
   const tdee = bmr * activityFactor;
 
+  const deficitPct = params.velocityDeficitPct[velocity];
+  const surplusPct = params.velocitySurplusPct[velocity];
+  const proteinPerKg = params.proteinGPerKg[goal];
+
   // Direção do objetivo × velocidade → calorias-alvo.
   let calories = tdee;
-  if (direction === "deficit") calories = tdee * (1 - VELOCITY_DEFICIT_PCT[velocity]);
-  else if (direction === "superavit") calories = tdee * (1 + VELOCITY_SURPLUS_PCT[velocity]);
+  if (direction === "deficit") calories = tdee * (1 - deficitPct);
+  else if (direction === "superavit") calories = tdee * (1 + surplusPct);
   calories = roundTo(calories, CALORIE_ROUNDING);
 
   // Proteína (por objetivo) e gordura (piso) primeiro; carboidrato fecha a conta.
-  const proteinG = Math.round(PROTEIN_G_PER_KG[goal] * ctx.weightKg);
-  const fatG = Math.round(FAT_G_PER_KG * ctx.weightKg);
+  const proteinG = Math.round(proteinPerKg * ctx.weightKg);
+  const fatG = Math.round(params.fatGPerKg * ctx.weightKg);
   const proteinKcal = proteinG * KCAL_PER_GRAM.protein;
   const fatKcal = fatG * KCAL_PER_GRAM.fat;
   const carbKcal = Math.max(0, calories - proteinKcal - fatKcal);
@@ -101,12 +104,12 @@ export function computeMacros(
     `BMR ${Math.round(bmr)} kcal por ${METHOD_LABEL[method]}.`,
     `TDEE ${Math.round(tdee)} kcal = BMR × fator de atividade ${activityFactor.toFixed(3)}.`,
     direction === "deficit"
-      ? `Déficit de ${Math.round(VELOCITY_DEFICIT_PCT[velocity] * 100)}% (velocidade) → ${calories} kcal.`
+      ? `Déficit de ${Math.round(deficitPct * 100)}% (velocidade) → ${calories} kcal.`
       : direction === "superavit"
-        ? `Superávit de ${Math.round(VELOCITY_SURPLUS_PCT[velocity] * 100)}% (velocidade) → ${calories} kcal.`
+        ? `Superávit de ${Math.round(surplusPct * 100)}% (velocidade) → ${calories} kcal.`
         : `Manutenção → ${calories} kcal.`,
-    `Proteína ${proteinG} g (${PROTEIN_G_PER_KG[goal]} g/kg) — preserva massa magra e saciedade.`,
-    `Gordura ${fatG} g (piso de ${FAT_G_PER_KG} g/kg) — suporte hormonal e sabor.`,
+    `Proteína ${proteinG} g (${proteinPerKg} g/kg) — preserva massa magra e saciedade.`,
+    `Gordura ${fatG} g (piso de ${params.fatGPerKg} g/kg) — suporte hormonal e sabor.`,
     `Carboidrato ${carbG} g — completa as calorias restantes, combustível do treino.`,
   ];
 

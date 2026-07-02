@@ -14,6 +14,7 @@ import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
 import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
+import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import type { MacroContext } from "@/modules/strategy/types";
 import {
   buildEvolutionInsights,
@@ -42,6 +43,7 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
   const records = useLocalCollection<StrategyRecord[]>("strategy_records", EMPTY_RECORDS);
   const { followUps, add, remove } = useFollowUps(studentId);
+  const macroParams = useMacroParams();
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
   const student = React.useMemo(
@@ -73,7 +75,13 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
       activity: (session.answers.activity as string | undefined) ?? null,
       trains: (session.answers.trains as string | undefined) ?? null,
     };
-    const macros = computeMacros(student.mainGoal, strategy.direction, strategy.velocity, macroCtx);
+    const macros = computeMacros(
+      student.mainGoal,
+      strategy.direction,
+      strategy.velocity,
+      macroCtx,
+      macroParams,
+    );
     const expectedWeeklyKg = expectedWeeklyKgFromMacros(
       strategy.direction,
       macros.tdee,
@@ -87,7 +95,7 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
       expectedWeeklyKg,
     );
     return { evolution, insights: buildEvolutionInsights(evolution) };
-  }, [student, session, record, followUps]);
+  }, [student, session, record, followUps, macroParams]);
 
   if (typeof window === "undefined") {
     return <LoadingScreen messages={["Carregando os acompanhamentos..."]} />;

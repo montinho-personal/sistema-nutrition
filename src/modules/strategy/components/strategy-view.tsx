@@ -23,6 +23,7 @@ import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services"
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
+import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { AnthropometricsForm } from "@/modules/strategy/components/anthropometrics-form";
 import { StrategyResult } from "@/modules/strategy/components/strategy-result";
 import { MacroSummary } from "@/modules/strategy/components/macro-summary";
@@ -39,6 +40,7 @@ export function StrategyView({ studentId }: { studentId: string }) {
   const students = useLocalCollection<Student[]>("students", EMPTY_STUDENTS);
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
   const { input, save } = useStrategyInput(studentId);
+  const macroParams = useMacroParams();
   const [editing, setEditing] = React.useState(false);
 
   const student = React.useMemo(
@@ -71,8 +73,8 @@ export function StrategyView({ studentId }: { studentId: string }) {
       activity: (session?.answers.activity as string | undefined) ?? null,
       trains: (session?.answers.trains as string | undefined) ?? null,
     };
-    return computeMacros(student.mainGoal, strategy.direction, strategy.velocity, ctx);
-  }, [student, strategy, input, session]);
+    return computeMacros(student.mainGoal, strategy.direction, strategy.velocity, ctx, macroParams);
+  }, [student, strategy, input, session, macroParams]);
 
   // A store é lida no cliente; antes disso, evitar flash de "não encontrado".
   if (typeof window === "undefined") {

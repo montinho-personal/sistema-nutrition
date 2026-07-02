@@ -57,6 +57,21 @@ export interface StrategyInput {
   bodyFatPct: number | null;
 }
 
+/**
+ * Parâmetros de macro configuráveis (Documento 08). Padrões vivem nas
+ * constantes; a tela de Configurações permite sobrescrevê-los por usuário.
+ */
+export interface MacroParams {
+  /** Proteína (g por kg de peso) por objetivo. */
+  proteinGPerKg: Record<StudentGoal, number>;
+  /** Gordura mínima (g por kg de peso). */
+  fatGPerKg: number;
+  /** Ajuste calórico (fração do TDEE) por velocidade, no déficit. */
+  velocityDeficitPct: Record<StrategyVelocity, number>;
+  /** Ajuste calórico (fração do TDEE) por velocidade, no superávit. */
+  velocitySurplusPct: Record<StrategyVelocity, number>;
+}
+
 export type BmrMethod = "katch_mcardle" | "mifflin" | "fallback";
 
 /** Alvos de macronutrientes calculados (Documento 04 — depois da estratégia). */
