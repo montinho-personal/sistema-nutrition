@@ -16,6 +16,7 @@ import type { StudentGoal } from "@/modules/students/types";
 import type { MacroParams, StrategyVelocity } from "@/modules/strategy/types";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { saveMacroParams, resetMacroParams } from "@/modules/settings/services";
+import { SyncSettingsCard } from "@/modules/sync/components/sync-settings-card";
 
 const GOALS = Object.keys(STUDENT_GOAL_LABELS) as StudentGoal[];
 const VELOCITIES = Object.keys(VELOCITY_LABELS) as StrategyVelocity[];
@@ -101,6 +102,8 @@ export function SettingsView() {
       />
 
       <div className="flex flex-col gap-6">
+        <SyncSettingsCard />
+
         <SectionHeader
           title="Parâmetros de macro"
           description="Ajuste a matemática dos macros. Os motores passam a usar estes valores imediatamente."
