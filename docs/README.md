@@ -16,6 +16,7 @@ máxima sobre qualquer outro.
 | 03C | [Clinical Strategy Council (CSC)](03c-clinical-strategy-council.md) | ✅ V1.0 — Core Intelligence Module |
 | 03D | [Strategic Priority Matrix (SPM)](03d-strategic-priority-matrix.md) | ✅ V1.0 — Core Intelligence Module |
 | 03E | [Transformation Roadmap Engine (TRE)](03e-transformation-roadmap-engine.md) | ✅ V1.0 — Core Intelligence Module |
+| 03F | [Outcome Prediction Engine (OPE)](03f-outcome-prediction-engine.md) | ✅ V1.0 — Core Intelligence Module |
 
 ## Módulos previstos
 
