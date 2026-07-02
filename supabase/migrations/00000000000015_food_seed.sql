@@ -11,7 +11,7 @@
 -- =============================================================================
 
 -- ── Grupos / categorias ──────────────────────────────────────────────────────
-insert into public.food_categories (name, description) values
+insert into montinho.food_categories (name, description) values
   ('Carnes e ovos', 'Fontes proteicas de origem animal'),
   ('Pescados', 'Peixes e frutos do mar'),
   ('Laticínios', 'Leite e derivados'),
@@ -25,9 +25,9 @@ insert into public.food_categories (name, description) values
 on conflict (name) do nothing;
 
 -- ── Alimentos (composição por 100 g) ─────────────────────────────────────────
-with s as (select name, id from public.food_sources),
-     c as (select name, id from public.food_categories)
-insert into public.foods (
+with s as (select name, id from montinho.food_sources),
+     c as (select name, id from montinho.food_categories)
+insert into montinho.foods (
   source_id, category_id, source_code, name, food_group, subgroup,
   energy_kcal, protein_g, carbs_g, fat_g, fiber_g, sugar_g,
   saturated_fat_g, sodium_mg, potassium_mg, data_confidence, processing_level, synonyms
@@ -65,7 +65,7 @@ join s on s.name = v.src
 join c on c.name = v.cat;
 
 -- ── Atributos estratégicos por alimento ──────────────────────────────────────
-insert into public.food_attributes (
+insert into montinho.food_attributes (
   food_id, satiety_score, practicality_score, digestibility_score, palatability_score,
   acceptance_score, overeating_risk, cost_range, availability, prep_time_minutes,
   freezes_well, portability, needs_cooking, can_eat_cold, can_prep_ahead,
@@ -102,10 +102,10 @@ from (values
   ('FIE023',72,60,80,52,66,'low','low','high',12,true,false,true,true,true,true,false,true,true,'{lunch,dinner}','{weight_loss,recomposition}','Baixa caloria e alta fibra; grande volume alimentar.'),
   ('FIE024',66,90,78,62,80,'low','very_low','high',0,false,true,false,true,true,true,true,true,true,'{snack,lunch}','{weight_loss,maintenance}','Crua e portátil; ótima para saciedade de baixa caloria.')
 ) a(code, sat, prat, dig, pal, acc, risk, cost, avail, prep, frz, port, cook, cold, ahead, lunch, travel, hunger, few, times, goals, apps)
-join public.foods f on f.source_code = a.code;
+join montinho.foods f on f.source_code = a.code;
 
 -- ── Medidas caseiras (amostra) ───────────────────────────────────────────────
-insert into public.food_portions (food_id, name, grams)
+insert into montinho.food_portions (food_id, name, grams)
 select f.id, p.name, p.grams
 from (values
   ('FIE002','unidade média', 50),
@@ -119,11 +119,11 @@ from (values
   ('FIE020','colher de sopa', 20),
   ('FIE021','unidade', 5)
 ) p(code, name, grams)
-join public.foods f on f.source_code = p.code
+join montinho.foods f on f.source_code = p.code
 on conflict (food_id, name) do nothing;
 
 -- ── Catálogo de tags (Documento 15) ──────────────────────────────────────────
-insert into public.food_tags (name, tag_type, description) values
+insert into montinho.food_tags (name, tag_type, description) values
   ('Alta proteína', 'nutritional', 'Boa densidade proteica por caloria'),
   ('Alta fibra', 'nutritional', 'Rico em fibras'),
   ('Baixa caloria', 'nutritional', 'Baixa densidade energética'),
@@ -142,7 +142,7 @@ insert into public.food_tags (name, tag_type, description) values
 on conflict (name) do nothing;
 
 -- ── Atribuição de tags aos alimentos ─────────────────────────────────────────
-insert into public.food_tag_assignments (food_id, tag_id)
+insert into montinho.food_tag_assignments (food_id, tag_id)
 select f.id, t.id
 from (values
   ('FIE001','Alta proteína'),('FIE001','Alta saciedade'),('FIE001','Congelável'),('FIE001','Sem glúten'),('FIE001','Sem lactose'),
@@ -170,6 +170,6 @@ from (values
   ('FIE023','Alta fibra'),('FIE023','Baixa caloria'),('FIE023','Alta saciedade'),('FIE023','Vegano'),('FIE023','Sem glúten'),
   ('FIE024','Alta fibra'),('FIE024','Baixa caloria'),('FIE024','Portátil'),('FIE024','Vegano'),('FIE024','Sem glúten')
 ) m(code, tag)
-join public.foods f on f.source_code = m.code
-join public.food_tags t on t.name = m.tag
+join montinho.foods f on f.source_code = m.code
+join montinho.food_tags t on t.name = m.tag
 on conflict (food_id, tag_id) do nothing;

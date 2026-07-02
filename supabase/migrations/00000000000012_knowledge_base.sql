@@ -7,7 +7,7 @@
 -- =============================================================================
 
 -- kb_articles ---------------------------------------------------------------------
-create table public.kb_articles (
+create table montinho.kb_articles (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   slug text not null unique,
@@ -27,14 +27,14 @@ create table public.kb_articles (
   notes text
 );
 
-comment on table public.kb_articles is
+comment on table montinho.kb_articles is
   'Artigos da base de conhecimento com nível de evidência (Documento 03G — Biblioteca 10).';
 
-create index idx_kb_articles_category on public.kb_articles (category);
-create index idx_kb_articles_tags on public.kb_articles using gin (tags);
+create index idx_kb_articles_category on montinho.kb_articles (category);
+create index idx_kb_articles_tags on montinho.kb_articles using gin (tags);
 
 -- kb_protocols ----------------------------------------------------------------------
-create table public.kb_protocols (
+create table montinho.kb_protocols (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
   protocol_type text not null check (protocol_type in (
@@ -54,17 +54,17 @@ create table public.kb_protocols (
   notes text
 );
 
-comment on table public.kb_protocols is
+comment on table montinho.kb_protocols is
   'Banco de Protocolos (Documento 03G — Biblioteca 9): platôs, baixa aderência, excesso de fome...';
-comment on column public.kb_protocols.trigger_conditions is
+comment on column montinho.kb_protocols.trigger_conditions is
   'Quando o protocolo se aplica — ex.: estagnação de peso por 3 semanas com boa adesão.';
-comment on column public.kb_protocols.steps is
+comment on column montinho.kb_protocols.steps is
   'Sequência de investigação/ação — ex.: platô: investigar adesão, passos, sono ANTES de reduzir calorias (Documento 03H).';
 
-create index idx_kb_protocols_type on public.kb_protocols (protocol_type);
+create index idx_kb_protocols_type on montinho.kb_protocols (protocol_type);
 
 -- kb_food_guides -----------------------------------------------------------------------
-create table public.kb_food_guides (
+create table montinho.kb_food_guides (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   context text not null check (context in (
@@ -83,16 +83,16 @@ create table public.kb_food_guides (
   notes text
 );
 
-comment on table public.kb_food_guides is
+comment on table montinho.kb_food_guides is
   'Guias de aderência alimentar por contexto (Documento 03G — Biblioteca 5): viagens, restaurantes, delivery...';
 
-create index idx_kb_food_guides_context on public.kb_food_guides (context);
+create index idx_kb_food_guides_context on montinho.kb_food_guides (context);
 
 -- kb_supplement_guides ---------------------------------------------------------------------
-create table public.kb_supplement_guides (
+create table montinho.kb_supplement_guides (
   id uuid primary key default gen_random_uuid(),
   title text not null,
-  supplement_id uuid references public.supplements (id),
+  supplement_id uuid references montinho.supplements (id),
   content text not null,
   evidence_level text check (evidence_level in ('strong', 'moderate', 'limited', 'expert_opinion')),
 
@@ -105,13 +105,13 @@ create table public.kb_supplement_guides (
   notes text
 );
 
-comment on table public.kb_supplement_guides is
+comment on table montinho.kb_supplement_guides is
   'Guias de suplementação — sempre subordinados à filosofia: alimentação primeiro (Documento 00).';
 
-create index idx_kb_supplement_guides_supplement on public.kb_supplement_guides (supplement_id);
+create index idx_kb_supplement_guides_supplement on montinho.kb_supplement_guides (supplement_id);
 
 -- kb_behavior_guides --------------------------------------------------------------------------
-create table public.kb_behavior_guides (
+create table montinho.kb_behavior_guides (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   behavior_type text not null check (behavior_type in (
@@ -130,13 +130,13 @@ create table public.kb_behavior_guides (
   notes text
 );
 
-comment on table public.kb_behavior_guides is
+comment on table montinho.kb_behavior_guides is
   'Banco de Comportamento Alimentar (Documento 03G — Biblioteca 4): gatilhos, compulsão, fome emocional...';
 
-create index idx_kb_behavior_guides_type on public.kb_behavior_guides (behavior_type);
+create index idx_kb_behavior_guides_type on montinho.kb_behavior_guides (behavior_type);
 
 -- kb_scientific_references ----------------------------------------------------------------------
-create table public.kb_scientific_references (
+create table montinho.kb_scientific_references (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   authors text,
@@ -156,34 +156,34 @@ create table public.kb_scientific_references (
   notes text
 );
 
-comment on table public.kb_scientific_references is
+comment on table montinho.kb_scientific_references is
   'Referências científicas: toda afirmação importante possui origem e nível de evidência (Documento 03G).';
 
-create index idx_kb_scientific_references_year on public.kb_scientific_references (publication_year);
+create index idx_kb_scientific_references_year on montinho.kb_scientific_references (publication_year);
 
 -- RLS --------------------------------------------------------------------------------------------
-alter table public.kb_articles enable row level security;
-alter table public.kb_protocols enable row level security;
-alter table public.kb_food_guides enable row level security;
-alter table public.kb_supplement_guides enable row level security;
-alter table public.kb_behavior_guides enable row level security;
-alter table public.kb_scientific_references enable row level security;
+alter table montinho.kb_articles enable row level security;
+alter table montinho.kb_protocols enable row level security;
+alter table montinho.kb_food_guides enable row level security;
+alter table montinho.kb_supplement_guides enable row level security;
+alter table montinho.kb_behavior_guides enable row level security;
+alter table montinho.kb_scientific_references enable row level security;
 
-create policy "kb_articles_all_authenticated" on public.kb_articles
+create policy "kb_articles_all_authenticated" on montinho.kb_articles
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "kb_protocols_all_authenticated" on public.kb_protocols
+create policy "kb_protocols_all_authenticated" on montinho.kb_protocols
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "kb_food_guides_all_authenticated" on public.kb_food_guides
+create policy "kb_food_guides_all_authenticated" on montinho.kb_food_guides
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "kb_supplement_guides_all_authenticated" on public.kb_supplement_guides
+create policy "kb_supplement_guides_all_authenticated" on montinho.kb_supplement_guides
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "kb_behavior_guides_all_authenticated" on public.kb_behavior_guides
+create policy "kb_behavior_guides_all_authenticated" on montinho.kb_behavior_guides
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "kb_scientific_references_all_authenticated" on public.kb_scientific_references
+create policy "kb_scientific_references_all_authenticated" on montinho.kb_scientific_references
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
 
 -- Gatilhos padrão -----------------------------------------------------------------------------------
-call public.attach_standard_triggers(
+call montinho.attach_standard_triggers(
   'kb_articles', 'kb_protocols', 'kb_food_guides',
   'kb_supplement_guides', 'kb_behavior_guides', 'kb_scientific_references'
 );

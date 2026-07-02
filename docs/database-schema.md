@@ -2,6 +2,9 @@
 
 > Gerado na Sprint 1.2 (Documento 14). Fonte da verdade: `supabase/migrations/`.
 > Toda alteração de schema acontece **exclusivamente** via migração.
+>
+> **Todas as tabelas vivem no schema `montinho`** (não no `public`) — permite coexistir com
+> outros apps num mesmo projeto Supabase. Os nomes abaixo omitem o prefixo `montinho.`.
 
 ## Convenções
 

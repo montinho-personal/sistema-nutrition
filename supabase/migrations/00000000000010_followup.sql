@@ -7,10 +7,10 @@
 -- =============================================================================
 
 -- followups ---------------------------------------------------------------------
-create table public.followups (
+create table montinho.followups (
   id uuid primary key default gen_random_uuid(),
-  student_id uuid not null references public.students (id) on delete cascade,
-  strategy_id uuid references public.strategies (id),
+  student_id uuid not null references montinho.students (id) on delete cascade,
+  strategy_id uuid references montinho.strategies (id),
   followup_date date not null default current_date,
   weight_kg numeric(5, 2) check (weight_kg > 0),
   adherence_score integer check (adherence_score between 0 and 100),
@@ -29,17 +29,17 @@ create table public.followups (
   notes text
 );
 
-comment on table public.followups is
+comment on table montinho.followups is
   'Acompanhamento periódico: peso, adesão, fome, sono, energia e humor (Documento 03E — Indicadores da Jornada).';
 
-create index idx_followups_student on public.followups (student_id);
-create index idx_followups_strategy on public.followups (strategy_id);
-create index idx_followups_date on public.followups (followup_date);
+create index idx_followups_student on montinho.followups (student_id);
+create index idx_followups_strategy on montinho.followups (strategy_id);
+create index idx_followups_date on montinho.followups (followup_date);
 
 -- followup_answers -----------------------------------------------------------------
-create table public.followup_answers (
+create table montinho.followup_answers (
   id uuid primary key default gen_random_uuid(),
-  followup_id uuid not null references public.followups (id) on delete cascade,
+  followup_id uuid not null references montinho.followups (id) on delete cascade,
   question_key text not null,
   question_text text not null,
   answer jsonb,
@@ -55,15 +55,15 @@ create table public.followup_answers (
   unique (followup_id, question_key)
 );
 
-comment on table public.followup_answers is
+comment on table montinho.followup_answers is
   'Respostas estruturadas do acompanhamento — o que funcionou, o que não funcionou, por quê (Documento 05).';
 
-create index idx_followup_answers_followup on public.followup_answers (followup_id);
+create index idx_followup_answers_followup on montinho.followup_answers (followup_id);
 
 -- followup_adjustments ----------------------------------------------------------------
-create table public.followup_adjustments (
+create table montinho.followup_adjustments (
   id uuid primary key default gen_random_uuid(),
-  followup_id uuid not null references public.followups (id) on delete cascade,
+  followup_id uuid not null references montinho.followups (id) on delete cascade,
   adjustment text not null,
   reason text not null,
   expected_impact text,
@@ -78,17 +78,17 @@ create table public.followup_adjustments (
   notes text
 );
 
-comment on table public.followup_adjustments is
+comment on table montinho.followup_adjustments is
   'Ajustes realizados: alteração, motivo, impacto esperado e resultado observado (Documento 10).';
-comment on column public.followup_adjustments.observed_result is
+comment on column montinho.followup_adjustments.observed_result is
   'Preenchido no acompanhamento seguinte — fecha o ciclo de aprendizado (Documento 05).';
 
-create index idx_followup_adjustments_followup on public.followup_adjustments (followup_id);
+create index idx_followup_adjustments_followup on montinho.followup_adjustments (followup_id);
 
 -- followup_progress ---------------------------------------------------------------------
-create table public.followup_progress (
+create table montinho.followup_progress (
   id uuid primary key default gen_random_uuid(),
-  followup_id uuid not null references public.followups (id) on delete cascade,
+  followup_id uuid not null references montinho.followups (id) on delete cascade,
   metric_key text not null,
   metric_value numeric(10, 2) not null,
   metric_unit text,
@@ -105,28 +105,28 @@ create table public.followup_progress (
   unique (followup_id, metric_key)
 );
 
-comment on table public.followup_progress is
+comment on table montinho.followup_progress is
   'Progresso por métrica (força, medidas, performance...) com tendência interpretada.';
 
-create index idx_followup_progress_followup on public.followup_progress (followup_id);
-create index idx_followup_progress_metric on public.followup_progress (metric_key);
+create index idx_followup_progress_followup on montinho.followup_progress (followup_id);
+create index idx_followup_progress_metric on montinho.followup_progress (metric_key);
 
 -- RLS -------------------------------------------------------------------------------------
-alter table public.followups enable row level security;
-alter table public.followup_answers enable row level security;
-alter table public.followup_adjustments enable row level security;
-alter table public.followup_progress enable row level security;
+alter table montinho.followups enable row level security;
+alter table montinho.followup_answers enable row level security;
+alter table montinho.followup_adjustments enable row level security;
+alter table montinho.followup_progress enable row level security;
 
-create policy "followups_all_authenticated" on public.followups
+create policy "followups_all_authenticated" on montinho.followups
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "followup_answers_all_authenticated" on public.followup_answers
+create policy "followup_answers_all_authenticated" on montinho.followup_answers
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "followup_adjustments_all_authenticated" on public.followup_adjustments
+create policy "followup_adjustments_all_authenticated" on montinho.followup_adjustments
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
-create policy "followup_progress_all_authenticated" on public.followup_progress
+create policy "followup_progress_all_authenticated" on montinho.followup_progress
   for all using (auth.uid() is not null) with check (auth.uid() is not null);
 
 -- Gatilhos padrão ----------------------------------------------------------------------------
-call public.attach_standard_triggers(
+call montinho.attach_standard_triggers(
   'followups', 'followup_answers', 'followup_adjustments', 'followup_progress'
 );

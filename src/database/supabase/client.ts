@@ -17,5 +17,8 @@ export function createSupabaseBrowserClient() {
     });
   }
 
-  return createBrowserClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+  return createBrowserClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    // Queries (.from) usam o schema dedicado; Auth não é afetado.
+    db: { schema: env.NEXT_PUBLIC_SUPABASE_SCHEMA },
+  });
 }

@@ -26,9 +26,11 @@ assumir, sempre evoluir (nunca reconstruir).**
 - **Regras de negócio somente em `services/`** — nunca em componentes React (Doc 11).
 - **Validação sempre com Zod**; env vars só via `src/config/env.ts`.
 - **Nenhum número mágico**: parâmetros estratégicos são configuráveis (Doc 08).
-- **Banco**: toda alteração via migração em `supabase/migrations/` (nunca manual). Toda tabela
-  tem o padrão de auditoria: `id` UUID, `created_at/updated_at`, `created_by/updated_by`,
-  `is_active`, `notes` (Doc 10). RLS sempre.
+- **Banco**: toda alteração via migração em `supabase/migrations/` (nunca manual). Tudo vive no
+  schema **`montinho`** (nunca `public`), para coexistir com outros apps num mesmo projeto
+  Supabase; app aponta via `NEXT_PUBLIC_SUPABASE_SCHEMA`. Toda tabela tem o padrão de auditoria:
+  `id` UUID, `created_at/updated_at`, `created_by/updated_by`, `is_active`, `version`, `notes`
+  (Doc 10). RLS sempre.
 - **Prompts** centralizados em `src/prompts/` com nome/objetivo/versão — nunca inline (Doc 11).
 - **IA só onde agrega**: se existe resposta determinística, implementar como regra (Doc 08).
 - **Reutilizar antes de criar**: componente/da função semelhante existe? Use-o (AEC Regra 8).

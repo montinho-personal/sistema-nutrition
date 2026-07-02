@@ -10,7 +10,7 @@
 -- =============================================================================
 
 -- ── foods: identificação + nutrição completa + confiança científica ──────────
-alter table public.foods
+alter table montinho.foods
   add column if not exists food_group text,
   add column if not exists subgroup text,
   add column if not exists description text,
@@ -31,17 +31,17 @@ alter table public.foods
     check (data_confidence in ('high', 'medium', 'low', 'estimated')),
   add column if not exists data_reviewed_at date;
 
-comment on column public.foods.food_group is 'Grupo alimentar (ex.: Cereais, Carnes, Frutas).';
-comment on column public.foods.synonyms is 'Nomes alternativos para busca — ex.: {aipim, macaxeira}.';
-comment on column public.foods.processing_level is
+comment on column montinho.foods.food_group is 'Grupo alimentar (ex.: Cereais, Carnes, Frutas).';
+comment on column montinho.foods.synonyms is 'Nomes alternativos para busca — ex.: {aipim, macaxeira}.';
+comment on column montinho.foods.processing_level is
   'Nível de processamento (NOVA): in_natura → ultra_processed. Contexto, nunca demonização (Documento 15).';
-comment on column public.foods.data_confidence is
+comment on column montinho.foods.data_confidence is
   'Confiança dos dados (Documento 15 — Perfil Científico): high (TBCA/TACO) → estimated.';
 
 -- Índice full-text incluindo sinônimos e descrição (busca por nome/sinônimo) ──
 -- A resolução do regconfig por nome é STABLE; encapsular numa função IMMUTABLE
 -- com o dicionário fixo torna a expressão indexável (padrão recomendado).
-create or replace function public.food_search_vector(
+create or replace function montinho.food_search_vector(
   p_name text, p_synonyms text[], p_description text
 )
 returns tsvector
@@ -56,26 +56,26 @@ as $$
   );
 $$;
 
-comment on function public.food_search_vector(text, text[], text) is
+comment on function montinho.food_search_vector(text, text[], text) is
   'Vetor de busca full-text (pt-BR) sobre nome + sinônimos + descrição de um alimento.';
 
-drop index if exists public.idx_foods_name;
-create index idx_foods_search on public.foods using gin (
-  public.food_search_vector(name, synonyms, description)
+drop index if exists montinho.idx_foods_name;
+create index idx_foods_search on montinho.foods using gin (
+  montinho.food_search_vector(name, synonyms, description)
 );
-create index if not exists idx_foods_group on public.foods (food_group);
-create index if not exists idx_foods_processing on public.foods (processing_level);
+create index if not exists idx_foods_group on montinho.foods (food_group);
+create index if not exists idx_foods_processing on montinho.foods (processing_level);
 
 -- ── food_attributes: perfis estratégico, comportamental e logístico ──────────
 -- Amplia a escala de custo de 3 para 5 níveis (Documento 15 — Perfil Financeiro).
-alter table public.food_attributes
+alter table montinho.food_attributes
   drop constraint if exists food_attributes_cost_range_check;
-alter table public.food_attributes
+alter table montinho.food_attributes
   add constraint food_attributes_cost_range_check
   check (cost_range is null or cost_range in
     ('very_low', 'low', 'medium', 'high', 'very_high'));
 
-alter table public.food_attributes
+alter table montinho.food_attributes
   -- Comportamental (Documento 15)
   add column if not exists palatability_score integer
     check (palatability_score is null or palatability_score between 0 and 100),
@@ -104,28 +104,28 @@ alter table public.food_attributes
     check (strategic_override is null or strategic_override in
       ('excellent', 'good', 'neutral', 'poor', 'context_dependent'));
 
-comment on column public.food_attributes.overeating_risk is
+comment on column montinho.food_attributes.overeating_risk is
   'Risco de exagero / gatilho de palatabilidade — usado pelo Motor de Risco, sem demonizar.';
-comment on column public.food_attributes.strategic_override is
+comment on column montinho.food_attributes.strategic_override is
   'Sobrescreve a classificação estratégica computada. Null = motor decide (Documento 08).';
 
 -- ── food_tags: tipo de tag (reutiliza a infra N:N para restrições) ───────────
 -- Restrições dietéticas são modeladas como tags (tag_type = dietary),
 -- reutilizando food_tag_assignments — nunca duplicar (Documento 11 / AEC 8).
-alter table public.food_tags
+alter table montinho.food_tags
   add column if not exists tag_type text not null default 'strategic'
     check (tag_type in ('strategic', 'nutritional', 'dietary', 'logistic', 'timing'));
 
-comment on column public.food_tags.tag_type is
+comment on column montinho.food_tags.tag_type is
   'Classe da tag: strategic, nutritional, dietary (restrições), logistic, timing.';
 
-create index if not exists idx_food_tags_type on public.food_tags (tag_type);
+create index if not exists idx_food_tags_type on montinho.food_tags (tag_type);
 
 -- ── View enriquecida: leitura conveniente para busca e recomendação ──────────
 -- A classificação estratégica NÃO é materializada aqui — é computada no serviço
 -- (regra determinística, Documento 08). A view entrega os dados brutos + rótulos
 -- qualitativos derivados diretamente dos scores.
-create or replace view public.foods_enriched as
+create or replace view montinho.foods_enriched as
 select
   f.id,
   f.name,
@@ -179,10 +179,10 @@ select
   a.strategic_applications,
   a.strategic_override,
   f.is_active
-from public.foods f
-  left join public.food_categories fc on fc.id = f.category_id
-  left join public.food_sources fs on fs.id = f.source_id
-  left join public.food_attributes a on a.food_id = f.id;
+from montinho.foods f
+  left join montinho.food_categories fc on fc.id = f.category_id
+  left join montinho.food_sources fs on fs.id = f.source_id
+  left join montinho.food_attributes a on a.food_id = f.id;
 
-comment on view public.foods_enriched is
+comment on view montinho.foods_enriched is
   'Alimento + atributos + categoria + fonte em uma linha (Documento 15). Classificação estratégica é computada no serviço FIE.';

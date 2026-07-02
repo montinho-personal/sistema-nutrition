@@ -20,6 +20,8 @@ export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    // Queries (.from) usam o schema dedicado; Auth não é afetado.
+    db: { schema: env.NEXT_PUBLIC_SUPABASE_SCHEMA },
     cookies: {
       getAll() {
         return cookieStore.getAll();

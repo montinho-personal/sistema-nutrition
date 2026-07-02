@@ -10,11 +10,16 @@ import { z } from "zod";
 const environmentSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
+  // Schema do banco onde o sistema vive. Permite instalar dentro de um projeto
+  // Supabase existente sem colidir com outros apps. Deve casar com o schema das
+  // migrações (padrão: montinho).
+  NEXT_PUBLIC_SUPABASE_SCHEMA: z.string().min(1).default("montinho"),
 });
 
 const parsed = environmentSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SUPABASE_SCHEMA: process.env.NEXT_PUBLIC_SUPABASE_SCHEMA,
 });
 
 if (!parsed.success) {
