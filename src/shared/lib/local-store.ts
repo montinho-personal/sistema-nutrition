@@ -21,6 +21,16 @@ function emit(): void {
   for (const listener of listeners) listener();
 }
 
+// Observadores de escrita (desacoplados): a camada de sync na nuvem se
+// registra aqui para replicar as coleções, sem que a store conheça o Supabase.
+const writeListeners = new Set<(key: string, value: unknown) => void>();
+
+/** Registra um observador de escritas (retorna a função para cancelar). */
+export function onLocalWrite(listener: (key: string, value: unknown) => void): () => void {
+  writeListeners.add(listener);
+  return () => writeListeners.delete(listener);
+}
+
 /** Assina mudanças da store (mesma aba e entre abas). */
 export function subscribeLocal(listener: () => void): () => void {
   listeners.add(listener);
@@ -66,6 +76,7 @@ export function writeLocal<T>(key: string, value: T): void {
     window.localStorage.setItem(PREFIX + key, raw);
     cache.set(key, { raw, value });
     emit();
+    for (const listener of writeListeners) listener(key, value);
   } catch {
     logger.error("Falha ao gravar armazenamento local", { key });
   }

@@ -23,3 +23,14 @@ export function createSupabaseBrowserClient(schema: string = env.NEXT_PUBLIC_SUP
     db: { schema },
   });
 }
+
+// Instância única para Auth e sync — mantém a sessão estável entre chamadas.
+let browserSingleton: ReturnType<typeof createSupabaseBrowserClient> | null = null;
+
+/** Cliente de navegador reutilizável (sessão persistida). Null se não configurado. */
+export function getSupabaseBrowser() {
+  if (!isSupabaseConfigured) return null;
+  // Schema `public`: onde vivem as funções de sync/anamnese e o Auth.
+  browserSingleton ??= createSupabaseBrowserClient("public");
+  return browserSingleton;
+}
