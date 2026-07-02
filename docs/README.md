@@ -10,6 +10,7 @@ máxima sobre qualquer outro.
 | --- | --- | --- |
 | 00 | [Vision & Product Philosophy (PRD)](00-vision-product-philosophy.md) | ✅ V1.0 — Fundação |
 | 01 | [Software Architecture & Nutrition Decision Engine (NDE)](01-software-architecture-nde.md) | ✅ V1.0 — Arquitetura |
+| 02 | [Design System • UX • UI • Product Experience](02-design-system-ux-ui.md) | ✅ V1.0 — Design System |
 
 ## Módulos previstos
 
