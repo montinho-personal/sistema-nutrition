@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, PencilIcon, StethoscopeIcon, TargetIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  PencilIcon,
+  StethoscopeIcon,
+  TargetIcon,
+  UtensilsIcon,
+} from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -156,10 +163,19 @@ export function StrategyView({ studentId }: { studentId: string }) {
                 {input.bodyFatPct ? ` · ${input.bodyFatPct}% gordura` : ""}
                 {` · objetivo: ${STUDENT_GOAL_LABELS[student.mainGoal]}`}
               </Badge>
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                <PencilIcon className="size-4" />
-                Ajustar peso
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+                  <PencilIcon className="size-4" />
+                  Ajustar peso
+                </Button>
+                <Button asChild size="sm">
+                  <Link href={`/meal-plan/${student.id}`}>
+                    <UtensilsIcon className="size-4" />
+                    Ver plano alimentar
+                    <ArrowRightIcon className="size-4" />
+                  </Link>
+                </Button>
+              </div>
             </div>
             <MacroSummary macros={macros} />
           </div>
