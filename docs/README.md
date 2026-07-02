@@ -22,6 +22,7 @@ máxima sobre qualquer outro.
 | 04 | [Strategic Prescription Engine (SPE)](04-strategic-prescription-engine.md) | ✅ V1.0 — Core Strategy Module |
 | 05 | [Personal Nutrition Intelligence (PNI)](05-personal-nutrition-intelligence.md) | ✅ V1.0 — Core Intelligence Module |
 | 06 | [Módulo 1 — Diagnóstico Estratégico Nutricional (PRD)](06-modulo-1-diagnostico-prd.md) | ✅ V1.0 — PRD de Módulo |
+| 07 | [Módulo 1 — UX • Interface • Fluxo da Entrevista](07-modulo-1-ux-interface-entrevista.md) | ✅ V1.0 — Engineering PRD |
 
 ## Módulos previstos
 
