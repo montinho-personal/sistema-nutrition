@@ -89,6 +89,7 @@ describe("buildStudentReport", () => {
         date: "2026-05-29",
         weightKg: 90.5,
         scales: { adherence: 7, hunger: 6, sleep: 7, energy: 7, mood: 7 },
+        measurements: null,
         whatWorked: null,
         whatFailed: null,
         why: null,

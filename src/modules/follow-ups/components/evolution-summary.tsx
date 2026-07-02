@@ -1,12 +1,12 @@
 "use client";
 
-import { ActivityIcon, ScaleIcon, TargetIcon } from "lucide-react";
+import { ActivityIcon, RulerIcon, ScaleIcon, TargetIcon } from "lucide-react";
 
 import { MetricCard } from "@/shared/components/metric-card";
 import { InsightCard, type InsightKind } from "@/shared/components/insight-card";
 import { SectionHeader } from "@/shared/components/section-header";
-import { STATUS_LABELS } from "@/modules/follow-ups/constants/parameters";
-import type { Evolution, EvolutionInsight } from "@/modules/follow-ups/types";
+import { MEASUREMENT_LABELS, STATUS_LABELS } from "@/modules/follow-ups/constants/parameters";
+import type { Evolution, EvolutionInsight, MeasurementDelta } from "@/modules/follow-ups/types";
 
 const INSIGHT_KIND: Record<EvolutionInsight["kind"], InsightKind> = {
   risk: "risk",
@@ -26,13 +26,21 @@ function weeklyLabel(value: number | null): string {
   return `${kg(value)}/sem`;
 }
 
-/** Resumo da evolução: métricas-chave + recomendações (Documentos 03F/05). */
+function cm(value: number): string {
+  const abs = Math.abs(value).toFixed(1).replace(".", ",");
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+  return `${sign}${abs} cm`;
+}
+
+/** Resumo da evolução: métricas-chave + medidas + recomendações (Docs 03F/05). */
 export function EvolutionSummary({
   evolution,
   insights,
+  measurementDeltas = [],
 }: {
   evolution: Evolution;
   insights: EvolutionInsight[];
+  measurementDeltas?: MeasurementDelta[];
 }) {
   // Direção esperada: perda (negativa) ou ganho (positiva).
   const expectedDir = Math.sign(evolution.expectedWeeklyKg);
@@ -79,6 +87,34 @@ export function EvolutionSummary({
           value={STATUS_LABELS[evolution.status] ?? evolution.status}
         />
       </div>
+
+      {measurementDeltas.length > 0 ? (
+        <div className="flex flex-col gap-2 rounded-lg border p-3">
+          <span className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            <RulerIcon className="size-3.5" />
+            Medidas corporais
+          </span>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+            {measurementDeltas.map((d) => (
+              <div key={d.key} className="flex flex-col">
+                <span className="text-xs text-muted-foreground">{MEASUREMENT_LABELS[d.key]}</span>
+                <span className="text-sm tabular-nums">
+                  {d.last.toFixed(1).replace(".", ",")} cm
+                  {d.deltaCm !== 0 ? (
+                    <span
+                      className={
+                        d.deltaCm < 0 ? "ml-1.5 text-success" : "ml-1.5 text-muted-foreground"
+                      }
+                    >
+                      {cm(d.deltaCm)}
+                    </span>
+                  ) : null}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {insights.length > 0 ? (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

@@ -11,6 +11,7 @@ import type { EnergyDirection } from "@/modules/strategy/types";
 import {
   KCAL_PER_KG,
   MAINTENANCE_TOLERANCE_KG,
+  MEASUREMENT_KEYS,
   MIN_DAYS_FOR_RATE,
   RATE_BANDS,
   SCALE_LABELS,
@@ -23,6 +24,7 @@ import type {
   EvolutionStatus,
   FollowUp,
   FollowUpScales,
+  MeasurementDelta,
   WeightPoint,
 } from "@/modules/follow-ups/types";
 
@@ -136,6 +138,27 @@ export function computeEvolution(
     points,
     averageScales: averageScales(followups),
   };
+}
+
+/**
+ * Evolução das circunferências: para cada medida registrada ao menos uma vez,
+ * compara o primeiro e o último valor conhecido. Determinístico — a cintura,
+ * por exemplo, cai mesmo quando a balança empaca (recomposição).
+ */
+export function computeMeasurementDeltas(followups: FollowUp[]): MeasurementDelta[] {
+  const sorted = [...followups].sort((a, b) => a.date.localeCompare(b.date));
+  const deltas: MeasurementDelta[] = [];
+
+  for (const key of MEASUREMENT_KEYS) {
+    const withValue = sorted.filter(
+      (f) => typeof f.measurements?.[key] === "number",
+    );
+    if (withValue.length === 0) continue;
+    const first = withValue[0].measurements![key]!;
+    const last = withValue[withValue.length - 1].measurements![key]!;
+    deltas.push({ key, first, last, deltaCm: round(last - first, 1) });
+  }
+  return deltas;
 }
 
 /**

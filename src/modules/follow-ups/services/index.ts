@@ -3,6 +3,7 @@
 export {
   computeEvolution,
   buildEvolutionInsights,
+  computeMeasurementDeltas,
   expectedWeeklyKgFromMacros,
 } from "./evolutionEngine";
 export { listFollowUps, createFollowUp, deleteFollowUp } from "./followUpRepository";
