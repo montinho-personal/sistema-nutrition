@@ -26,6 +26,7 @@ máxima sobre qualquer outro.
 | 08 | [Master Software Architecture (MSA)](08-master-software-architecture.md) | ✅ V1.0 — Master Architecture |
 | 09 | [Main Workspace (Central de Decisão)](09-main-workspace-central-decisao.md) | ✅ V1.0 — Engineering PRD (Core UI) |
 | 10 | [Database Architecture V1](10-database-architecture-v1.md) | ✅ V1.0 — Engineering PRD (Database) |
+| 11 | [Project Foundation & Engineering Standards (PFES)](11-project-foundation-engineering-standards.md) | ✅ V1.0 — Master Engineering PRD |
 
 ## Módulos previstos
 
