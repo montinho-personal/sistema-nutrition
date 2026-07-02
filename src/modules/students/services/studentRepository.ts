@@ -54,8 +54,12 @@ export function updateStudent(id: string, input: StudentInput): Student | null {
   const index = all.findIndex((s) => s.id === id);
   if (index === -1) return null;
   const updated: Student = { ...all[index], ...input, updatedAt: nowIso() };
-  all[index] = updated;
-  writeLocal(STORAGE_KEY, all);
+  // Novo array (nunca mutar o em cache — o useSyncExternalStore compara por
+  // referência e não re-renderiza se mutar in-place).
+  writeLocal(
+    STORAGE_KEY,
+    all.map((s, i) => (i === index ? updated : s)),
+  );
   return updated;
 }
 

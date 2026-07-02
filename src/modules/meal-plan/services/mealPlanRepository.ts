@@ -27,9 +27,8 @@ export function setMealPlanVariant(studentId: string, variant: number): void {
   const all = readAll();
   const index = all.findIndex((p) => p.studentId === studentId);
   const pref: MealPlanPref = { studentId, variant, updatedAt: new Date().toISOString() };
+  // Novo array (nunca mutar o em cache — comparação por referência no
+  // useSyncExternalStore não dispara re-render se mutar in-place).
   if (index === -1) persist([pref, ...all]);
-  else {
-    all[index] = pref;
-    persist(all);
-  }
+  else persist(all.map((p, i) => (i === index ? pref : p)));
 }

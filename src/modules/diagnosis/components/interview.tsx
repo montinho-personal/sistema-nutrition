@@ -18,6 +18,10 @@ interface InterviewProps {
   onAnswer: (key: string, value: AnswerValue) => void;
   onStageChange: (index: number) => void;
   onComplete: () => void;
+  /** Mostra o painel do NDE em tempo real (uso do treinador). */
+  showInsights?: boolean;
+  /** Rótulo do botão final (ex.: "Finalizar" na versão do aluno). */
+  completeLabel?: string;
 }
 
 /** Entrevista Estratégica: uma etapa por vez, com insights em tempo real (Documento 07). */
@@ -27,6 +31,8 @@ export function Interview({
   onAnswer,
   onStageChange,
   onComplete,
+  showInsights = true,
+  completeLabel = "Concluir diagnóstico",
 }: InterviewProps) {
   const total = STAGES.length;
   const index = Math.max(0, Math.min(total - 1, stageIndex));
@@ -35,7 +41,12 @@ export function Interview({
   const isLast = index === total - 1;
 
   return (
-    <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1fr_340px]">
+    <div
+      className={cn(
+        "grid grid-cols-1 gap-6",
+        showInsights && "2xl:grid-cols-[1fr_340px]",
+      )}
+    >
       <div className="flex min-w-0 flex-col gap-5">
         {/* Progresso */}
         <div className="flex flex-col gap-2">
@@ -93,7 +104,7 @@ export function Interview({
           {isLast ? (
             <Button variant="gold" onClick={onComplete}>
               <CheckIcon className="size-4" />
-              Concluir diagnóstico
+              {completeLabel}
             </Button>
           ) : (
             <Button onClick={() => onStageChange(index + 1)}>
@@ -104,18 +115,20 @@ export function Interview({
         </div>
       </div>
 
-      {/* Insights em tempo real */}
-      <aside className="2xl:sticky 2xl:top-4 2xl:self-start">
-        <Card className="gap-0 py-4">
-          <CardContent className="flex flex-col gap-3 px-4">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <SparklesIcon className="size-4 text-gold" />
-              Nutrition Decision Engine
-            </div>
-            <DiagnosisInsights answers={answers} />
-          </CardContent>
-        </Card>
-      </aside>
+      {/* Insights em tempo real (apenas no uso do treinador) */}
+      {showInsights ? (
+        <aside className="2xl:sticky 2xl:top-4 2xl:self-start">
+          <Card className="gap-0 py-4">
+            <CardContent className="flex flex-col gap-3 px-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <SparklesIcon className="size-4 text-gold" />
+                Nutrition Decision Engine
+              </div>
+              <DiagnosisInsights answers={answers} />
+            </CardContent>
+          </Card>
+        </aside>
+      ) : null}
     </div>
   );
 }

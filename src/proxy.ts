@@ -12,7 +12,9 @@ import { createServerClient } from "@supabase/ssr";
  * projeto), o proxy não bloqueia — permite desenvolver a interface.
  */
 
-const publicRoutes = ["/login"];
+// Rotas acessíveis sem sessão. `/anamnese` é o link público que o aluno
+// preenche por conta própria (sem login).
+const publicRoutes = ["/login", "/anamnese"];
 
 export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

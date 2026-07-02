@@ -64,12 +64,31 @@ export function saveSession(
   const index = all.findIndex((s) => s.id === id);
   if (index === -1) return null;
   const updated: DiagnosisSession = { ...all[index], ...patch, updatedAt: nowIso() };
-  all[index] = updated;
-  persist(all);
+  // Novo array (nunca mutar o em cache): a store é comparada por referência
+  // no useSyncExternalStore — mutar in-place não dispara re-render.
+  const next = all.map((s, i) => (i === index ? updated : s));
+  persist(next);
   return updated;
 }
 
 /** Atalho para gravar respostas. */
 export function saveAnswers(id: string, answers: AnswerMap): DiagnosisSession | null {
   return saveSession(id, { answers });
+}
+
+/**
+ * Importa respostas recebidas (ex.: anamnese preenchida pelo aluno) para o
+ * aluno, marcando a sessão como concluída. Cria a sessão se necessário.
+ */
+export function applyImportedAnswers(studentId: string, answers: AnswerMap): DiagnosisSession {
+  const session = getOrCreateSession(studentId);
+  const timestamp = nowIso();
+  return (
+    saveSession(session.id, {
+      answers,
+      status: "completed",
+      currentStageIndex: 0,
+      completedAt: timestamp,
+    }) ?? session
+  );
 }

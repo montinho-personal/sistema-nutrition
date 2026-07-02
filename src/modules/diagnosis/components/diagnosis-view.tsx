@@ -13,6 +13,7 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import { useDiagnosisSession } from "@/modules/diagnosis/hooks/use-diagnosis-session";
 import { Interview } from "@/modules/diagnosis/components/interview";
+import { ShareAnamnese } from "@/modules/diagnosis/components/share-anamnese";
 import { DiagnosisSummary } from "@/modules/diagnosis/components/diagnosis-summary";
 
 const EMPTY_STUDENTS: Student[] = [];
@@ -94,13 +95,16 @@ export function DiagnosisView({ studentId }: { studentId: string }) {
           <DiagnosisSummary answers={session.answers} student={student} />
         </div>
       ) : (
-        <Interview
-          answers={session.answers}
-          stageIndex={session.currentStageIndex}
-          onAnswer={setAnswer}
-          onStageChange={setStageIndex}
-          onComplete={complete}
-        />
+        <div className="flex flex-col gap-6">
+          <ShareAnamnese studentId={student.id} studentName={student.fullName} />
+          <Interview
+            answers={session.answers}
+            stageIndex={session.currentStageIndex}
+            onAnswer={setAnswer}
+            onStageChange={setStageIndex}
+            onComplete={complete}
+          />
+        </div>
       )}
     </>
   );

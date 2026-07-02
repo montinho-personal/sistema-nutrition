@@ -48,7 +48,8 @@ export function saveStrategyInput(studentId: string, input: StrategyInput): Stra
   }
 
   const updated: StrategyRecord = { ...all[index], input, updatedAt: timestamp };
-  all[index] = updated;
-  persist(all);
+  // Novo array (nunca mutar o em cache — senão o useSyncExternalStore não
+  // dispara re-render por comparar a referência).
+  persist(all.map((r, i) => (i === index ? updated : r)));
   return updated;
 }

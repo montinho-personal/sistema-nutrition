@@ -12,4 +12,11 @@ export {
   getOrCreateSession,
   saveSession,
   saveAnswers,
+  applyImportedAnswers,
 } from "./diagnosisRepository";
+export {
+  encodeAnamnese,
+  decodeAnamnese,
+  buildAnamneseUrl,
+  type AnamnesePayload,
+} from "./shareCodec";
