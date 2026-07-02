@@ -155,3 +155,50 @@ describe("importação TBCA", () => {
     expect(result.errors[0].index).toBe(1);
   });
 });
+
+describe("integridade do banco de alimentos expandido", () => {
+  it("tem cobertura ampliada (dezenas de alimentos)", () => {
+    expect(curatedFoods.length).toBeGreaterThanOrEqual(70);
+  });
+
+  it("todos os códigos (ids) são únicos", () => {
+    const ids = curatedFoods.map((f) => f.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("macros e energia são numéricos e não-negativos", () => {
+    for (const f of curatedFoods) {
+      const n = f.nutrition;
+      for (const value of [n.energyKcal, n.proteinG, n.carbsG, n.fatG, n.fiberG]) {
+        expect(typeof value).toBe("number");
+        expect(value as number).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it("a energia informada bate com os macros (Atwater, tolerância de 15%)", () => {
+    // A fibra conta no carboidrato mas rende menos energia; hortaliças de
+    // baixa caloria (<40 kcal) têm ruído relativo alto e ficam de fora.
+    for (const f of curatedFoods) {
+      const { energyKcal, proteinG, carbsG, fatG } = f.nutrition;
+      const fromMacros = (proteinG ?? 0) * 4 + (carbsG ?? 0) * 4 + (fatG ?? 0) * 9;
+      if ((energyKcal ?? 0) < 40) continue;
+      const diff = Math.abs((energyKcal ?? 0) - fromMacros) / (energyKcal ?? 1);
+      expect(diff, `${f.name}: ${energyKcal} vs ${fromMacros}`).toBeLessThan(0.15);
+    }
+  });
+
+  it("os alimentos animais usam os grupos que os filtros de restrição reconhecem", () => {
+    const animalGroups = new Set(["Carnes", "Pescados", "Ovos", "Laticínios"]);
+    // Carnes/pescados, ovo e laticínios/whey adicionados no bloco expandido.
+    const animalCodes = [
+      "FIE025", "FIE026", "FIE027", "FIE028", "FIE029", "FIE030", "FIE031", "FIE032",
+      "FIE033", "FIE034", "FIE035", "FIE036", "FIE037", "FIE038", "FIE039", "FIE040",
+    ];
+    for (const code of animalCodes) {
+      const f = curatedFoods.find((x) => x.id === code);
+      expect(f, code).toBeDefined();
+      expect(animalGroups.has(f!.foodGroup ?? ""), `${f!.name} → ${f!.foodGroup}`).toBe(true);
+    }
+  });
+});

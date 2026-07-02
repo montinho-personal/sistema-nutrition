@@ -15,7 +15,7 @@ foods/
 ├── types/         # tipos de domínio (Food, atributos, alertas, critérios)
 ├── constants/     # limiares e rótulos configuráveis — sem números mágicos
 ├── validators/    # schemas Zod (filtros, importação)
-├── data/          # dataset curado (fallback/demonstração; espelha o seed SQL)
+├── data/          # dataset curado (~75 alimentos BR, TBCA/TACO por 100 g)
 ├── services/      # TODA a regra de negócio (determinística, sem IA)
 │   ├── foodMetrics.ts         # densidade energética, proteína/100 kcal, rótulos
 │   ├── foodClassification.ts  # classificação estratégica automática + justificativas
