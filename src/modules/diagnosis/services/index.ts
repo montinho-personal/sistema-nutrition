@@ -8,6 +8,12 @@ export {
   type PortraitItem,
 } from "./anamnesePortrait";
 export {
+  analyzeRecordatorio,
+  type RecordatorioAnalysis,
+  type RecordatorioObservation,
+  type MealReading,
+} from "./recordatorioAnalysis";
+export {
   buildExecutiveSummary,
   ageFromBirthDate,
   type StudentSummaryContext,
