@@ -66,7 +66,7 @@ export const ROLE_THRESHOLDS = {
 /** Faixas de porção (g) por papel — evita porções absurdas. */
 export const PORTION_LIMITS: Record<FoodRole, { min: number; max: number }> = {
   protein: { min: 30, max: 300 },
-  carb: { min: 15, max: 300 },
+  carb: { min: 15, max: 380 },
   fat: { min: 5, max: 60 },
   veg: { min: 50, max: 200 },
 };

@@ -41,10 +41,10 @@ describe("buildMealPlan — estrutura", () => {
   it("cada refeição tem itens e o total do dia se aproxima do alvo", () => {
     const plan = buildMealPlan(curatedFoods, BASE_CTX);
     for (const meal of plan.meals) expect(meal.items.length).toBeGreaterThan(0);
-    // fechamento calórico e proteico razoável (montagem sequencial)
-    expect(plan.accuracy.kcal).toBeGreaterThanOrEqual(80);
-    expect(plan.accuracy.kcal).toBeLessThanOrEqual(120);
-    expect(plan.accuracy.protein).toBeGreaterThanOrEqual(80);
+    // fechamento calórico e proteico apertado (montagem sequencial refinada)
+    expect(plan.accuracy.kcal).toBeGreaterThanOrEqual(92);
+    expect(plan.accuracy.kcal).toBeLessThanOrEqual(112);
+    expect(plan.accuracy.protein).toBeGreaterThanOrEqual(90);
   });
 
   it("o total do dia é a soma das refeições", () => {
