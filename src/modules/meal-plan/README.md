@@ -22,8 +22,11 @@ Diagnóstico concluído → Estratégia (velocidade, nº de refeições, tática
 - `services/`:
   - `mealPlanEngine.ts` — classifica o papel do alimento (proteína/carbo/gordura/vegetal),
     ranqueia por aderência ao objetivo + timing + saciedade/praticidade/orçamento, escolhe os
-    alimentos (variante determinística) e resolve as porções (vegetal → proteína → gordura →
-    carboidrato, que absorve o restante).
+    alimentos (variante determinística) e resolve as porções com um **solver de resíduo
+    iterativo** (Gauss-Seidel): cada alimento é ajustado para o alvo do seu macro *menos* o que
+    os outros já contribuem — proteína e gordura são alvos duros, o carboidrato fecha as calorias
+    restantes. Elimina o overshoot da dupla contagem (a proteína dos cereais/gorduras não estoura
+    o alvo).
   - `dietaryFilters.ts` — restrições da anamnese (vegetariano/vegano/sem lactose/sem glúten).
   - `mealPlanRepository.ts` — persiste só a **variante** escolhida (local-first).
 - `hooks/use-meal-plan-variant.ts` — variante reativa ("gerar outra opção").
