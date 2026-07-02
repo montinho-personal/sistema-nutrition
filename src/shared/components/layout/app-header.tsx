@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { appConfig } from "@/config/app";
 import { Button } from "@/shared/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/components/ui/tooltip";
+import { MobileNav } from "@/shared/components/layout/mobile-nav";
 
 interface AppHeaderProps {
   /** Alterna a visibilidade dos painéis de inteligência (Insights + IA). */
@@ -23,7 +24,8 @@ function AppHeader({ onToggleIntelligencePanels }: AppHeaderProps) {
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 print:hidden">
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <MobileNav />
         <h1 className="truncate text-sm font-medium">{appConfig.name}</h1>
       </div>
       <div className="flex items-center gap-1">

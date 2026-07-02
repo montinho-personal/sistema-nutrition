@@ -3,19 +3,30 @@ import { describe, expect, it } from "vitest";
 import {
   buildEvolutionInsights,
   computeEvolution,
+  computeMeasurementDeltas,
   expectedWeeklyKgFromMacros,
 } from "@/modules/follow-ups/services";
-import type { FollowUp, FollowUpScales } from "@/modules/follow-ups/types";
+import type {
+  FollowUp,
+  FollowUpMeasurements,
+  FollowUpScales,
+} from "@/modules/follow-ups/types";
 
 const SCALES: FollowUpScales = { adherence: 7, hunger: 5, sleep: 6, energy: 6, mood: 6 };
 
-function fu(date: string, weightKg: number, scales: Partial<FollowUpScales> = {}): FollowUp {
+function fu(
+  date: string,
+  weightKg: number,
+  scales: Partial<FollowUpScales> = {},
+  measurements: FollowUpMeasurements | null = null,
+): FollowUp {
   return {
     id: date,
     studentId: "s1",
     date,
     weightKg,
     scales: { ...SCALES, ...scales },
+    measurements,
     whatWorked: null,
     whatFailed: null,
     why: null,
@@ -39,6 +50,32 @@ describe("expectedWeeklyKgFromMacros", () => {
 
   it("manutenção espera ritmo zero", () => {
     expect(expectedWeeklyKgFromMacros("manutencao", 2000, 2000)).toBe(0);
+  });
+});
+
+describe("computeMeasurementDeltas", () => {
+  it("compara a primeira e a última medida de cada circunferência", () => {
+    const followUps = [
+      fu("2026-01-01", 90, {}, { waist: 95, hip: 100 }),
+      fu("2026-01-15", 88, {}, { waist: 92 }),
+      fu("2026-02-01", 86, {}, { waist: 90, hip: 98 }),
+    ];
+    const deltas = computeMeasurementDeltas(followUps);
+    const waist = deltas.find((d) => d.key === "waist");
+    expect(waist).toEqual({ key: "waist", first: 95, last: 90, deltaCm: -5 });
+    const hip = deltas.find((d) => d.key === "hip");
+    expect(hip).toEqual({ key: "hip", first: 100, last: 98, deltaCm: -2 });
+  });
+
+  it("ignora circunferências nunca medidas", () => {
+    const deltas = computeMeasurementDeltas([fu("2026-01-01", 90, {}, { waist: 95 })]);
+    expect(deltas).toHaveLength(1);
+    expect(deltas[0].key).toBe("waist");
+    expect(deltas[0].deltaCm).toBe(0);
+  });
+
+  it("sem medidas, retorna lista vazia", () => {
+    expect(computeMeasurementDeltas([fu("2026-01-01", 90)])).toHaveLength(0);
   });
 });
 

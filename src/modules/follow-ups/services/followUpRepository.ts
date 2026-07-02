@@ -41,6 +41,7 @@ export function createFollowUp(studentId: string, input: FollowUpInput): FollowU
     date: input.date,
     weightKg: input.weightKg,
     scales: input.scales,
+    measurements: input.measurements ?? null,
     whatWorked: input.whatWorked,
     whatFailed: input.whatFailed,
     why: input.why,

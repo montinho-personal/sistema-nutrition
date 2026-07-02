@@ -14,10 +14,27 @@ export const followUpScalesSchema = z.object({
   mood: scale,
 });
 
+/** Circunferência (cm): opcional e anulável — o treinador mede o que quiser. */
+const cm = z
+  .number()
+  .min(20, "Medida muito pequena.")
+  .max(250, "Medida muito grande.")
+  .nullable();
+
+export const followUpMeasurementsSchema = z.object({
+  waist: cm,
+  abdomen: cm,
+  hip: cm,
+  chest: cm,
+  arm: cm,
+  thigh: cm,
+});
+
 export const followUpFormSchema = z.object({
   date: z.string().min(1, "Informe a data."),
   weightKg: z.number().min(30, "Peso muito baixo.").max(300, "Peso muito alto."),
   scales: followUpScalesSchema,
+  measurements: followUpMeasurementsSchema,
   whatWorked: z.string().nullable(),
   whatFailed: z.string().nullable(),
   why: z.string().nullable(),

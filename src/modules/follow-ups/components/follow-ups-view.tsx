@@ -19,6 +19,7 @@ import type { MacroContext } from "@/modules/strategy/types";
 import {
   buildEvolutionInsights,
   computeEvolution,
+  computeMeasurementDeltas,
   expectedWeeklyKgFromMacros,
 } from "@/modules/follow-ups/services";
 import { useFollowUps } from "@/modules/follow-ups/hooks/use-follow-ups";
@@ -94,7 +95,11 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
       followUps,
       expectedWeeklyKg,
     );
-    return { evolution, insights: buildEvolutionInsights(evolution) };
+    return {
+      evolution,
+      insights: buildEvolutionInsights(evolution),
+      measurementDeltas: computeMeasurementDeltas(followUps),
+    };
   }, [student, session, record, followUps, macroParams]);
 
   if (typeof window === "undefined") {
@@ -170,7 +175,11 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
     <>
       {header}
       <div className="flex flex-col gap-8">
-        <EvolutionSummary evolution={analysis.evolution} insights={analysis.insights} />
+        <EvolutionSummary
+          evolution={analysis.evolution}
+          insights={analysis.insights}
+          measurementDeltas={analysis.measurementDeltas}
+        />
 
         {followUps.length === 0 ? (
           <EmptyState

@@ -5,7 +5,7 @@
  * insights — ponto único de verdade, ajustável no futuro pelas Configurações.
  */
 
-import type { FollowUpScales } from "@/modules/follow-ups/types";
+import type { FollowUpScales, MeasurementKey } from "@/modules/follow-ups/types";
 
 /** Energia equivalente a 1 kg de peso corporal (kcal). */
 export const KCAL_PER_KG = 7700;
@@ -49,6 +49,24 @@ export const SCALE_LABELS: Record<keyof FollowUpScales, string> = {
 
 /** Indicadores cuja leitura é invertida (maior = pior). */
 export const INVERTED_SCALES: (keyof FollowUpScales)[] = ["hunger"];
+
+/** Circunferências acompanhadas (ordem de exibição) e seus rótulos pt-BR. */
+export const MEASUREMENT_KEYS: MeasurementKey[] = [
+  "waist",
+  "abdomen",
+  "hip",
+  "chest",
+  "arm",
+  "thigh",
+];
+export const MEASUREMENT_LABELS: Record<MeasurementKey, string> = {
+  waist: "Cintura",
+  abdomen: "Abdômen",
+  hip: "Quadril",
+  chest: "Peitoral",
+  arm: "Braço",
+  thigh: "Coxa",
+};
 
 /** Rótulos pt-BR dos status de evolução. */
 export const STATUS_LABELS: Record<string, string> = {

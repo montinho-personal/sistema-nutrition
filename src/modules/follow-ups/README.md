@@ -6,8 +6,9 @@ Monitoramento contínuo que alimenta a inteligência individual do aluno
 ## Objetivo
 
 Registrar a resposta do aluno ao plano ao longo do tempo (peso + adesão, fome, sono, energia,
-humor + o que funcionou/não funcionou/porquê) e **comparar a evolução real com o ritmo previsto**
-pelos macros — gerando recomendações ligadas ao plano de ajustes (Documento 04, Etapa 12).
+humor + **medidas corporais** + o que funcionou/não funcionou/porquê) e **comparar a evolução
+real com o ritmo previsto** pelos macros — gerando recomendações ligadas ao plano de ajustes
+(Documento 04, Etapa 12).
 
 ## A cadeia
 
@@ -22,13 +23,14 @@ e os macros). Diagnóstico → Estratégia/Macros → **Acompanhamentos**.
 - `types/` — acompanhamento, escalas, evolução, insights.
 - `services/`:
   - `evolutionEngine.ts` — **determinístico** (regra, não IA): ritmo esperado a partir dos macros
-    (déficit → kg/semana), status (no ritmo / lento / acelerado / estagnado / contrário) e
-    recomendações ligadas ao plano de ajustes e ao aprendizado.
+    (déficit → kg/semana), status (no ritmo / lento / acelerado / estagnado / contrário),
+    recomendações ligadas ao plano de ajustes, e a **evolução das circunferências**
+    (`computeMeasurementDeltas` — primeiro × último; a cintura cai mesmo quando a balança empaca).
   - `followUpRepository.ts` — CRUD local-first (tabela `montinho.followups` no futuro).
-- `validators/` — schema Zod do registro.
+- `validators/` — schema Zod do registro (peso, escalas e medidas opcionais).
 - `hooks/use-follow-ups.ts` — lista reativa por aluno.
-- `components/` — índice, resumo da evolução (métricas + insights), formulário e histórico.
-- `tests/` — cobertura do motor (previsão, status, insights).
+- `components/` — índice, resumo da evolução (métricas + medidas + insights), formulário e histórico.
+- `tests/` — cobertura do motor (previsão, status, insights, deltas de medidas).
 
 ## Previsão × real
 

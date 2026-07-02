@@ -6,7 +6,11 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { SectionHeader } from "@/shared/components/section-header";
-import { SCALE_LABELS } from "@/modules/follow-ups/constants/parameters";
+import {
+  MEASUREMENT_KEYS,
+  MEASUREMENT_LABELS,
+  SCALE_LABELS,
+} from "@/modules/follow-ups/constants/parameters";
 import type { FollowUp, FollowUpScales } from "@/modules/follow-ups/types";
 
 const SCALE_KEYS: (keyof FollowUpScales)[] = ["adherence", "hunger", "sleep", "energy", "mood"];
@@ -62,6 +66,21 @@ export function FollowUpHistory({
                   </span>
                 ))}
               </div>
+
+              {f.measurements && Object.keys(f.measurements).length > 0 ? (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 border-t pt-2 text-xs text-muted-foreground">
+                  {MEASUREMENT_KEYS.filter((key) => typeof f.measurements?.[key] === "number").map(
+                    (key) => (
+                      <span key={key} className="tabular-nums">
+                        {MEASUREMENT_LABELS[key]}{" "}
+                        <strong className="text-foreground">
+                          {f.measurements![key]!.toString().replace(".", ",")} cm
+                        </strong>
+                      </span>
+                    ),
+                  )}
+                </div>
+              ) : null}
 
               {f.whatWorked || f.whatFailed || f.why ? (
                 <div className="flex flex-col gap-1 border-t pt-2 text-sm">

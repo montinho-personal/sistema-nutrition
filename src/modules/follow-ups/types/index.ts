@@ -12,6 +12,20 @@ export interface FollowUpScales {
   mood: number;
 }
 
+/** Circunferências corporais medidas (cm) — antropometria evolutiva. */
+export type MeasurementKey = "waist" | "hip" | "abdomen" | "chest" | "arm" | "thigh";
+
+/** Medidas de um acompanhamento — todas opcionais (o treinador registra o que medir). */
+export type FollowUpMeasurements = Partial<Record<MeasurementKey, number>>;
+
+/** Evolução de uma circunferência entre o primeiro e o último registro. */
+export interface MeasurementDelta {
+  key: MeasurementKey;
+  first: number;
+  last: number;
+  deltaCm: number;
+}
+
 /** Um acompanhamento periódico do aluno. */
 export interface FollowUp {
   id: string;
@@ -20,6 +34,8 @@ export interface FollowUp {
   date: string;
   weightKg: number;
   scales: FollowUpScales;
+  /** Circunferências corporais medidas neste registro (opcional). */
+  measurements: FollowUpMeasurements | null;
   /** Loop de aprendizado (Documento 05): o que funcionou / não funcionou / porquê. */
   whatWorked: string | null;
   whatFailed: string | null;
@@ -32,6 +48,7 @@ export interface FollowUpInput {
   date: string;
   weightKg: number;
   scales: FollowUpScales;
+  measurements: FollowUpMeasurements | null;
   whatWorked: string | null;
   whatFailed: string | null;
   why: string | null;
