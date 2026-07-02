@@ -1,10 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangleIcon } from "lucide-react";
 
 import { logger } from "@/shared/services/logger";
-import { Button } from "@/shared/components/ui/button";
+import { ErrorView } from "@/shared/components/error-view";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -45,22 +44,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
-      return (
-        <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 p-8 text-center">
-          <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-            <AlertTriangleIcon className="size-6" />
-          </div>
-          <div className="flex max-w-sm flex-col gap-1">
-            <h3 className="text-sm font-semibold">Algo não saiu como esperado</h3>
-            <p className="text-sm text-muted-foreground">
-              O erro foi registrado. Tente novamente — se persistir, recarregue a página.
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={this.handleRetry}>
-            Tentar novamente
-          </Button>
-        </div>
-      );
+      return <ErrorView onRetry={this.handleRetry} />;
     }
 
     return this.props.children;
