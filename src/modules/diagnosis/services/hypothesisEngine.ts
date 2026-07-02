@@ -114,6 +114,46 @@ const RULES: Rule[] = [
       "Com rotina corrida e fome sob controle, concentrar em menos refeições reduz a fricção e melhora a aderência.",
     confidence: () => 76,
   },
+  {
+    id: "sem_estrutura_refeicoes",
+    dimension: "difficulty",
+    when: (a) => a.meals_per_day === "beliscando",
+    title: "Falta de estrutura nas refeições é o ponto de partida",
+    justification:
+      "Beliscar o dia todo, sem horários, dificulta perceber a fome real e o total ingerido. Definir refeições com começo, meio e fim tende a render mais que qualquer corte calórico.",
+    confidence: () => 84,
+  },
+  {
+    id: "gatilho_emocional",
+    dimension: "risk",
+    when: (a) =>
+      Array.isArray(a.compulsion_trigger) &&
+      (a.compulsion_trigger.includes("estresse") || a.compulsion_trigger.includes("emocoes")),
+    title: "Comer é, em parte, uma válvula emocional",
+    justification:
+      "Os episódios são disparados por estresse ou emoções, não por fome. Restringir comida sem oferecer outra válvula costuma piorar — a estratégia precisa de plano para os momentos-gatilho.",
+    confidence: () => 86,
+  },
+  {
+    id: "hidratacao_baixa",
+    dimension: "opportunity",
+    when: (a) => a.water_intake === "menos_1l",
+    title: "Aumentar a água é uma vitória rápida e fácil",
+    justification:
+      "Baixa hidratação se confunde com fome e reduz a saciedade. Subir a ingestão de água é um ajuste simples, de baixo custo, que ajuda no controle do apetite desde a primeira semana.",
+    confidence: () => 78,
+  },
+  {
+    id: "calorias_liquidas",
+    dimension: "difficulty",
+    when: (a) =>
+      a.alcohol_frequency === "quase_diario" ||
+      (Array.isArray(a.beverages) && a.beverages.includes("refrigerante")),
+    title: "Calorias líquidas passam despercebidas e pesam no total",
+    justification:
+      "Refrigerante, suco adoçado ou álcool frequente somam calorias sem saciar. Ajustar as bebidas costuma abrir espaço calórico sem mexer no prato — um ganho com pouca perda percebida.",
+    confidence: (a) => (a.alcohol_frequency === "quase_diario" ? 82 : 74),
+  },
 ];
 
 /** Gera as hipóteses ativas, ordenadas por confiança (Documento 03A). */

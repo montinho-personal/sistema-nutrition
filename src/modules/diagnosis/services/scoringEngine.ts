@@ -6,7 +6,7 @@
  */
 
 import { INVERTED_SCORES, SCORE_BASELINE } from "@/modules/diagnosis/constants";
-import { QUESTIONS } from "@/modules/diagnosis/constants/questionnaire";
+import { QUESTIONS, visibleQuestions } from "@/modules/diagnosis/constants/questionnaire";
 import type { AnswerMap, DiagnosisScore, ScoreDelta, ScoreKey } from "@/modules/diagnosis/types";
 
 const ALL_KEYS = Object.keys(SCORE_BASELINE) as ScoreKey[];
@@ -69,12 +69,15 @@ export function computeScores(answers: AnswerMap): DiagnosisScore[] {
 }
 
 /**
- * Confiança geral do diagnóstico (0–100): proporção de perguntas
- * pontuáveis respondidas (Documento 03B — grau de confiança).
+ * Confiança geral do diagnóstico (0–100): proporção das perguntas
+ * *aplicáveis* que foram respondidas (Documento 03B — grau de confiança).
+ * As condicionais só entram na conta quando de fato aparecem — uma pergunta
+ * que nunca foi mostrada não pode derrubar a confiança.
  */
 export function computeOverallConfidence(answers: AnswerMap): number {
-  const total = QUESTIONS.length;
-  const answered = QUESTIONS.filter((q) => {
+  const applicable = visibleQuestions(answers);
+  const total = applicable.length || 1;
+  const answered = applicable.filter((q) => {
     const a = answers[q.key];
     return a !== undefined && a !== null && !(Array.isArray(a) && a.length === 0) && a !== "";
   }).length;

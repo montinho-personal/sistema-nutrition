@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangleIcon, LightbulbIcon, TargetIcon } from "lucide-react";
+import { AlertTriangleIcon, LightbulbIcon, TargetIcon, UtensilsCrossedIcon } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { ScoreCard } from "@/shared/components/score-card";
@@ -10,6 +10,7 @@ import { SectionHeader } from "@/shared/components/section-header";
 import { INVERTED_SCORES, SCORE_LABELS } from "@/modules/diagnosis/constants";
 import {
   ageFromBirthDate,
+  buildAnamnesePortrait,
   buildExecutiveSummary,
   computeHypotheses,
   computeScores,
@@ -41,6 +42,7 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
   );
   const scores = React.useMemo(() => computeScores(answers), [answers]);
   const hypotheses = React.useMemo(() => computeHypotheses(answers), [answers]);
+  const portrait = React.useMemo(() => buildAnamnesePortrait(answers), [answers]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -117,6 +119,40 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
           ))}
         </div>
       </section>
+
+      {/* Retrato alimentar — o que o aluno de fato come e prefere */}
+      {portrait.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <SectionHeader
+            title="Retrato alimentar"
+            description="O que o aluno relatou na anamnese — a base concreta para a estratégia."
+          />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {portrait.map((grp) => (
+              <Card key={grp.title}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <UtensilsCrossedIcon className="size-4 text-gold" />
+                    {grp.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="flex flex-col gap-2">
+                    {grp.items.map((item) => (
+                      <div key={item.label} className="flex flex-col gap-0.5">
+                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                          {item.label}
+                        </dt>
+                        <dd className="text-sm">{item.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
