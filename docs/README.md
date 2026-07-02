@@ -9,6 +9,7 @@ máxima sobre qualquer outro.
 | # | Documento | Status |
 | --- | --- | --- |
 | 00 | [Vision & Product Philosophy (PRD)](00-vision-product-philosophy.md) | ✅ V1.0 — Fundação |
+| 01 | [Software Architecture & Nutrition Decision Engine (NDE)](01-software-architecture-nde.md) | ✅ V1.0 — Arquitetura |
 
 ## Módulos previstos
 
@@ -17,7 +18,7 @@ reflete a **Hierarquia das Decisões** definida no PRD:
 
 - **Diagnóstico Estratégico** — coleta e interpretação do contexto do aluno.
 - **Objetivos** — definição e priorização de metas.
-- **Nutrition Decision Engine (NDE)** — motor central de decisão.
+- **Nutrition Decision Engine (NDE)** — motor central de decisão (arquitetura de 8 camadas definida no [Documento 01](01-software-architecture-nde.md)).
 - **Motor de Aderência** — prioriza estratégias que o aluno consiga seguir.
 - **Motor de Risco** — avalia riscos antes de cada decisão.
 - **Motor de Oportunidades** — busca ganhos simples de alto impacto.
