@@ -20,6 +20,7 @@ máxima sobre qualquer outro.
 | 03G | [Nutrition Knowledge Base (NKB)](03g-nutrition-knowledge-base.md) | ✅ V1.0 — Core Knowledge Module |
 | 03H | [Decision Rules Engine (DRE)](03h-decision-rules-engine.md) | ✅ V1.0 — Core Decision Module |
 | 04 | [Strategic Prescription Engine (SPE)](04-strategic-prescription-engine.md) | ✅ V1.0 — Core Strategy Module |
+| 05 | [Personal Nutrition Intelligence (PNI)](05-personal-nutrition-intelligence.md) | ✅ V1.0 — Core Intelligence Module |
 
 ## Módulos previstos
 
