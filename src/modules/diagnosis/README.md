@@ -20,6 +20,11 @@ Conduzir uma anamnese inteligente por etapas e, a partir das respostas, produzir
   - `hypothesisEngine.ts` — hipóteses com justificativa e confiança (Documento 03A).
   - `anamnesePortrait.ts` — traduz o recordatório e as preferências em grupos legíveis
     ("Retrato alimentar") para o treinador.
+  - `recordatorioAnalysis.ts` — **leitura clínica do dia alimentar**: casa o texto livre com o
+    Banco de Alimentos (reconhece o que foi comido, por refeição) e gera observações acionáveis
+    (café sem proteína, calorias líquidas, poucos vegetais, ultraprocessados...). Determinístico;
+    a camada de IA (V2) é opcional e só enriquece — o prompt vive em
+    `src/prompts/recordatorioInterpretation.ts` (seam pronto, ainda não invocado).
   - `executiveSummary.ts` — Resumo Inteligente (Documento 05/06).
   - `diagnosisRepository.ts` — sessões com auto-save (local-first).
 - `hooks/use-diagnosis-session.ts` — sessão reativa com auto-save.

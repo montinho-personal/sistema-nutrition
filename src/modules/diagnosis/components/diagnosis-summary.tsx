@@ -8,6 +8,7 @@ import { ScoreCard } from "@/shared/components/score-card";
 import { InsightCard, type InsightKind } from "@/shared/components/insight-card";
 import { SectionHeader } from "@/shared/components/section-header";
 import { INVERTED_SCORES, SCORE_LABELS } from "@/modules/diagnosis/constants";
+import { RecordatorioAnalysis } from "@/modules/diagnosis/components/recordatorio-analysis";
 import {
   ageFromBirthDate,
   buildAnamnesePortrait,
@@ -119,6 +120,9 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
           ))}
         </div>
       </section>
+
+      {/* Análise do dia alimentar — leitura clínica do recordatório */}
+      <RecordatorioAnalysis answers={answers} />
 
       {/* Retrato alimentar — o que o aluno de fato come e prefere */}
       {portrait.length > 0 ? (
