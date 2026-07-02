@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CopyIcon, DownloadIcon, SendIcon, Share2Icon } from "lucide-react";
+import { CopyIcon, DownloadIcon, RefreshCwIcon, SendIcon, Share2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/components/ui/button";
@@ -15,7 +15,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { buildAnamneseUrl, decodeAnamnese, applyImportedAnswers } from "@/modules/diagnosis/services";
+import {
+  buildAnamneseUrl,
+  decodeAnamnese,
+  applyImportedAnswers,
+  isAnamneseSyncEnabled,
+  fetchLatestAnamnese,
+  consumeAnamnese,
+} from "@/modules/diagnosis/services";
 
 /**
  * Envio da anamnese para o aluno preencher (link público) e importação do
@@ -30,6 +37,24 @@ export function ShareAnamnese({
 }) {
   const [importOpen, setImportOpen] = React.useState(false);
   const [code, setCode] = React.useState("");
+  const [fetching, setFetching] = React.useState(false);
+  const syncEnabled = isAnamneseSyncEnabled();
+
+  const handleFetch = async () => {
+    setFetching(true);
+    try {
+      const submission = await fetchLatestAnamnese(studentId);
+      if (!submission) {
+        toast.info("Nenhuma resposta recebida ainda. Tente novamente em instantes.");
+        return;
+      }
+      applyImportedAnswers(studentId, submission.answers);
+      await consumeAnamnese(submission.id);
+      toast.success("Respostas recebidas! O diagnóstico está pronto.");
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const buildUrl = () =>
     buildAnamneseUrl(
@@ -77,8 +102,9 @@ export function ShareAnamnese({
             Prefere que o aluno preencha?
           </div>
           <p className="text-sm text-muted-foreground">
-            Envie o link da anamnese. Ao terminar, o aluno recebe um código e devolve para você —
-            é só importar aqui.
+            {syncEnabled
+              ? "Envie o link da anamnese. Quando o aluno terminar, clique em “Buscar respostas” — elas chegam automaticamente."
+              : "Envie o link da anamnese. Ao terminar, o aluno recebe um código e devolve para você — é só importar aqui."}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={shareWhatsApp}>
@@ -89,9 +115,15 @@ export function ShareAnamnese({
               <CopyIcon className="size-4" />
               Copiar link
             </Button>
+            {syncEnabled ? (
+              <Button size="sm" variant="outline" onClick={handleFetch} disabled={fetching}>
+                <RefreshCwIcon className="size-4" />
+                {fetching ? "Buscando..." : "Buscar respostas"}
+              </Button>
+            ) : null}
             <Button size="sm" variant="ghost" onClick={() => setImportOpen(true)}>
               <DownloadIcon className="size-4" />
-              Importar respostas
+              Importar por código
             </Button>
           </div>
         </CardContent>

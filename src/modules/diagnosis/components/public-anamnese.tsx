@@ -8,10 +8,11 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Interview } from "@/modules/diagnosis/components/interview";
-import { encodeAnamnese } from "@/modules/diagnosis/services";
+import { encodeAnamnese, isAnamneseSyncEnabled, submitAnamnese } from "@/modules/diagnosis/services";
 import type { AnswerMap, AnswerValue } from "@/modules/diagnosis/types";
 
 type Phase = "welcome" | "interview" | "done";
+type SyncState = "idle" | "sending" | "sent" | "failed";
 
 /** Cabeçalho simples da página pública (sem App Shell). */
 function PublicHeader() {
@@ -39,8 +40,21 @@ export function PublicAnamnese({
   const [phase, setPhase] = React.useState<Phase>("welcome");
   const [answers, setAnswers] = React.useState<AnswerMap>({});
   const [stageIndex, setStageIndex] = React.useState(0);
+  const [syncState, setSyncState] = React.useState<SyncState>("idle");
 
   const firstName = studentName.trim().split(/\s+/)[0] || "";
+
+  // Ao concluir: se o Supabase estiver ligado, envia direto ao personal;
+  // senão, o aluno devolve o código manualmente.
+  const finish = React.useCallback(() => {
+    setPhase("done");
+    if (isAnamneseSyncEnabled()) {
+      setSyncState("sending");
+      submitAnamnese({ studentId, studentName, answers }).then((ok) =>
+        setSyncState(ok ? "sent" : "failed"),
+      );
+    }
+  }, [studentId, studentName, answers]);
 
   const code = React.useMemo(
     () => (phase === "done" ? encodeAnamnese({ studentId, studentName, answers }) : ""),
@@ -117,51 +131,69 @@ export function PublicAnamnese({
             stageIndex={stageIndex}
             onAnswer={setAnswer}
             onStageChange={setStageIndex}
-            onComplete={() => setPhase("done")}
+            onComplete={finish}
             showInsights={false}
             completeLabel="Finalizar anamnese"
           />
         ) : null}
 
         {phase === "done" ? (
-          <div className="flex flex-col gap-4">
+          syncState === "sending" || syncState === "sent" ? (
             <Card className="border-l-2 border-l-gold">
-              <CardContent className="flex flex-col gap-3 py-6">
+              <CardContent className="flex flex-col gap-3 py-8">
                 <div className="flex items-center gap-2">
                   <CheckCircle2Icon className="size-5 text-success" />
-                  <h1 className="text-lg font-semibold">Anamnese concluída. Obrigado!</h1>
+                  <h1 className="text-lg font-semibold">
+                    {syncState === "sending" ? "Enviando suas respostas..." : "Tudo certo. Obrigado!"}
+                  </h1>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Falta um passo: envie o código abaixo para o seu personal. É com ele que a
-                  estratégia será montada.
+                  {syncState === "sending"
+                    ? "Só um instante enquanto enviamos ao seu personal."
+                    : "Suas respostas foram enviadas ao seu personal. Ele já pode montar sua estratégia — você pode fechar esta página."}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="gold" onClick={shareWhatsApp}>
-                    <SendIcon className="size-4" />
-                    Enviar no WhatsApp
-                  </Button>
-                  <Button variant="outline" onClick={copyCode}>
-                    <CopyIcon className="size-4" />
-                    Copiar código
-                  </Button>
-                </div>
               </CardContent>
             </Card>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <Card className="border-l-2 border-l-gold">
+                <CardContent className="flex flex-col gap-3 py-6">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2Icon className="size-5 text-success" />
+                    <h1 className="text-lg font-semibold">Anamnese concluída. Obrigado!</h1>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Falta um passo: envie o código abaixo para o seu personal. É com ele que a
+                    estratégia será montada.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="gold" onClick={shareWhatsApp}>
+                      <SendIcon className="size-4" />
+                      Enviar no WhatsApp
+                    </Button>
+                    <Button variant="outline" onClick={copyCode}>
+                      <CopyIcon className="size-4" />
+                      Copiar código
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <div className="flex flex-col gap-2">
-              <span className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                <ClipboardCheckIcon className="size-3.5" />
-                Seu código de respostas
-              </span>
-              <Textarea
-                readOnly
-                value={code}
-                rows={5}
-                className="font-mono text-xs"
-                onFocus={(e) => e.currentTarget.select()}
-              />
+              <div className="flex flex-col gap-2">
+                <span className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                  <ClipboardCheckIcon className="size-3.5" />
+                  Seu código de respostas
+                </span>
+                <Textarea
+                  readOnly
+                  value={code}
+                  rows={5}
+                  className="font-mono text-xs"
+                  onFocus={(e) => e.currentTarget.select()}
+                />
+              </div>
             </div>
-          </div>
+          )
         ) : null}
       </main>
     </div>

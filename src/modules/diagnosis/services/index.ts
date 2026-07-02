@@ -20,3 +20,10 @@ export {
   buildAnamneseUrl,
   type AnamnesePayload,
 } from "./shareCodec";
+export {
+  isAnamneseSyncEnabled,
+  submitAnamnese,
+  fetchLatestAnamnese,
+  consumeAnamnese,
+  type AnamneseSubmission,
+} from "./anamneseSync";

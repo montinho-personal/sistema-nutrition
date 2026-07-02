@@ -19,10 +19,13 @@ const publicRoutes = ["/login", "/anamnese"];
 export async function proxy(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Login só é exigido quando explicitamente ligado. Assim é possível conectar
+  // o Supabase apenas para a anamnese pública sem trancar o app do treinador.
+  const requireAuth = process.env.NEXT_PUBLIC_REQUIRE_AUTH === "true";
 
   let response = NextResponse.next({ request });
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabaseAnonKey || !requireAuth) {
     return response;
   }
 
