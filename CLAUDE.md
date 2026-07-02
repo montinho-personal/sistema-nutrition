@@ -3,14 +3,22 @@
 # Montinho Nutrition Strategy — Guia do Projeto
 
 Sistema Inteligente de Decisão Nutricional (single-user: Montinho Personal).
-Toda a especificação vive em `docs/` (Documentos 00–13). **Leia antes de implementar um módulo.**
+Toda a especificação vive em `docs/` (Documentos 00–17). **Leia antes de implementar um módulo.**
 
-## Hierarquia em caso de conflito entre documentos (Doc 13)
+## Hierarquia em caso de conflito entre documentos (Doc 17 — MDC)
 
 1. `docs/12-ai-engineering-constitution.md` (como a IA trabalha)
-2. `docs/08-master-software-architecture.md` (arquitetura técnica)
-3. `docs/00-vision-product-philosophy.md` (filosofia do produto)
-4. Demais PRDs
+2. `docs/17-master-development-constitution.md` (como o desenvolvimento é conduzido)
+3. `docs/08-master-software-architecture.md` (arquitetura técnica)
+4. PRDs (inclui `docs/00-vision-product-philosophy.md`, soberano na esfera de produto)
+5. Demais documentos
+
+## Fluxo de trabalho por Sprint (Doc 17)
+
+Analisar projeto → planejar → explicar o plano → implementar → **type check · lint · testes ·
+build** → corrigir tudo. Antes de tocar em arquivos: ler o estado atual, nunca recriar/duplicar,
+sempre reutilizar, sempre buscar a solução mais simples. Regra de Ouro: **sempre verificar, nunca
+assumir, sempre evoluir (nunca reconstruir).**
 
 ## Regras invioláveis
 
@@ -57,5 +65,5 @@ Migrações: recriar o banco do zero e rodar `supabase/tests/` num Postgres real
 Nenhuma Sprint/módulo é "concluído" sem passar pelos 15 checkpoints do MQG. Mínimo inegociável:
 testes aprovados, código documentado, banco consistente, Design System respeitado, arquitetura
 limpa, UX excelente, **decisões justificadas**, desempenho adequado, docs atualizados, pronto
-para produção. Autocrítica final: *"Se fosse vendido hoje, eu teria orgulho deste módulo?"* —
+para produção. Autocrítica final: _"Se fosse vendido hoje, eu teria orgulho deste módulo?"_ —
 se não, melhorar antes de finalizar.

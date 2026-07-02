@@ -1,8 +1,8 @@
 # Documentação — Montinho Nutrition Strategy
 
-Este diretório reúne os documentos de produto do sistema. Os documentos são numerados por
-ordem de autoridade e dependência. O **Documento 00** é o Documento Mestre e tem prioridade
-máxima sobre qualquer outro.
+Este diretório reúne os documentos do sistema. O **Documento 00** é o Documento Mestre do
+**produto** e prevalece na esfera de produto/módulos. A governança de **desenvolvimento** segue
+a hierarquia definida no Doc 17 (MDC), detalhada abaixo.
 
 ## Índice
 
@@ -32,14 +32,17 @@ máxima sobre qualquer outro.
 | 14  | [Sprint 1.2 — Database Implementation](14-sprint-1.2-database-implementation.md)                    | ✅ Implementada                           |
 | 15  | [Sprint 1.3 — Food Intelligence Engine (FIE)](15-sprint-1.3-food-intelligence-engine.md)            | ✅ Implementada                           |
 | 16  | [Master Quality Gate (MQG)](16-master-quality-gate.md)                                              | ✅ V1.0 — Definição de Qualidade          |
+| 17  | [Master Development Constitution (MDC)](17-master-development-constitution.md)                      | ✅ V1.0 — Constituição de Desenvolvimento |
 | —   | [Esquema do Banco de Dados (referência técnica)](database-schema.md)                                | 📘 Gerado na Sprint 1.2                   |
 
-## Hierarquia em caso de conflito (definida no Doc 13)
+## Hierarquia em caso de conflito (redefinida no Doc 17 — MDC)
 
 1. **AI Engineering Constitution** (Doc 12) — como a IA trabalha.
-2. **Master Software Architecture** (Doc 08) — arquitetura técnica.
-3. **Vision & Product Philosophy** (Doc 00) — filosofia do produto.
-4. Demais PRDs.
+2. **Master Development Constitution** (Doc 17) — como o desenvolvimento é conduzido.
+3. **Master Software Architecture** (Doc 08) — arquitetura técnica.
+4. **Product Requirements Documents** (PRDs) — inclui a Vision & Product Philosophy (Doc 00),
+   soberana dentro da esfera de produto.
+5. Demais documentos.
 
 ## Módulos previstos
 
