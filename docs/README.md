@@ -12,6 +12,7 @@ máxima sobre qualquer outro.
 | 01 | [Software Architecture & Nutrition Decision Engine (NDE)](01-software-architecture-nde.md) | ✅ V1.0 — Arquitetura |
 | 02 | [Design System • UX • UI • Product Experience](02-design-system-ux-ui.md) | ✅ V1.0 — Design System |
 | 03A | [Módulo 1 — Diagnóstico Estratégico Nutricional](03a-modulo-1-diagnostico-estrategico.md) | ✅ V1.0 — Core Module |
+| 03B | [Intelligent Clinical Interview Engine (ICIE)](03b-intelligent-clinical-interview-engine.md) | ✅ V1.0 — Core AI Module |
 
 ## Módulos previstos
 
