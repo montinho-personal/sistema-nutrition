@@ -14,6 +14,19 @@ export const strategyInputSchema = z.object({
     .min(3, "% de gordura muito baixo.")
     .max(60, "% de gordura muito alto.")
     .nullable(),
+  targetChangeKg: z
+    .number()
+    .min(0.5, "Meta muito pequena.")
+    .max(100, "Meta muito alta.")
+    .nullable()
+    .optional(),
+  targetWeeks: z
+    .number()
+    .int("Use semanas inteiras.")
+    .min(1, "Prazo muito curto.")
+    .max(104, "Prazo muito longo (máx. 2 anos).")
+    .nullable()
+    .optional(),
 });
 
 export type StrategyInputValues = z.infer<typeof strategyInputSchema>;

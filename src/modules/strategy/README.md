@@ -17,13 +17,16 @@ macros. Nenhuma caloria é calculada antes de a estratégia estar definida.
 - `services/` — **inteligência determinística** (regra, não IA — Documento 08):
   - `strategyEngine.ts` — as 12 decisões do SPE a partir dos scores + respostas + objetivo.
   - `macroEngine.ts` — BMR (Katch-McArdle/Mifflin/fallback) → TDEE → calorias → macros.
+  - `goalProjection.ts` — **Definição Estratégica**: dada a meta (kg) e o prazo (semanas),
+    projeta ritmo, déficit/superávit necessário, realismo, perda de massa magra estimada,
+    aderência provável e riscos — com uma alternativa realista (honestidade antes da promessa).
   - `strategyRepository.ts` — persiste só o input antropométrico (local-first); a estratégia e
     os macros são derivados, então nunca dessincronizam.
-- `validators/` — schema Zod do input (peso, % de gordura).
+- `validators/` — schema Zod do input (peso, % de gordura, meta/prazo opcionais).
 - `hooks/use-strategy-input.ts` — input reativo do aluno.
 - `components/` — índice (escolher aluno), formulário antropométrico, resultado da estratégia
-  (DecisionCards) e resumo dos macros.
-- `tests/` — cobertura dos dois motores (estratégia e macros).
+  (DecisionCards), resumo dos macros e a **Definição Estratégica** (meta + prazo + projeção).
+- `tests/` — cobertura dos motores (estratégia, macros e projeção de meta).
 
 ## Fluxo
 

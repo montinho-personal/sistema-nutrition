@@ -109,6 +109,47 @@ export const DEFAULT_MACRO_PARAMS: MacroParams = {
 /** Arredondamentos (múltiplos) para números "redondos" e realistas. */
 export const CALORIE_ROUNDING = 10;
 
+// ── Definição Estratégica: projeção de meta (Documento 04 — realismo) ─────────
+
+/**
+ * Energia por kg de massa corporal (kcal). ~7700 kcal/kg é a estimativa
+ * clássica para tecido corporal — base determinística da projeção de meta.
+ */
+export const ENERGY_KCAL_PER_KG = 7700;
+
+/**
+ * Ritmo semanal de emagrecimento como fração do peso corporal.
+ * Referência de segurança consolidada: até ~1%/semana é sustentável; acima
+ * disso, sobe o risco de perda de massa magra e de abandono.
+ */
+export const WEEKLY_LOSS_PCT_BW = { safe: 0.0075, max: 0.01, extreme: 0.0125 } as const;
+
+/**
+ * Ritmo semanal de ganho (kg absolutos). O ganho de massa magra é limitado por
+ * fisiologia — apressar só adiciona gordura.
+ */
+export const WEEKLY_GAIN_KG = { safe: 0.25, max: 0.5, extreme: 0.75 } as const;
+
+/** Déficit máximo tolerável como fração do TDEE, antes de fome/queda de energia. */
+export const MAX_DEFICIT_PCT_TDEE = 0.35;
+
+/**
+ * Modelo determinístico da fração da perda que vem de massa magra.
+ * fração = base + (ritmo acima do seguro) × slope, aliviada por treino de força
+ * e proteína adequada, limitada a [min, max].
+ */
+export const LEAN_LOSS = {
+  base: 0.18,
+  slopePerPctBW: 40,
+  trainingRelief: 0.08,
+  proteinRelief: 0.05,
+  min: 0.05,
+  max: 0.45,
+} as const;
+
+/** Capacidade de execução (aderência + consistência − risco) → faixa de normalização. */
+export const CAPACITY_RANGE = { floor: 40, ceil: 140 } as const;
+
 /** Faixa de refeições/dia permitida (Documento 04 — Etapa 5). */
 export const MEALS_MIN = 3;
 export const MEALS_MAX = 6;

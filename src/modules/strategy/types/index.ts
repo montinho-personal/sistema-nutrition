@@ -55,6 +55,48 @@ export interface NutritionStrategy {
 export interface StrategyInput {
   currentWeightKg: number;
   bodyFatPct: number | null;
+  /** Meta de mudança de peso (kg, magnitude) — Definição Estratégica. Opcional. */
+  targetChangeKg?: number | null;
+  /** Prazo desejado para a meta (semanas). Opcional. */
+  targetWeeks?: number | null;
+}
+
+/** Nível qualitativo do realismo de uma meta. */
+export type RealismLevel = "tranquilo" | "ambicioso" | "irrealista";
+/** Nível qualitativo da aderência estimada. */
+export type AdherenceLevel = "alta" | "media" | "baixa";
+
+/** Entrada do motor de projeção de meta (Definição Estratégica — Documento 04). */
+export interface GoalProjectionInput {
+  currentWeightKg: number;
+  /** Magnitude da mudança desejada (kg, sempre > 0). */
+  targetChangeKg: number;
+  /** Prazo desejado (semanas, sempre > 0). */
+  weeks: number;
+  direction: EnergyDirection;
+  velocity: StrategyVelocity;
+  tdee: number;
+  /** Fração de ajuste calórico prescrita pela velocidade (déficit/superávit). */
+  prescribedDeltaPct: number;
+  trainsRegularly: boolean;
+  proteinAdequate: boolean;
+  /** Capacidade de execução do diagnóstico (aderência + consistência − risco). */
+  capacity: number;
+}
+
+/** Projeção determinística de uma meta: honestidade antes da promessa. */
+export interface GoalProjection {
+  weeklyRateKg: number;
+  weeklyRatePctBW: number;
+  dailyEnergyDeltaKcal: number;
+  requiredDeltaPctTdee: number;
+  realism: { level: RealismLevel; score: number; reason: string };
+  /** Só no emagrecimento: estimativa de perda de massa magra. */
+  muscle: { leanFractionPct: number; estimatedLeanLossKg: number; note: string } | null;
+  adherence: { level: AdherenceLevel; score: number; reason: string };
+  risks: string[];
+  /** Alternativa mais realista, quando a meta pedida não é tranquila. */
+  suggestion: { weeklyRateKg: number; weeks: number; reason: string } | null;
 }
 
 /**

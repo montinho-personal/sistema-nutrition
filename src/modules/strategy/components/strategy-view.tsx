@@ -27,6 +27,7 @@ import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { AnthropometricsForm } from "@/modules/strategy/components/anthropometrics-form";
 import { StrategyResult } from "@/modules/strategy/components/strategy-result";
 import { MacroSummary } from "@/modules/strategy/components/macro-summary";
+import { GoalDefinition } from "@/modules/strategy/components/goal-definition";
 import type { MacroContext, StrategyInput } from "@/modules/strategy/types";
 
 const EMPTY_STUDENTS: Student[] = [];
@@ -56,11 +57,15 @@ export function StrategyView({ studentId }: { studentId: string }) {
     [sessions, studentId],
   );
 
+  const scores = React.useMemo(
+    () => (session ? computeScoreMap(session.answers) : null),
+    [session],
+  );
+
   const strategy = React.useMemo(() => {
-    if (!student?.mainGoal || !session) return null;
-    const scores = computeScoreMap(session.answers);
+    if (!student?.mainGoal || !session || !scores) return null;
     return buildStrategy(student.mainGoal, scores, session.answers);
-  }, [student, session]);
+  }, [student, session, scores]);
 
   const macros = React.useMemo(() => {
     if (!student?.mainGoal || !strategy || !input) return null;
@@ -140,9 +145,15 @@ export function StrategyView({ studentId }: { studentId: string }) {
     );
   }
 
+  // Preserva a meta/prazo já definidos ao recalcular só o peso.
   const handleSave = (values: StrategyInput) => {
-    save(values);
+    save({ ...input, ...values });
     setEditing(false);
+  };
+
+  const persistGoal = (targetChangeKg: number | null, targetWeeks: number | null) => {
+    if (!input) return;
+    save({ ...input, targetChangeKg, targetWeeks });
   };
 
   return (
@@ -180,6 +191,26 @@ export function StrategyView({ studentId }: { studentId: string }) {
               </div>
             </div>
             <MacroSummary macros={macros} />
+
+            {strategy && scores && strategy.direction !== "manutencao" ? (
+              <GoalDefinition
+                direction={strategy.direction}
+                velocity={strategy.velocity}
+                tdee={macros.tdee}
+                currentWeightKg={input.currentWeightKg}
+                capacity={scores.adherence + scores.consistency - scores.abandonmentRisk}
+                prescribedDeltaPct={
+                  strategy.direction === "deficit"
+                    ? macroParams.velocityDeficitPct[strategy.velocity]
+                    : macroParams.velocitySurplusPct[strategy.velocity]
+                }
+                trainsRegularly={session?.answers.trains === "regular"}
+                proteinAdequate={macroParams.proteinGPerKg[student.mainGoal] >= 1.6}
+                initialTargetKg={input.targetChangeKg ?? null}
+                initialWeeks={input.targetWeeks ?? null}
+                onPersist={persistGoal}
+              />
+            ) : null}
           </div>
         ) : null}
       </div>
