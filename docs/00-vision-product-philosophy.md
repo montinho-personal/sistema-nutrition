@@ -4,12 +4,12 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
-| **Classificação** | Documento Mestre |
-| **Versão** | V1.0 |
-| **Status** | Fundação do Projeto |
-| **Prioridade** | Máxima |
+| Campo             | Valor               |
+| ----------------- | ------------------- |
+| **Classificação** | Documento Mestre    |
+| **Versão**        | V1.0                |
+| **Status**        | Fundação do Projeto |
+| **Prioridade**    | Máxima              |
 
 > Este documento define toda a filosofia do software.
 >
