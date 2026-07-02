@@ -49,4 +49,13 @@ Interface em **pt-BR**; código e nomes em inglês, autoexplicativos
 
 ## Verificação
 
-`npm run lint` e `npm run build` devem passar antes de qualquer commit.
+`npm run lint`, `npm run build` e `npm run test` devem passar antes de qualquer commit.
+Migrações: recriar o banco do zero e rodar `supabase/tests/` num Postgres real.
+
+## Definition of Done (Doc 16 — Master Quality Gate)
+
+Nenhuma Sprint/módulo é "concluído" sem passar pelos 15 checkpoints do MQG. Mínimo inegociável:
+testes aprovados, código documentado, banco consistente, Design System respeitado, arquitetura
+limpa, UX excelente, **decisões justificadas**, desempenho adequado, docs atualizados, pronto
+para produção. Autocrítica final: *"Se fosse vendido hoje, eu teria orgulho deste módulo?"* —
+se não, melhorar antes de finalizar.

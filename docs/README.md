@@ -31,6 +31,7 @@ máxima sobre qualquer outro.
 | 13  | [Sprint 1.1 — Foundation Setup](13-sprint-1.1-foundation-setup.md)                                  | ✅ Implementada                           |
 | 14  | [Sprint 1.2 — Database Implementation](14-sprint-1.2-database-implementation.md)                    | ✅ Implementada                           |
 | 15  | [Sprint 1.3 — Food Intelligence Engine (FIE)](15-sprint-1.3-food-intelligence-engine.md)            | ✅ Implementada                           |
+| 16  | [Master Quality Gate (MQG)](16-master-quality-gate.md)                                              | ✅ V1.0 — Definição de Qualidade          |
 | —   | [Esquema do Banco de Dados (referência técnica)](database-schema.md)                                | 📘 Gerado na Sprint 1.2                   |
 
 ## Hierarquia em caso de conflito (definida no Doc 13)
