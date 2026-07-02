@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, PencilIcon, StethoscopeIcon } from "lucide-react";
+import { ArrowLeftIcon, PencilIcon, StethoscopeIcon, TargetIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -79,10 +79,16 @@ export function DiagnosisView({ studentId }: { studentId: string }) {
 
       {completed ? (
         <div className="flex flex-col gap-4">
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={reopen}>
               <PencilIcon className="size-4" />
               Revisar respostas
+            </Button>
+            <Button asChild size="sm">
+              <Link href={`/strategy/${student.id}`}>
+                <TargetIcon className="size-4" />
+                Montar estratégia
+              </Link>
             </Button>
           </div>
           <DiagnosisSummary answers={session.answers} student={student} />
