@@ -28,7 +28,9 @@ máxima sobre qualquer outro.
 | 10  | [Database Architecture V1](10-database-architecture-v1.md)                                          | ✅ V1.0 — Engineering PRD (Database)      |
 | 11  | [Project Foundation & Engineering Standards (PFES)](11-project-foundation-engineering-standards.md) | ✅ V1.0 — Master Engineering PRD          |
 | 12  | [AI Engineering Constitution (AEC)](12-ai-engineering-constitution.md)                              | ✅ V1.0 — Master Engineering Constitution |
-| 13  | [Sprint 1.1 — Foundation Setup](13-sprint-1.1-foundation-setup.md)                                  | 🚧 Em implementação                       |
+| 13  | [Sprint 1.1 — Foundation Setup](13-sprint-1.1-foundation-setup.md)                                  | ✅ Implementada                           |
+| 14  | [Sprint 1.2 — Database Implementation](14-sprint-1.2-database-implementation.md)                    | ✅ Implementada                           |
+| —   | [Esquema do Banco de Dados (referência técnica)](database-schema.md)                                | 📘 Gerado na Sprint 1.2                   |
 
 ## Hierarquia em caso de conflito (definida no Doc 13)
 
