@@ -27,6 +27,7 @@ máxima sobre qualquer outro.
 | 09 | [Main Workspace (Central de Decisão)](09-main-workspace-central-decisao.md) | ✅ V1.0 — Engineering PRD (Core UI) |
 | 10 | [Database Architecture V1](10-database-architecture-v1.md) | ✅ V1.0 — Engineering PRD (Database) |
 | 11 | [Project Foundation & Engineering Standards (PFES)](11-project-foundation-engineering-standards.md) | ✅ V1.0 — Master Engineering PRD |
+| 12 | [AI Engineering Constitution (AEC)](12-ai-engineering-constitution.md) | ✅ V1.0 — Master Engineering Constitution |
 
 ## Módulos previstos
 
