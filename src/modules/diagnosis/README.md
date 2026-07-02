@@ -11,11 +11,15 @@ Conduzir uma anamnese inteligente por etapas e, a partir das respostas, produzir
 ## Estrutura
 
 - `types/` — perguntas, sessão, scores, hipóteses, resumo.
-- `constants/` — scores (linha de base, rótulos) e o **questionário** (10 etapas, Documento 06),
-  com contribuições de score e perguntas condicionais (`showIf`).
+- `constants/` — scores (linha de base, rótulos) e o **questionário** (11 etapas, Documento 06),
+  com contribuições de score e perguntas condicionais (`showIf`). Inclui o **recordatório
+  alimentar** ("Seu dia alimentar") e o aprofundamento adaptativo (gatilhos, histórico, saúde).
 - `services/` — **toda a inteligência é determinística** (regra, não IA — Documento 08):
-  - `scoringEngine.ts` — scores 0–100 a partir das respostas.
+  - `scoringEngine.ts` — scores 0–100 a partir das respostas; a confiança conta só as
+    perguntas *aplicáveis* (condicionais ocultas não penalizam).
   - `hypothesisEngine.ts` — hipóteses com justificativa e confiança (Documento 03A).
+  - `anamnesePortrait.ts` — traduz o recordatório e as preferências em grupos legíveis
+    ("Retrato alimentar") para o treinador.
   - `executiveSummary.ts` — Resumo Inteligente (Documento 05/06).
   - `diagnosisRepository.ts` — sessões com auto-save (local-first).
 - `hooks/use-diagnosis-session.ts` — sessão reativa com auto-save.

@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildAnamnesePortrait,
   buildExecutiveSummary,
   computeHypotheses,
   computeOverallConfidence,
   computeScoreMap,
 } from "@/modules/diagnosis/services";
-import { visibleQuestionsForStage } from "@/modules/diagnosis/constants/questionnaire";
+import {
+  visibleQuestions,
+  visibleQuestionsForStage,
+} from "@/modules/diagnosis/constants/questionnaire";
 import type { AnswerMap } from "@/modules/diagnosis/types";
 
 describe("scoringEngine", () => {
@@ -110,5 +114,111 @@ describe("perguntas condicionais", () => {
     expect(semHome.some((q) => q.key === "home_snacking")).toBe(false);
     const comHome = visibleQuestionsForStage("rotina", { work_location: "home" });
     expect(comHome.some((q) => q.key === "home_snacking")).toBe(true);
+  });
+
+  it("aprofunda os gatilhos só quando há compulsão", () => {
+    const sem = visibleQuestionsForStage("comportamento", { compulsion: "nao" });
+    expect(sem.some((q) => q.key === "compulsion_trigger")).toBe(false);
+    const com = visibleQuestionsForStage("comportamento", { compulsion: "frequente" });
+    expect(com.some((q) => q.key === "compulsion_trigger")).toBe(true);
+  });
+
+  it("pergunta a frequência de álcool só quando o aluno bebe", () => {
+    const sem = visibleQuestionsForStage("alimentacao", { beverages: ["cafe"] });
+    expect(sem.some((q) => q.key === "alcohol_frequency")).toBe(false);
+    const com = visibleQuestionsForStage("alimentacao", { beverages: ["cafe", "alcool"] });
+    expect(com.some((q) => q.key === "alcohol_frequency")).toBe(true);
+  });
+
+  it("detalha a condição de saúde só quando é diabetes/outra", () => {
+    const base = visibleQuestionsForStage("saude", { health_conditions: ["nenhuma"] });
+    expect(base.some((q) => q.key === "diabetes_med")).toBe(false);
+    const diab = visibleQuestionsForStage("saude", { health_conditions: ["diabetes"] });
+    expect(diab.some((q) => q.key === "diabetes_med")).toBe(true);
+  });
+});
+
+describe("grau de confiança", () => {
+  it("não penaliza por perguntas condicionais que nem apareceram", () => {
+    // Duas situações com o MESMO nº de respostas dadas, mas uma abre condicionais.
+    const semRamo: AnswerMap = { compulsion: "nao", beverages: ["cafe"] };
+    const comRamo: AnswerMap = { compulsion: "frequente", beverages: ["alcool"] };
+    // Quem abriu ramos e não os respondeu deve ter confiança MENOR
+    // (mais perguntas aplicáveis em aberto), nunca maior.
+    expect(computeOverallConfidence(comRamo)).toBeLessThanOrEqual(
+      computeOverallConfidence(semRamo),
+    );
+  });
+
+  it("responder um ramo aberto recupera a confiança", () => {
+    const aberto: AnswerMap = { compulsion: "frequente" };
+    const respondido: AnswerMap = { compulsion: "frequente", compulsion_trigger: ["estresse"] };
+    expect(computeOverallConfidence(respondido)).toBeGreaterThan(
+      computeOverallConfidence(aberto),
+    );
+  });
+});
+
+describe("hipóteses do recordatório alimentar", () => {
+  it("beliscar o dia todo vira dificuldade de estrutura", () => {
+    const hs = computeHypotheses({ meals_per_day: "beliscando" });
+    expect(hs.some((h) => h.id === "sem_estrutura_refeicoes")).toBe(true);
+  });
+
+  it("gatilho emocional é reconhecido como risco", () => {
+    const hs = computeHypotheses({ compulsion_trigger: ["estresse", "tedio"] });
+    const risco = hs.find((h) => h.id === "gatilho_emocional");
+    expect(risco?.dimension).toBe("risk");
+  });
+
+  it("baixa hidratação vira oportunidade de vitória rápida", () => {
+    const hs = computeHypotheses({ water_intake: "menos_1l" });
+    expect(hs.some((h) => h.id === "hidratacao_baixa" && h.dimension === "opportunity")).toBe(true);
+  });
+
+  it("calorias líquidas: álcool diário tem mais confiança que refrigerante", () => {
+    const alcool = computeHypotheses({ alcohol_frequency: "quase_diario" }).find(
+      (h) => h.id === "calorias_liquidas",
+    );
+    const refri = computeHypotheses({ beverages: ["refrigerante"] }).find(
+      (h) => h.id === "calorias_liquidas",
+    );
+    expect(alcool && refri).toBeTruthy();
+    expect(alcool!.confidence).toBeGreaterThan(refri!.confidence);
+  });
+});
+
+describe("retrato alimentar", () => {
+  it("agrupa e traduz as respostas em rótulos legíveis, sem seções vazias", () => {
+    const answers: AnswerMap = {
+      meals_per_day: "beliscando",
+      breakfast: "café com pão",
+      beverages: ["cafe", "alcool"],
+      disliked_foods: "jiló",
+    };
+    const portrait = buildAnamnesePortrait(answers);
+    const dia = portrait.find((g) => g.title === "Dia alimentar");
+    expect(dia).toBeDefined();
+    // Valor de opção é traduzido para o rótulo escolhido.
+    expect(dia!.items.find((i) => i.label === "Refeições por dia")?.value).toBe(
+      "Belisco o dia todo, sem hora certa",
+    );
+    // Multi vira lista de rótulos.
+    expect(dia!.items.find((i) => i.label === "Bebidas")?.value).toContain("Café");
+    // Texto livre é preservado.
+    const pref = portrait.find((g) => g.title === "Preferências e restrições");
+    expect(pref!.items.find((i) => i.label === "Não come")?.value).toBe("jiló");
+    // Nada de grupos vazios.
+    expect(portrait.every((g) => g.items.length > 0)).toBe(true);
+  });
+
+  it("sem respostas, o retrato é vazio", () => {
+    expect(buildAnamnesePortrait({})).toHaveLength(0);
+  });
+
+  it("todas as perguntas aplicáveis padrão são não-condicionais", () => {
+    // Sanidade: sem respostas, só as perguntas incondicionais aparecem.
+    const base = visibleQuestions({});
+    expect(base.every((q) => !q.showIf)).toBe(true);
   });
 });

@@ -3,6 +3,11 @@
 export { computeScores, computeScoreMap, computeOverallConfidence } from "./scoringEngine";
 export { computeHypotheses } from "./hypothesisEngine";
 export {
+  buildAnamnesePortrait,
+  type PortraitGroup,
+  type PortraitItem,
+} from "./anamnesePortrait";
+export {
   buildExecutiveSummary,
   ageFromBirthDate,
   type StudentSummaryContext,

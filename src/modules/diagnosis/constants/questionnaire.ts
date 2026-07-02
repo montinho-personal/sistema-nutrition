@@ -35,6 +35,11 @@ export const STAGES: Stage[] = [
     description: "Fome, vontade de comer e gatilhos do dia a dia.",
   },
   {
+    id: "alimentacao",
+    title: "Seu dia alimentar",
+    description: "Como é a sua comida num dia comum — sem julgamento, é para conhecer o seu ponto de partida.",
+  },
+  {
     id: "psicologico",
     title: "Perfil psicológico",
     description: "Como você lida com disciplina, confiança e planejamento.",
@@ -120,6 +125,21 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    key: "regain_trigger",
+    block: "corporal",
+    type: "single",
+    label: "O que costumava fazer o peso voltar?",
+    help: "Entender o que aconteceu antes ajuda a evitar que se repita.",
+    showIf: (a) => a.weight_history === "sanfona",
+    options: [
+      { value: "parou_treino", label: "Parei de treinar" },
+      { value: "voltou_habitos", label: "Voltei aos antigos hábitos" },
+      { value: "emocional", label: "Uma fase emocional difícil" },
+      { value: "restricao", label: "A dieta era restritiva demais", scores: { flexibility: -5 } },
+      { value: "nao_sei", label: "Não sei dizer" },
+    ],
+  },
+  {
     key: "diet_experience",
     block: "corporal",
     type: "single",
@@ -138,6 +158,21 @@ export const QUESTIONS: Question[] = [
         label: "Já tive sucesso antes",
         scores: { adherence: 12, consistency: 8 },
       },
+    ],
+  },
+  {
+    key: "diet_blocker",
+    block: "corporal",
+    type: "single",
+    label: "Nas tentativas anteriores, o que mais atrapalhou?",
+    help: "O maior obstáculo do passado costuma ser o ponto a resolver primeiro.",
+    showIf: (a) => a.diet_experience === "muitas_sem",
+    options: [
+      { value: "fome", label: "Sentia muita fome", scores: { hungerControl: -5 } },
+      { value: "tempo", label: "Falta de tempo para preparar", scores: { practicality: -5 } },
+      { value: "social", label: "A vida social (sair, eventos)" },
+      { value: "ansiedade", label: "Ansiedade / comer emocional", scores: { abandonmentRisk: 5 } },
+      { value: "rigidez", label: "O plano era rígido demais", scores: { flexibility: -5 } },
     ],
   },
 
@@ -232,6 +267,28 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    key: "diabetes_med",
+    block: "saude",
+    type: "single",
+    label: "Você usa alguma medicação para o diabetes?",
+    help: "Só para termos cuidado: o plano é sempre alinhado à orientação do seu médico.",
+    showIf: (a) => Array.isArray(a.health_conditions) && a.health_conditions.includes("diabetes"),
+    options: [
+      { value: "insulina", label: "Sim, insulina" },
+      { value: "oral", label: "Sim, comprimido" },
+      { value: "nao", label: "Não uso" },
+    ],
+  },
+  {
+    key: "health_other",
+    block: "saude",
+    type: "text",
+    label: "Conte um pouco sobre essa condição de saúde.",
+    help: "Assim conseguimos respeitar as suas necessidades no plano.",
+    placeholder: "Ex.: colesterol alto, enxaqueca...",
+    showIf: (a) => Array.isArray(a.health_conditions) && a.health_conditions.includes("outra"),
+  },
+  {
     key: "digestion",
     block: "saude",
     type: "scale",
@@ -267,6 +324,16 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    key: "night_food",
+    block: "comportamento",
+    type: "text",
+    label: "O que você costuma comer ou beliscar à noite?",
+    help: "Saber o que é ajuda a trocar por algo que sacia sem sabotar o plano.",
+    placeholder: "Ex.: bolacha, pão, doce, salgadinho...",
+    optional: true,
+    showIf: (a) => a.night_eating === "frequente",
+  },
+  {
     key: "compulsion",
     block: "comportamento",
     type: "single",
@@ -283,6 +350,22 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    key: "compulsion_trigger",
+    block: "comportamento",
+    type: "multi",
+    label: "O que costuma disparar esses episódios?",
+    help: "Marque o que mais acontece com você. Conhecer o gatilho é metade da solução.",
+    showIf: (a) => a.compulsion === "frequente" || a.compulsion === "as_vezes",
+    options: [
+      { value: "estresse", label: "Estresse / ansiedade" },
+      { value: "tedio", label: "Tédio" },
+      { value: "noite", label: "À noite, ao relaxar" },
+      { value: "emocoes", label: "Brigas ou emoções fortes" },
+      { value: "restricao", label: "Depois de passar fome / me privar" },
+      { value: "social", label: "Em situações sociais" },
+    ],
+  },
+  {
     key: "sweets",
     block: "comportamento",
     type: "single",
@@ -291,6 +374,115 @@ export const QUESTIONS: Question[] = [
     options: [
       { value: "tranquila", label: "Tranquila" },
       { value: "gatilho", label: "Doce é um gatilho", scores: { hungerControl: -10 } },
+    ],
+  },
+  {
+    key: "sweets_timing",
+    block: "comportamento",
+    type: "single",
+    label: "Em que momento a vontade de doce mais aperta?",
+    help: "Saber a hora ajuda a planejar uma opção que satisfaça sem descarrilar o dia.",
+    showIf: (a) => a.sweets === "gatilho",
+    options: [
+      { value: "apos_refeicoes", label: "Depois das refeições" },
+      { value: "tarde", label: "À tarde" },
+      { value: "noite", label: "À noite" },
+      { value: "dia_todo", label: "O dia todo", scores: { hungerControl: -5 } },
+    ],
+  },
+
+  // ── Seu dia alimentar (recordatório) ────────────────────────────────────────
+  {
+    key: "meals_per_day",
+    block: "alimentacao",
+    type: "single",
+    label: "Quantas refeições você costuma fazer por dia?",
+    help: "Conte só as refeições de verdade, sem os beliscos.",
+    options: [
+      { value: "1_2", label: "1 a 2" },
+      { value: "3", label: "3" },
+      { value: "4_5", label: "4 a 5", scores: { organization: 5 } },
+      {
+        value: "beliscando",
+        label: "Belisco o dia todo, sem hora certa",
+        scores: { hungerControl: -8, organization: -8 },
+      },
+    ],
+  },
+  {
+    key: "breakfast",
+    block: "alimentacao",
+    type: "text",
+    label: "O que você costuma comer no café da manhã?",
+    help: "De um dia comum. Se costuma pular, é só escrever \"pulo o café\".",
+    placeholder: "Ex.: café com pão e ovo; ou pulo o café...",
+    optional: true,
+  },
+  {
+    key: "lunch",
+    block: "alimentacao",
+    type: "text",
+    label: "E no almoço, o que costuma comer?",
+    help: "Como é o seu prato num dia normal.",
+    placeholder: "Ex.: arroz, feijão, frango e salada...",
+    optional: true,
+  },
+  {
+    key: "dinner",
+    block: "alimentacao",
+    type: "text",
+    label: "E no jantar?",
+    help: "Se janta a mesma coisa do almoço, pode escrever isso.",
+    placeholder: "Ex.: repito o almoço; ou um lanche...",
+    optional: true,
+  },
+  {
+    key: "snacks",
+    block: "alimentacao",
+    type: "text",
+    label: "O que você belisca entre as refeições?",
+    help: "Aqueles lanchinhos ao longo do dia — café, fruta, biscoito, o que for.",
+    placeholder: "Ex.: café, fruta, castanhas, biscoito...",
+    optional: true,
+  },
+  {
+    key: "water_intake",
+    block: "alimentacao",
+    type: "single",
+    label: "Quanta água você bebe por dia, mais ou menos?",
+    help: "Um copo tem cerca de 250 ml; uma garrafinha, cerca de 500 ml.",
+    options: [
+      { value: "menos_1l", label: "Menos de 1 litro", scores: { hungerControl: -4 } },
+      { value: "1_2l", label: "Entre 1 e 2 litros" },
+      { value: "mais_2l", label: "Mais de 2 litros" },
+    ],
+  },
+  {
+    key: "beverages",
+    block: "alimentacao",
+    type: "multi",
+    label: "O que você costuma beber ao longo do dia?",
+    help: "Marque todas. Ajuda a encontrar calorias líquidas que passam despercebidas.",
+    options: [
+      { value: "agua_cha", label: "Água / chá sem açúcar" },
+      { value: "cafe", label: "Café" },
+      { value: "refrigerante", label: "Refrigerante / suco adoçado", scores: { environment: -6 } },
+      { value: "suco_natural", label: "Suco natural" },
+      { value: "energetico", label: "Energético", scores: { hungerControl: -3 } },
+      { value: "alcool", label: "Bebida alcoólica" },
+    ],
+  },
+  {
+    key: "alcohol_frequency",
+    block: "alimentacao",
+    type: "single",
+    label: "Com que frequência você bebe álcool?",
+    help: "Sem julgamento — só entra na conta das calorias da semana.",
+    showIf: (a) => Array.isArray(a.beverages) && a.beverages.includes("alcool"),
+    options: [
+      { value: "raramente", label: "Raramente" },
+      { value: "fim_de_semana", label: "Nos fins de semana" },
+      { value: "quase_diario", label: "Quase todo dia", scores: { environment: -8 } },
     ],
   },
 
@@ -444,12 +636,30 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    key: "restrictions_other",
+    block: "preferencias",
+    type: "text",
+    label: "Qual é a sua restrição?",
+    help: "Assim garantimos que nada no plano vá contra ela.",
+    placeholder: "Ex.: alergia a frutos do mar, não como carne vermelha...",
+    showIf: (a) => Array.isArray(a.restrictions) && a.restrictions.includes("outra"),
+  },
+  {
     key: "favorite_foods",
     block: "preferencias",
     type: "text",
     label: "Quais alimentos você ama e não abre mão?",
     help: "A gente encaixa o que você gosta no plano — pode listar à vontade.",
     placeholder: "Ex.: pão, café, chocolate...",
+    optional: true,
+  },
+  {
+    key: "disliked_foods",
+    block: "preferencias",
+    type: "text",
+    label: "E o que você não gosta ou não come de jeito nenhum?",
+    help: "O plano nunca vai insistir nesses — pode ser sincero(a).",
+    placeholder: "Ex.: fígado, jiló, peixe...",
     optional: true,
   },
 
@@ -498,4 +708,13 @@ export function visibleQuestionsForStage(
   answers: Record<string, unknown>,
 ): Question[] {
   return QUESTIONS.filter((q) => q.block === stageId && (!q.showIf || q.showIf(answers as never)));
+}
+
+/**
+ * Todas as perguntas atualmente aplicáveis (as condicionais só contam quando
+ * a condição está satisfeita). Base honesta para o grau de confiança: uma
+ * pergunta que nem apareceu não deveria derrubar a confiança (Documento 03B).
+ */
+export function visibleQuestions(answers: Record<string, unknown>): Question[] {
+  return QUESTIONS.filter((q) => !q.showIf || q.showIf(answers as never));
 }
