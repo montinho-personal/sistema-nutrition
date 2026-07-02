@@ -1,24 +1,26 @@
 import type { Metadata } from "next";
-import { SaladIcon } from "lucide-react";
 
-import { EmptyState } from "@/shared/components/empty-state";
 import { PageHeader } from "@/shared/components/page-header";
+import { listFoods } from "@/modules/foods/services";
+import { FoodBrowser } from "@/modules/foods/components/food-browser";
 
 export const metadata: Metadata = { title: "Alimentos" };
 
-/** Banco Inteligente de Alimentos (Documento 03G — Biblioteca 2, TBCA/TACO). */
-export default function FoodsPage() {
+/**
+ * Banco Inteligente de Alimentos (Documento 15 — Food Intelligence Engine).
+ * Cada alimento é conhecido além dos macros: saciedade, praticidade, custo,
+ * momento de uso, classificação estratégica e alertas contextuais.
+ */
+export default async function FoodsPage() {
+  const foods = await listFoods();
+
   return (
     <>
       <PageHeader
         title="Alimentos"
         description="Banco inteligente: além dos macros — saciedade, praticidade, custo e aplicações estratégicas."
       />
-      <EmptyState
-        icon={<SaladIcon />}
-        title="Módulo em construção"
-        description="A biblioteca de alimentos com dados TBCA/TACO e atributos estratégicos será implementada em sprint futura."
-      />
+      <FoodBrowser foods={foods} />
     </>
   );
 }

@@ -30,6 +30,7 @@ máxima sobre qualquer outro.
 | 12  | [AI Engineering Constitution (AEC)](12-ai-engineering-constitution.md)                              | ✅ V1.0 — Master Engineering Constitution |
 | 13  | [Sprint 1.1 — Foundation Setup](13-sprint-1.1-foundation-setup.md)                                  | ✅ Implementada                           |
 | 14  | [Sprint 1.2 — Database Implementation](14-sprint-1.2-database-implementation.md)                    | ✅ Implementada                           |
+| 15  | [Sprint 1.3 — Food Intelligence Engine (FIE)](15-sprint-1.3-food-intelligence-engine.md)            | ✅ Implementada                           |
 | —   | [Esquema do Banco de Dados (referência técnica)](database-schema.md)                                | 📘 Gerado na Sprint 1.2                   |
 
 ## Hierarquia em caso de conflito (definida no Doc 13)
