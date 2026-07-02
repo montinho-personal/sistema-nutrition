@@ -19,6 +19,7 @@ máxima sobre qualquer outro.
 | 03F | [Outcome Prediction Engine (OPE)](03f-outcome-prediction-engine.md) | ✅ V1.0 — Core Intelligence Module |
 | 03G | [Nutrition Knowledge Base (NKB)](03g-nutrition-knowledge-base.md) | ✅ V1.0 — Core Knowledge Module |
 | 03H | [Decision Rules Engine (DRE)](03h-decision-rules-engine.md) | ✅ V1.0 — Core Decision Module |
+| 04 | [Strategic Prescription Engine (SPE)](04-strategic-prescription-engine.md) | ✅ V1.0 — Core Strategy Module |
 
 ## Módulos previstos
 
