@@ -1,24 +1,10 @@
 import type { Metadata } from "next";
-import { FileTextIcon } from "lucide-react";
 
-import { EmptyState } from "@/shared/components/empty-state";
-import { PageHeader } from "@/shared/components/page-header";
+import { ReportsIndex } from "@/modules/reports/components/reports-index";
 
 export const metadata: Metadata = { title: "Relatórios" };
 
-/** Documentos premium para o aluno (Documento 02 — Documento Final). */
+/** Índice dos Relatórios (Documento 02 — escolher um aluno). */
 export default function ReportsPage() {
-  return (
-    <>
-      <PageHeader
-        title="Relatórios"
-        description="Documentos com padrão de consultoria premium para apresentação ao aluno."
-      />
-      <EmptyState
-        icon={<FileTextIcon />}
-        title="Módulo em construção"
-        description="A geração de documentos premium (resumo executivo, planos e justificativas) será implementada em sprint futura."
-      />
-    </>
-  );
+  return <ReportsIndex />;
 }

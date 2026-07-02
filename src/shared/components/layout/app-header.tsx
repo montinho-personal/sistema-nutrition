@@ -22,7 +22,7 @@ function AppHeader({ onToggleIntelligencePanels }: AppHeaderProps) {
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 print:hidden">
       <div className="flex min-w-0 items-center gap-3">
         <h1 className="truncate text-sm font-medium">{appConfig.name}</h1>
       </div>
