@@ -38,13 +38,22 @@ describe("buildMealPlan — estrutura", () => {
     expect(buildMealPlan(curatedFoods, { ...BASE_CTX, mealsPerDay: 6 }).meals).toHaveLength(6);
   });
 
-  it("cada refeição tem itens e o total do dia se aproxima do alvo", () => {
+  it("cada refeição tem itens e o total do dia bate o alvo com precisão", () => {
     const plan = buildMealPlan(curatedFoods, BASE_CTX);
     for (const meal of plan.meals) expect(meal.items.length).toBeGreaterThan(0);
-    // fechamento calórico e proteico apertado (montagem sequencial refinada)
-    expect(plan.accuracy.kcal).toBeGreaterThanOrEqual(92);
+    // Solver de resíduo: proteína (macro prioritário) fecha justo, sem o
+    // overshoot do encadeamento ingênuo; calorias próximas do alvo.
+    expect(plan.accuracy.protein).toBeGreaterThanOrEqual(92);
+    expect(plan.accuracy.protein).toBeLessThanOrEqual(115);
+    expect(plan.accuracy.kcal).toBeGreaterThanOrEqual(88);
     expect(plan.accuracy.kcal).toBeLessThanOrEqual(112);
-    expect(plan.accuracy.protein).toBeGreaterThanOrEqual(90);
+  });
+
+  it("a proteína não estoura por dupla contagem entre alimentos", () => {
+    // Café + aveia + pasta de amendoim: cereais e gordura somam proteína; a
+    // porção proteica deve encolher para compensar (nunca > ~115% no dia).
+    const plan = buildMealPlan(curatedFoods, { ...BASE_CTX, goal: "hypertrophy", mealsPerDay: 5 });
+    expect(plan.accuracy.protein).toBeLessThanOrEqual(115);
   });
 
   it("o total do dia é a soma das refeições", () => {

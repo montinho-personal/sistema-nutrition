@@ -77,6 +77,13 @@ export const VEG_FIXED_GRAMS = 120;
 /** Arredondamento das porções (múltiplo de gramas). */
 export const GRAMS_ROUNDING = 5;
 
+/**
+ * Passadas do solver de resíduo (Gauss-Seidel) que ajusta as porções para bater
+ * os macros descontando a contribuição cruzada entre alimentos. 4 passadas já
+ * convergem com folga para 3 incógnitas fortemente diagonais.
+ */
+export const SOLVER_PASSES = 4;
+
 /** Pesos do ranqueamento de alimentos (base + ênfases da estratégia). */
 export const RANK_WEIGHTS = {
   timingMatch: 20,

@@ -18,6 +18,7 @@ import {
   PORTION_LIMITS,
   RANK_WEIGHTS,
   ROLE_THRESHOLDS,
+  SOLVER_PASSES,
   VEG_FIXED_GRAMS,
   type MealTemplate,
 } from "@/modules/meal-plan/constants/parameters";
@@ -157,6 +158,15 @@ function solveGrams(food: Food, role: FoodRole, targetMacroG: number): number {
   return Math.min(limits.max, Math.max(limits.min, round(grams, GRAMS_ROUNDING)));
 }
 
+/** Gramas do carboidrato para preencher as calorias restantes da refeição. */
+function solveGramsForKcal(food: Food, targetKcal: number): number {
+  const per100 = food.nutrition.energyKcal ?? 0;
+  const limits = PORTION_LIMITS.carb;
+  if (per100 <= 0) return limits.min;
+  const grams = (Math.max(0, targetKcal) * 100) / per100;
+  return Math.min(limits.max, Math.max(limits.min, round(grams, GRAMS_ROUNDING)));
+}
+
 function portionLabel(food: Food, grams: number): string | null {
   const portion = food.portions[0];
   if (!portion || portion.grams <= 0) return null;
@@ -202,24 +212,47 @@ function buildMeal(
     }
   }
 
-  // Resolve as porções em ordem de prioridade: vegetal (fixo) → proteína →
-  // gordura → carboidrato (absorve o restante das calorias).
-  const remaining: MacroTotals = { ...target };
-  const items: MealItem[] = [];
-  const order: FoodRole[] = ["veg", "protein", "fat", "carb"];
+  // Resolve as porções com um solver de resíduo iterativo (Gauss-Seidel): cada
+  // alimento é ajustado para o alvo do SEU macro menos o que os outros já
+  // contribuem. Assim a proteína dos cereais/gorduras é descontada da porção
+  // proteica — o que elimina o overshoot do fechamento sequencial ingênuo.
+  const grams = new Map<FoodRole, number>();
+  if (selected.has("veg")) grams.set("veg", VEG_FIXED_GRAMS); // vegetal: volume fixo
 
-  for (const role of order) {
+  // Proteína e gordura são alvos "duros" (massa magra / suporte hormonal);
+  // o carboidrato é o macro flexível que fecha as CALORIAS restantes — o mesmo
+  // princípio do motor de macros. A proteína é resolvida antes, descontando o
+  // que os outros alimentos já contribuem; o carbo entra por último por energia.
+  for (let pass = 0; pass < SOLVER_PASSES; pass++) {
+    for (const role of ["protein", "fat", "carb"] as FoodRole[]) {
+      const food = selected.get(role);
+      if (!food) continue;
+
+      if (role === "carb") {
+        let othersKcal = 0;
+        for (const [otherRole, otherFood] of selected) {
+          if (otherRole === "carb") continue;
+          othersKcal += scaleFood(otherFood, grams.get(otherRole) ?? 0).kcal;
+        }
+        grams.set("carb", solveGramsForKcal(food, target.kcal - othersKcal));
+        continue;
+      }
+
+      const macroKey = role === "fat" ? "fat" : "protein";
+      let others = 0;
+      for (const [otherRole, otherFood] of selected) {
+        if (otherRole === role) continue;
+        others += scaleFood(otherFood, grams.get(otherRole) ?? 0)[macroKey];
+      }
+      grams.set(role, solveGrams(food, role, target[macroKey] - others));
+    }
+  }
+
+  const items: MealItem[] = [];
+  for (const role of ["veg", "protein", "fat", "carb"] as FoodRole[]) {
     const food = selected.get(role);
     if (!food) continue;
-    const grams =
-      role === "veg"
-        ? VEG_FIXED_GRAMS
-        : solveGrams(food, role, role === "carb" ? remaining.carbs : role === "fat" ? remaining.fat : remaining.protein);
-    const item = toItem(food, role, grams);
-    items.push(item);
-    remaining.protein -= item.protein;
-    remaining.carbs -= item.carbs;
-    remaining.fat -= item.fat;
+    items.push(toItem(food, role, grams.get(role) ?? PORTION_LIMITS[role].min));
   }
 
   // Reordena os itens conforme o template (proteína primeiro na exibição).
