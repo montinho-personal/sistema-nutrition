@@ -18,7 +18,7 @@ function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+    <aside className="hidden w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex print:hidden">
       <div className="flex h-14 items-center gap-2 px-4">
         <div className="flex size-7 items-center justify-center rounded-md bg-gold">
           <span className="text-xs font-bold text-gold-foreground">M</span>

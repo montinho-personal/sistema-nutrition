@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
-import { StethoscopeIcon } from "lucide-react";
+import Link from "next/link";
+import { UsersIcon } from "lucide-react";
 
+import { Button } from "@/shared/components/ui/button";
 import { EmptyState } from "@/shared/components/empty-state";
 import { PageHeader } from "@/shared/components/page-header";
 
 export const metadata: Metadata = { title: "Diagnóstico" };
 
 /**
- * Diagnóstico Estratégico Nutricional (Módulo 1 — Documentos 03A, 06, 07).
- * A Entrevista Inteligente será implementada na próxima sprint.
+ * Índice do Diagnóstico: o diagnóstico é sempre de um aluno específico.
+ * Aqui orientamos a escolher/cadastrar um aluno (Documento 06).
  */
-export default function DiagnosisPage() {
+export default function DiagnosisIndexPage() {
   return (
     <>
       <PageHeader
         title="Diagnóstico Estratégico"
-        description="Entrevista inteligente que compreende profundamente o aluno antes de qualquer decisão."
+        description="A entrevista inteligente que compreende o aluno antes de qualquer decisão."
       />
       <EmptyState
-        icon={<StethoscopeIcon />}
-        title="Módulo em construção"
-        description="A Entrevista Estratégica adaptativa — com hipóteses, scores e resumo executivo — será implementada na próxima sprint."
+        icon={<UsersIcon />}
+        title="Escolha um aluno para começar"
+        description="O diagnóstico é sempre individual. Selecione um aluno na lista (ou cadastre um novo) e inicie a Entrevista Estratégica."
+        action={
+          <Button asChild>
+            <Link href="/students">Ir para Alunos</Link>
+          </Button>
+        }
       />
     </>
   );

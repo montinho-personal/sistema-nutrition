@@ -1,24 +1,10 @@
 import type { Metadata } from "next";
-import { CalendarCheckIcon } from "lucide-react";
 
-import { EmptyState } from "@/shared/components/empty-state";
-import { PageHeader } from "@/shared/components/page-header";
+import { FollowUpsIndex } from "@/modules/follow-ups/components/follow-ups-index";
 
 export const metadata: Metadata = { title: "Acompanhamentos" };
 
-/** Acompanhamentos — monitoramento e ajustes (Documento 01). */
+/** Índice dos Acompanhamentos (Documentos 05, 01 — escolher um aluno). */
 export default function FollowUpsPage() {
-  return (
-    <>
-      <PageHeader
-        title="Acompanhamentos"
-        description="Monitoramento contínuo: adesão, fome, sono, energia e evolução."
-      />
-      <EmptyState
-        icon={<CalendarCheckIcon />}
-        title="Módulo em construção"
-        description="O acompanhamento estratégico com reavaliação automática de prioridades será implementado em sprint futura."
-      />
-    </>
-  );
+  return <FollowUpsIndex />;
 }

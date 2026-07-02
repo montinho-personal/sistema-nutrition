@@ -26,21 +26,21 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const [showIntelligencePanels, setShowIntelligencePanels] = React.useState(true);
 
   return (
-    <div className="flex h-dvh overflow-hidden">
+    <div className="flex h-dvh overflow-hidden print:h-auto print:overflow-visible">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppHeader
           onToggleIntelligencePanels={() => setShowIntelligencePanels((current) => !current)}
         />
         <div className="flex min-h-0 flex-1">
-          <main className="min-w-0 flex-1 overflow-y-auto">
-            <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
+          <main className="min-w-0 flex-1 overflow-y-auto print:overflow-visible">
+            <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6 print:max-w-none print:p-0">
               <ErrorBoundary>{children}</ErrorBoundary>
             </div>
           </main>
           <div
             className={cn(
-              "hidden w-[560px] shrink-0 grid-cols-2 xl:grid",
+              "hidden w-[560px] shrink-0 grid-cols-2 xl:grid print:hidden",
               !showIntelligencePanels && "xl:hidden",
             )}
           >
@@ -48,7 +48,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             <AiStrategyPanel />
           </div>
         </div>
-        <footer className="flex h-8 shrink-0 items-center justify-end border-t px-4 text-[11px] text-muted-foreground">
+        <footer className="flex h-8 shrink-0 items-center justify-end border-t px-4 text-[11px] text-muted-foreground print:hidden">
           Montinho Nutrition Strategy
         </footer>
       </div>

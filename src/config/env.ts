@@ -14,12 +14,17 @@ const environmentSchema = z.object({
   // Supabase existente sem colidir com outros apps. Deve casar com o schema das
   // migrações (padrão: montinho).
   NEXT_PUBLIC_SUPABASE_SCHEMA: z.string().min(1).default("montinho"),
+  // Exige login para acessar o app do treinador. Por padrão o app é aberto
+  // (uso pessoal local-first); mesmo com o Supabase conectado só para a
+  // anamnese, o app segue sem login a menos que isto seja "true".
+  NEXT_PUBLIC_REQUIRE_AUTH: z.string().optional(),
 });
 
 const parsed = environmentSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SUPABASE_SCHEMA: process.env.NEXT_PUBLIC_SUPABASE_SCHEMA,
+  NEXT_PUBLIC_REQUIRE_AUTH: process.env.NEXT_PUBLIC_REQUIRE_AUTH,
 });
 
 if (!parsed.success) {
@@ -39,3 +44,6 @@ export const env = parsed.data;
 export const isSupabaseConfigured = Boolean(
   env.NEXT_PUBLIC_SUPABASE_URL && env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 );
+
+/** Se o app do treinador exige login (opt-in — padrão: aberto). */
+export const isAuthRequired = env.NEXT_PUBLIC_REQUIRE_AUTH === "true";

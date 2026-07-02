@@ -1,28 +1,11 @@
-import type { Metadata } from "next";
-import { UsersIcon } from "lucide-react";
+"use client";
 
-import { EmptyState } from "@/shared/components/empty-state";
-import { PageHeader } from "@/shared/components/page-header";
-
-export const metadata: Metadata = { title: "Dashboard" };
+import { DashboardView } from "@/modules/dashboard/components/dashboard-view";
 
 /**
- * Dashboard — visão executiva (Documento 02): primeiro inteligência,
- * depois detalhes. Será alimentado pelos módulos de diagnóstico e
- * estratégia nas próximas sprints.
+ * Dashboard — Central de Decisão (Documento 09): visão executiva dos alunos,
+ * com a fase atual e a próxima ação recomendada de cada um.
  */
 export default function DashboardPage() {
-  return (
-    <>
-      <PageHeader
-        title="Dashboard"
-        description="Resumo estratégico dos seus alunos e das próximas decisões."
-      />
-      <EmptyState
-        icon={<UsersIcon />}
-        title="Nenhum aluno cadastrado ainda"
-        description="Cadastre o primeiro aluno para iniciar o Diagnóstico Estratégico — a base de todas as decisões do sistema."
-      />
-    </>
-  );
+  return <DashboardView />;
 }
