@@ -23,6 +23,7 @@ máxima sobre qualquer outro.
 | 05 | [Personal Nutrition Intelligence (PNI)](05-personal-nutrition-intelligence.md) | ✅ V1.0 — Core Intelligence Module |
 | 06 | [Módulo 1 — Diagnóstico Estratégico Nutricional (PRD)](06-modulo-1-diagnostico-prd.md) | ✅ V1.0 — PRD de Módulo |
 | 07 | [Módulo 1 — UX • Interface • Fluxo da Entrevista](07-modulo-1-ux-interface-entrevista.md) | ✅ V1.0 — Engineering PRD |
+| 08 | [Master Software Architecture (MSA)](08-master-software-architecture.md) | ✅ V1.0 — Master Architecture |
 
 ## Módulos previstos
 
