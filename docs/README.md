@@ -28,6 +28,14 @@ máxima sobre qualquer outro.
 | 10 | [Database Architecture V1](10-database-architecture-v1.md) | ✅ V1.0 — Engineering PRD (Database) |
 | 11 | [Project Foundation & Engineering Standards (PFES)](11-project-foundation-engineering-standards.md) | ✅ V1.0 — Master Engineering PRD |
 | 12 | [AI Engineering Constitution (AEC)](12-ai-engineering-constitution.md) | ✅ V1.0 — Master Engineering Constitution |
+| 13 | [Sprint 1.1 — Foundation Setup](13-sprint-1.1-foundation-setup.md) | 🚧 Em implementação |
+
+## Hierarquia em caso de conflito (definida no Doc 13)
+
+1. **AI Engineering Constitution** (Doc 12) — como a IA trabalha.
+2. **Master Software Architecture** (Doc 08) — arquitetura técnica.
+3. **Vision & Product Philosophy** (Doc 00) — filosofia do produto.
+4. Demais PRDs.
 
 ## Módulos previstos
 
