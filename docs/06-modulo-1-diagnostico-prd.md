@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
-| **Classificação** | Product Requirements Document (PRD) |
-| **Módulo** | Módulo 1 — Diagnóstico Estratégico Nutricional |
+| Campo             | Valor                                          |
+| ----------------- | ---------------------------------------------- |
+| **Classificação** | Product Requirements Document (PRD)            |
+| **Módulo**        | Módulo 1 — Diagnóstico Estratégico Nutricional |
 
 > **Missão:** construir o melhor sistema de diagnóstico nutricional estratégico já desenvolvido
 > para um software de consultoria.
@@ -58,34 +58,44 @@ O diagnóstico será dividido em etapas. Cada etapa deverá possuir:
 ## As 10 Etapas do Diagnóstico
 
 ### Etapa 1 — Objetivo da Transformação
+
 Objetivo principal, objetivos secundários, prazo, motivação, urgência, evento específico, expectativas.
 
 ### Etapa 2 — Histórico Corporal
+
 Peso máximo, peso mínimo, peso atual, histórico de emagrecimento, histórico de ganho de peso,
 efeito sanfona, estratégias anteriores, resultados anteriores.
 
 ### Etapa 3 — Rotina
+
 Horário, trabalho, treino, sono, tempo disponível, viagens, filhos, mercado, restaurantes, delivery.
 
 ### Etapa 4 — Saúde
+
 Doenças, medicamentos, digestão, exames relevantes, restrições alimentares, alergias, intolerâncias.
 
 ### Etapa 5 — Comportamento Alimentar
+
 Fome, saciedade, compulsão, beliscos, álcool, doces, fast food, eventos sociais.
 
 ### Etapa 6 — Perfil Psicológico
+
 Motivação, disciplina, autoeficácia, tudo ou nada, planejamento, organização.
 
 ### Etapa 7 — Ambiente Alimentar
+
 Quem cozinha, quem compra, empresa, família, disponibilidade de alimentos.
 
 ### Etapa 8 — Treinamento
+
 Musculação, cardio, passos, esportes, performance.
 
 ### Etapa 9 — Preferências
+
 Alimentos preferidos, alimentos rejeitados, cultura, religião, hábitos.
 
 ### Etapa 10 — Orçamento
+
 Disponibilidade financeira, frequência de compras, preferência por praticidade, suplementação.
 
 ---
@@ -104,12 +114,12 @@ Cada resposta poderá abrir novos blocos. Exemplo:
 
 Durante toda entrevista, o sistema deverá construir hipóteses. Exemplo:
 
-| Dimensão | Hipótese |
-| --- | --- |
-| Maior risco | Baixa organização |
-| Maior oportunidade | Alta motivação |
-| Maior dificuldade | Finais de semana |
-| Maior vantagem | Boa rotina de treino |
+| Dimensão           | Hipótese             |
+| ------------------ | -------------------- |
+| Maior risco        | Baixa organização    |
+| Maior oportunidade | Alta motivação       |
+| Maior dificuldade  | Finais de semana     |
+| Maior vantagem     | Boa rotina de treino |
 
 ---
 

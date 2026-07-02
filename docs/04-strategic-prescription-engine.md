@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                |
+| ----------------- | -------------------- |
 | **Classificação** | Core Strategy Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima               |
 
 > Este documento define **como o Montinho Nutrition Strategy constrói uma Estratégia Nutricional
 > antes de calcular qualquer caloria**.

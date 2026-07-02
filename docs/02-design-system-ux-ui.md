@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                              |
+| ----------------- | ---------------------------------- |
 | **Classificação** | Documento Oficial de Design System |
-| **Versão** | V1.0 |
+| **Versão**        | V1.0                               |
 
 > Este documento define toda a experiência visual e de utilização do software.
 >
@@ -156,13 +156,13 @@ Poucas cores. Evitar excesso. **Cada cor deve comunicar algo.**
 
 Sempre transformar informações complexas em indicadores simples. Exemplo:
 
-| Indicador | Score |
-| --- | --- |
-| Aderência | 94 |
-| Saciedade | 88 |
-| Praticidade | 91 |
-| Risco | 23 |
-| Compatibilidade | 96 |
+| Indicador       | Score |
+| --------------- | ----- |
+| Aderência       | 94    |
+| Saciedade       | 88    |
+| Praticidade     | 91    |
+| Risco           | 23    |
+| Compatibilidade | 96    |
 
 ---
 

@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor          |
+| ----------------- | -------------- |
 | **Classificação** | Core AI Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima         |
 
 > Este documento define **como a entrevista clínica deverá funcionar**.
 >
@@ -42,6 +42,7 @@ Se uma informação não altera nenhuma estratégia, ela **não deverá ser cole
 A entrevista será dinâmica. Cada resposta modifica automaticamente o restante da consulta.
 
 **Exemplo — home office:**
+
 ```
 Aluno informa que trabalha em home office
   ↓ Ocultar perguntas sobre restaurante da empresa
@@ -51,6 +52,7 @@ Aluno informa que trabalha em home office
 ```
 
 **Exemplo — treino às 5h:**
+
 ```
 Aluno informa: treina às 5h
   ↓ Treina em jejum?
@@ -61,6 +63,7 @@ Aluno informa: treina às 5h
 ```
 
 **Exemplo — compulsão alimentar:**
+
 ```
 Aluno informa: tem compulsão alimentar
   ↓ Abrir automaticamente um bloco específico
@@ -109,11 +112,11 @@ O software deverá pensar constantemente:
 
 Cada bloco deverá possuir um indicador de **confiança**. Exemplo:
 
-| Bloco | Confiança |
-| --- | --- |
-| Sono | 98% |
-| Rotina | 95% |
-| Compulsão | 42% |
+| Bloco     | Confiança |
+| --------- | --------- |
+| Sono      | 98%       |
+| Rotina    | 95%       |
+| Compulsão | 42%       |
 
 Enquanto o nível de confiança estiver baixo, o sistema continua perguntando.
 

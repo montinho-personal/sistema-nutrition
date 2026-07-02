@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                |
+| ----------------- | -------------------- |
 | **Classificação** | Core Decision Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima               |
 
 > Este documento define **como o Montinho Nutrition Strategy toma decisões**.
 >
@@ -20,7 +20,7 @@
 
 Transformar informações em decisões inteligentes.
 
-Não responder apenas *"o que fazer"*, mas responder:
+Não responder apenas _"o que fazer"_, mas responder:
 
 - **"Por que fazer."**
 - **"Por que agora."**
@@ -53,43 +53,48 @@ Antes de qualquer recomendação, responder obrigatoriamente, nesta ordem:
 ## Regras Universais
 
 ### Regra da Aderência
+
 Entre duas estratégias semelhantes, escolher sempre a que apresentar **maior chance de aderência**.
 
 ### Regra da Simplicidade
+
 Entre duas estratégias igualmente eficazes, escolher sempre a **mais simples**.
 
 ### Regra da Sustentabilidade
+
 Nunca escolher estratégias que funcionem apenas no curto prazo. Sempre perguntar:
 
 > "O aluno conseguirá viver assim durante meses?"
 
 ### Regra do Menor Esforço
+
 Sempre procurar: maior resultado, menor esforço, maior facilidade.
 
 ### Regra da Segurança
+
 Qualquer estratégia que aumente significativamente o risco deverá ser **reavaliada**.
 
 ---
 
 ## Regras de Emagrecimento
 
-| Se | Então |
-| --- | --- |
-| Alta fome | Priorizar saciedade, proteína, volume alimentar e planejamento — **antes** de reduzir calorias. |
-| Baixa aderência | Não utilizar déficit agressivo. |
-| Muitos eventos sociais | Priorizar flexibilidade. |
-| Pouco tempo para cozinhar | Priorizar praticidade. |
-| Grande histórico de efeito sanfona | Evitar estratégias extremamente restritivas. |
+| Se                                 | Então                                                                                           |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Alta fome                          | Priorizar saciedade, proteína, volume alimentar e planejamento — **antes** de reduzir calorias. |
+| Baixa aderência                    | Não utilizar déficit agressivo.                                                                 |
+| Muitos eventos sociais             | Priorizar flexibilidade.                                                                        |
+| Pouco tempo para cozinhar          | Priorizar praticidade.                                                                          |
+| Grande histórico de efeito sanfona | Evitar estratégias extremamente restritivas.                                                    |
 
 ---
 
 ## Regras de Hipertrofia
 
-| Se | Então |
-| --- | --- |
-| Baixo apetite | Priorizar alimentos mais densos energeticamente; reduzir excesso de volume alimentar. |
-| Grande dificuldade para atingir proteínas | Priorizar alimentos proteicos práticos; avaliar whey estrategicamente. |
-| Treino intenso | Garantir adequada recuperação nutricional antes de aumentar volume de treino. |
+| Se                                        | Então                                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| Baixo apetite                             | Priorizar alimentos mais densos energeticamente; reduzir excesso de volume alimentar. |
+| Grande dificuldade para atingir proteínas | Priorizar alimentos proteicos práticos; avaliar whey estrategicamente.                |
+| Treino intenso                            | Garantir adequada recuperação nutricional antes de aumentar volume de treino.         |
 
 ---
 
@@ -125,15 +130,19 @@ Utilizar apenas quando existir **justificativa estratégica**. Nunca por protoco
 ## Regras de Contexto
 
 ### Finais de semana
+
 Se a maior dificuldade for aos sábados → construir estratégia específica. Nunca apenas repetir a dieta da semana.
 
 ### Viagens
+
 Sempre construir plano específico **antes** da viagem.
 
 ### Restaurantes
+
 Nunca apenas listar alimentos. Criar **critérios de escolha**.
 
 ### Delivery
+
 Construir ranking, sempre justificando:
 
 1. Melhores opções.

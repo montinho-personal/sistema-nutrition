@@ -4,11 +4,11 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                        |
+| ----------------- | ---------------------------- |
 | **Classificação** | Master Architecture Document |
-| **Versão** | V1.0 |
-| **Prioridade** | Absoluta |
+| **Versão**        | V1.0                         |
+| **Prioridade**    | Absoluta                     |
 
 > Este documento define toda a **arquitetura técnica** do Montinho Nutrition Strategy.
 >
@@ -260,19 +260,23 @@ apenas preparar arquitetura:
 ## Regras de Desenvolvimento
 
 ### Princípio de Evolução
-Toda nova funcionalidade deverá responder: *pode ser adicionada sem alterar módulos existentes?*
+
+Toda nova funcionalidade deverá responder: _pode ser adicionada sem alterar módulos existentes?_
 Se não → **reprojetar**.
 
 ### Regra do Código
-Antes de escrever qualquer função, perguntar: *ela poderá ser reutilizada?*
+
+Antes de escrever qualquer função, perguntar: _ela poderá ser reutilizada?_
 Se sim → transformar em **serviço compartilhado**.
 
 ### Regra da Interface
-Antes de criar qualquer tela, perguntar: *existe componente semelhante?*
+
+Antes de criar qualquer tela, perguntar: _existe componente semelhante?_
 Se sim → **reutilizar. Nunca duplicar.**
 
 ### Regra da IA
-Antes de perguntar para a IA: *existe resposta determinística?*
+
+Antes de perguntar para a IA: _existe resposta determinística?_
 Se existir → utilizar regra. **Usar IA apenas onde ela realmente agrega inteligência.**
 
 ---

@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                           |
+| ----------------- | ------------------------------- |
 | **Classificação** | Master Engineering Constitution |
-| **Prioridade** | Absoluta |
+| **Prioridade**    | Absoluta                        |
 
 > Este documento define **como a Inteligência Artificial deverá trabalhar** durante todo o
 > desenvolvimento do Montinho Nutrition Strategy.
@@ -46,16 +46,20 @@ Clínica • Psicologia Alimentar • Mudança de Comportamento
 ## As 10 Regras
 
 ### Regra Nº 1
+
 **Nunca escrever código imediatamente.** Antes: pensar, planejar, modelar, questionar, validar.
 Somente depois implementar.
 
 ### Regra Nº 2
+
 Sempre procurar a solução mais **elegante**. Não a mais rápida.
 
 ### Regra Nº 3
+
 Nunca aceitar a primeira ideia automaticamente. Gerar alternativas. Comparar. Justificar. Escolher.
 
 ### Regra Nº 4
+
 Sempre desafiar as próprias decisões. Perguntar:
 
 - Existe arquitetura melhor?
@@ -65,13 +69,16 @@ Sempre desafiar as próprias decisões. Perguntar:
 - Existe solução mais sustentável?
 
 ### Regra Nº 5
+
 Sempre priorizar: **experiência do usuário → arquitetura → velocidade de implementação**.
 Nunca inverter.
 
 ### Regra Nº 6
+
 Sempre explicar decisões importantes. **Nunca responder apenas com código.**
 
 ### Regra Nº 7
+
 Nunca criar funcionalidades desnecessárias. Toda funcionalidade deverá responder:
 
 - Qual problema resolve?
@@ -79,12 +86,15 @@ Nunca criar funcionalidades desnecessárias. Toda funcionalidade deverá respond
 - Vale a complexidade?
 
 ### Regra Nº 8
+
 Sempre reutilizar: componentes, funções, serviços, hooks, bibliotecas. **Nunca duplicar.**
 
 ### Regra Nº 9
+
 **Nunca criar telas antes de desenhar o fluxo completo.**
 
 ### Regra Nº 10
+
 Todo módulo deverá ser considerado um **produto independente**, com: objetivo, fluxo, entradas,
 saídas, testes, documentação.
 
@@ -140,12 +150,15 @@ Se a resposta for negativa → **refatorar**.
 ## Princípios
 
 ### Princípio da Evolução
+
 Sempre desenvolver pensando nos **próximos cinco anos**. Nunca apenas na próxima entrega.
 
 ### Princípio da Simplicidade
+
 Soluções sofisticadas. Implementações simples. Código limpo. Interface intuitiva.
 
 ### Princípio da Excelência
+
 Nenhuma funcionalidade deverá ser considerada pronta apenas porque funciona. Ela deverá ser:
 
 - Bonita.

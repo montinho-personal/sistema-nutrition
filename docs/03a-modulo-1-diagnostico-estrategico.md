@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor       |
+| ----------------- | ----------- |
 | **Classificação** | Core Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima      |
 
 > Este documento define toda a estrutura do **Diagnóstico Estratégico Nutricional**.
 >
@@ -75,28 +75,28 @@ O sistema deverá descobrir:
 
 O diagnóstico será dividido em grandes áreas:
 
-| # | Bloco |
-| --- | --- |
-| 1 | Objetivos |
-| 2 | Histórico corporal |
-| 3 | Histórico nutricional |
-| 4 | Rotina |
-| 5 | Comportamento alimentar |
-| 6 | Psicologia alimentar |
-| 7 | Saúde clínica |
-| 8 | Treinamento |
-| 9 | Sono e recuperação |
-| 10 | Ambiente alimentar |
-| 11 | Preferências alimentares |
-| 12 | Orçamento |
-| 13 | Suplementação atual |
-| 14 | Disponibilidade para cozinhar |
-| 15 | Motivação |
-| 16 | Autoeficácia |
-| 17 | Perfil comportamental |
-| 18 | Histórico de aderência |
-| 19 | Riscos |
-| 20 | Oportunidades |
+| #   | Bloco                         |
+| --- | ----------------------------- |
+| 1   | Objetivos                     |
+| 2   | Histórico corporal            |
+| 3   | Histórico nutricional         |
+| 4   | Rotina                        |
+| 5   | Comportamento alimentar       |
+| 6   | Psicologia alimentar          |
+| 7   | Saúde clínica                 |
+| 8   | Treinamento                   |
+| 9   | Sono e recuperação            |
+| 10  | Ambiente alimentar            |
+| 11  | Preferências alimentares      |
+| 12  | Orçamento                     |
+| 13  | Suplementação atual           |
+| 14  | Disponibilidade para cozinhar |
+| 15  | Motivação                     |
+| 16  | Autoeficácia                  |
+| 17  | Perfil comportamental         |
+| 18  | Histórico de aderência        |
+| 19  | Riscos                        |
+| 20  | Oportunidades                 |
 
 ---
 
@@ -105,12 +105,14 @@ O diagnóstico será dividido em grandes áreas:
 **Cada bloco deverá responder pelo menos uma decisão futura.** Exemplos:
 
 **Rotina** →
+
 - Quantidade de refeições
 - Horários
 - Planejamento
 - Praticidade
 
 **Fome** →
+
 - Distribuição dos alimentos
 - Proteínas
 - Fibras
@@ -118,6 +120,7 @@ O diagnóstico será dividido em grandes áreas:
 - Estratégias de saciedade
 
 **Treinamento** →
+
 - Distribuição de carboidratos
 - Pré-treino
 - Pós-treino
@@ -148,12 +151,12 @@ Cada bloco deverá gerar indicadores próprios. Exemplo:
 
 O sistema nunca deverá entregar apenas respostas. Ele deverá gerar **hipóteses**. Exemplos:
 
-| # | Hipótese | Confiança |
-| --- | --- | --- |
-| 1 | Grande dificuldade será o período noturno. | 94% |
-| 2 | Alta probabilidade de sucesso utilizando estratégia flexível. | 91% |
-| 3 | Poucas refeições aumentarão aderência. | 87% |
-| 4 | Controle do ambiente alimentar terá maior impacto do que reduzir calorias. | 95% |
+| #   | Hipótese                                                                   | Confiança |
+| --- | -------------------------------------------------------------------------- | --------- |
+| 1   | Grande dificuldade será o período noturno.                                 | 94%       |
+| 2   | Alta probabilidade de sucesso utilizando estratégia flexível.              | 91%       |
+| 3   | Poucas refeições aumentarão aderência.                                     | 87%       |
+| 4   | Controle do ambiente alimentar terá maior impacto do que reduzir calorias. | 95%       |
 
 ### Padrões
 

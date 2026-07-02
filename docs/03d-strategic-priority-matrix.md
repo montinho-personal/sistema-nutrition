@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                    |
+| ----------------- | ------------------------ |
 | **Classificação** | Core Intelligence Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima                   |
 
 > Este documento define **como o software identifica quais problemas devem ser resolvidos primeiro**.
 >
@@ -84,10 +84,10 @@ Cada gargalo deverá receber notas em:
 
 Cada problema deverá ser posicionado em uma matriz:
 
-| | **Baixa Dificuldade** | **Alta Dificuldade** |
-| --- | --- | --- |
-| **Alto Impacto** | 🟢 Prioridade Máxima | 🟡 Planejamento gradual |
-| **Baixo Impacto** | 🔵 Melhoria futura | ⚪ Baixa prioridade |
+|                   | **Baixa Dificuldade** | **Alta Dificuldade**    |
+| ----------------- | --------------------- | ----------------------- |
+| **Alto Impacto**  | 🟢 Prioridade Máxima  | 🟡 Planejamento gradual |
+| **Baixo Impacto** | 🔵 Melhoria futura    | ⚪ Baixa prioridade     |
 
 **Regra:** nunca tentar corrigir tudo. **Priorizar.**
 

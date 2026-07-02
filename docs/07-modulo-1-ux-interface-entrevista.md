@@ -4,11 +4,11 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
-| **Classificação** | Engineering PRD |
-| **Prioridade** | Máxima |
-| **Módulo** | Módulo 1 — Diagnóstico Estratégico Nutricional |
+| Campo             | Valor                                          |
+| ----------------- | ---------------------------------------------- |
+| **Classificação** | Engineering PRD                                |
+| **Prioridade**    | Máxima                                         |
+| **Módulo**        | Módulo 1 — Diagnóstico Estratégico Nutricional |
 
 > Este documento define toda a experiência da **Entrevista Estratégica**.
 >

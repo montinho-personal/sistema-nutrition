@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                  |
+| ----------------- | ---------------------- |
 | **Classificação** | Master Engineering PRD |
-| **Prioridade** | Absoluta |
+| **Prioridade**    | Absoluta               |
 
 > Este documento define os **padrões obrigatórios de engenharia, arquitetura e organização** do projeto.
 >
@@ -82,27 +82,34 @@ Cada módulo deverá conter:
 ## Padrões de Código
 
 ### Componentes
+
 Cada componente deverá ser: **pequeno, reutilizável, tipado, documentado, testável**.
 Nunca criar componentes gigantes.
 
 ### Services
+
 Toda regra de negócio ficará em Services.
 **Nunca colocar regras importantes dentro dos componentes React.**
 
 ### Hooks
+
 Todo comportamento reutilizável deverá ser extraído para Hooks.
 
 ### Types
+
 Todo tipo deverá ficar centralizado. Nunca repetir interfaces.
 
 ### Validators
+
 Toda validação deverá utilizar **Zod**. Nenhuma validação espalhada pelo projeto.
 
 ### Erros
+
 Toda exceção deverá possuir: mensagem clara, contexto, possível solução.
 Nunca lançar erros genéricos.
 
 ### Logs
+
 Registrar: erro, aviso, ação importante.
 **Nunca registrar informações sensíveis.**
 
@@ -147,10 +154,10 @@ Toda alteração no banco deverá gerar **migração**. Nunca alterar tabelas ma
 
 Nomes claros, sem abreviações, sem nomes genéricos.
 
-| ✔ Correto | ✘ Nunca |
-| --- | --- |
-| `calculateProteinTarget()` | `calc()` |
-| `generateNutritionStrategy()` | `run()` |
+| ✔ Correto                      | ✘ Nunca  |
+| ------------------------------ | -------- |
+| `calculateProteinTarget()`     | `calc()` |
+| `generateNutritionStrategy()`  | `run()`  |
 | `buildTransformationRoadmap()` | `data()` |
 
 ## Padrão de Documentação

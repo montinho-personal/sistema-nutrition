@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                     |
+| ----------------- | ------------------------- |
 | **Classificação** | Engineering PRD — Core UI |
-| **Prioridade** | Absoluta |
+| **Prioridade**    | Absoluta                  |
 
 > Este documento define a **principal tela** do Montinho Nutrition Strategy.
 >

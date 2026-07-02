@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                    |
+| ----------------- | ------------------------ |
 | **Classificação** | Core Intelligence Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima                   |
 
 > Este documento define **como o sistema deverá raciocinar antes de tomar qualquer decisão estratégica**.
 >
@@ -37,20 +37,20 @@ Nenhuma decisão importante poderá ser tomada sem passar pelo Conselho Estraté
 
 ## Composição do Conselho
 
-| # | Especialista | Responsável por |
-| --- | --- | --- |
-| 1 | **Nutrição Esportiva** | Macros, proteínas, timing, recuperação, treinamento, performance |
-| 2 | **Emagrecimento** | Déficit energético, saciedade, velocidade da perda, preservação muscular, controle da fome |
-| 3 | **Hipertrofia** | Superávit, anabolismo, distribuição proteica, qualidade do ganho, performance |
-| 4 | **Nutrição Clínica** | Doenças, exames, medicamentos, digestão, condições clínicas, segurança |
-| 5 | **Comportamento Alimentar** | Compulsão, ansiedade, recompensa, ambiente, hábitos, gatilhos |
-| 6 | **Psicologia da Mudança** | Motivação, autoeficácia, adesão, construção de hábitos, resistência à mudança |
-| 7 | **Aderência** | Um único objetivo: "O aluno conseguirá seguir isso durante meses?" |
-| 8 | **Praticidade** | Tempo, culinária, mercado, trabalho, filhos, rotina, viagens |
-| 9 | **Suplementação Estratégica** | Não vende suplementos. Antes de indicar, pergunta: "Existe solução apenas com alimentação?" |
-| 10 | **Economia Doméstica** | Orçamento, custo-benefício, acessibilidade, realidade financeira |
-| 11 | **Performance Esportiva** | Recuperação, treinos, energia, cardio, sono |
-| 12 | **Qualidade de Vida** | Sustentabilidade, prazer em comer, vida social, relacionamentos, estresse |
+| #   | Especialista                  | Responsável por                                                                             |
+| --- | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | **Nutrição Esportiva**        | Macros, proteínas, timing, recuperação, treinamento, performance                            |
+| 2   | **Emagrecimento**             | Déficit energético, saciedade, velocidade da perda, preservação muscular, controle da fome  |
+| 3   | **Hipertrofia**               | Superávit, anabolismo, distribuição proteica, qualidade do ganho, performance               |
+| 4   | **Nutrição Clínica**          | Doenças, exames, medicamentos, digestão, condições clínicas, segurança                      |
+| 5   | **Comportamento Alimentar**   | Compulsão, ansiedade, recompensa, ambiente, hábitos, gatilhos                               |
+| 6   | **Psicologia da Mudança**     | Motivação, autoeficácia, adesão, construção de hábitos, resistência à mudança               |
+| 7   | **Aderência**                 | Um único objetivo: "O aluno conseguirá seguir isso durante meses?"                          |
+| 8   | **Praticidade**               | Tempo, culinária, mercado, trabalho, filhos, rotina, viagens                                |
+| 9   | **Suplementação Estratégica** | Não vende suplementos. Antes de indicar, pergunta: "Existe solução apenas com alimentação?" |
+| 10  | **Economia Doméstica**        | Orçamento, custo-benefício, acessibilidade, realidade financeira                            |
+| 11  | **Performance Esportiva**     | Recuperação, treinos, energia, cardio, sono                                                 |
+| 12  | **Qualidade de Vida**         | Sustentabilidade, prazer em comer, vida social, relacionamentos, estresse                   |
 
 ---
 

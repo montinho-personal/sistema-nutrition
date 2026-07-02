@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                    |
+| ----------------- | ------------------------ |
 | **Classificação** | Core Intelligence Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima                   |
 
 > Este documento define **como o sistema aprenderá continuamente sobre cada aluno**.
 >
@@ -74,6 +74,7 @@ Após cada acompanhamento, perguntar:
 ## Os Perfis de Aprendizado
 
 ### Perfil de Aderência
+
 - Qual estratégia gera maior aderência.
 - Qual horário funciona melhor.
 - Qual número de refeições funciona melhor.
@@ -81,6 +82,7 @@ Após cada acompanhamento, perguntar:
 - Qual estratégia para finais de semana funciona melhor.
 
 ### Perfil de Fome
+
 - Quando a fome aparece.
 - Intensidade.
 - Dias da semana.
@@ -89,12 +91,14 @@ Após cada acompanhamento, perguntar:
 - Estratégias que falham.
 
 ### Perfil de Motivação
+
 - O que motiva.
 - O que desmotiva.
 - Quando perde consistência.
 - Quais objetivos realmente importam.
 
 ### Perfil Comportamental
+
 - Tudo-ou-nada.
 - Flexível.
 - Planejador.
@@ -105,6 +109,7 @@ Após cada acompanhamento, perguntar:
 - Prático.
 
 ### Perfil Alimentar
+
 - Combinações favoritas.
 - Estratégias favoritas.
 - Receitas utilizadas.
@@ -113,12 +118,14 @@ Após cada acompanhamento, perguntar:
 - Alimentos rejeitados.
 
 ### Perfil Financeiro
+
 - Faixa de orçamento.
 - Mudanças.
 - Preferências de compra.
 - Marcas utilizadas.
 
 ### Perfil de Suplementação
+
 - Quais suplementos já utilizou.
 - Quais gostou.
 - Quais abandonou.
@@ -126,6 +133,7 @@ Após cada acompanhamento, perguntar:
 - Quais não fizeram sentido.
 
 ### Perfil de Evolução
+
 - Velocidade de emagrecimento.
 - Velocidade de hipertrofia.
 - Respostas ao déficit.
@@ -134,6 +142,7 @@ Após cada acompanhamento, perguntar:
 - Resposta aos Diet Breaks.
 
 ### Perfil Social
+
 - Viagens.
 - Restaurantes.
 - Aniversários.

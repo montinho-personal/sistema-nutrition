@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                 |
+| ----------------- | --------------------- |
 | **Classificação** | Core Knowledge Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima                |
 
 > Este documento define toda a **Base de Conhecimento** do Montinho Nutrition Strategy.
 >

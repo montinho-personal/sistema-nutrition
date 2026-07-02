@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                                 |
+| ----------------- | ------------------------------------- |
 | **Classificação** | Engineering PRD — Database Foundation |
-| **Prioridade** | Absoluta |
+| **Prioridade**    | Absoluta                              |
 
 > Este documento define toda a **arquitetura inicial do banco de dados**.
 >
@@ -58,70 +58,85 @@ notes
 
 O banco será dividido em **domínios independentes**:
 
-| Domain | Responsabilidade |
-| --- | --- |
-| **Students** | Dados permanentes do aluno |
-| **Diagnosis** | Diagnóstico estratégico |
-| **Nutrition Strategy** | Decisões estratégicas |
-| **Macros** | Cálculos nutricionais |
-| **Meal Planning** | Estrutura das refeições |
-| **Food Database** | Banco inteligente de alimentos |
-| **Supplements** | Banco inteligente de suplementação |
-| **Follow Up** | Acompanhamentos |
-| **Roadmap** | Planejamento da transformação |
-| **Reports** | Documentos, PDFs, histórico |
-| **Knowledge Base** | Bibliotecas inteligentes |
+| Domain                 | Responsabilidade                   |
+| ---------------------- | ---------------------------------- |
+| **Students**           | Dados permanentes do aluno         |
+| **Diagnosis**          | Diagnóstico estratégico            |
+| **Nutrition Strategy** | Decisões estratégicas              |
+| **Macros**             | Cálculos nutricionais              |
+| **Meal Planning**      | Estrutura das refeições            |
+| **Food Database**      | Banco inteligente de alimentos     |
+| **Supplements**        | Banco inteligente de suplementação |
+| **Follow Up**          | Acompanhamentos                    |
+| **Roadmap**            | Planejamento da transformação      |
+| **Reports**            | Documentos, PDFs, histórico        |
+| **Knowledge Base**     | Bibliotecas inteligentes           |
 
 ---
 
 ## Tabelas
 
 ### `students`
+
 Nome, sexo, nascimento, altura, objetivo principal, contato, observações, status, foto.
 
 ### `student_measurements`
+
 Peso, circunferências, dobras cutâneas, bioimpedância, fotos, data.
 
 ### `diagnosis_sessions`
+
 Cada entrevista realizada: versão, status, resumo, score geral.
 
 ### `diagnosis_answers`
+
 Todas as respostas: pergunta, resposta, data, categoria, confiança.
 
 ### `strategies`
+
 Estratégia escolhida: objetivo, velocidade, justificativa, status, data.
 
 ### `strategy_alternatives`
+
 Estratégias descartadas: motivos, probabilidade, riscos.
 
 ### `macro_plans`
+
 Calorias, proteínas, carboidratos, gorduras, justificativa.
 
 ### `meal_structure`
+
 Número de refeições, horários, objetivo de cada refeição, observações.
 
 ### `meal_items`
+
 Alimentos, quantidade, medidas caseiras, substituições.
 
 ### `food_library`
+
 Banco Inteligente de Alimentos: nome, grupo, categoria, TBCA_ID, TACO_ID, calorias, proteína,
 carboidrato, gordura, fibras, micronutrientes, saciedade, praticidade, tempo de preparo,
 congela bem, portabilidade, custo estimado, objetivos indicados, observações.
 
 ### `supplement_library`
+
 Nome, objetivo, nível de evidência, dose, quando utilizar, quando evitar, alternativas
 alimentares, prioridade.
 
 ### `followups`
+
 Data, peso, medidas, adesão, fome, sono, energia, observações.
 
 ### `adjustments`
+
 Alteração realizada, motivo, impacto esperado, resultado observado.
 
 ### `roadmap`
+
 Fase atual, objetivo, próxima etapa, prazo, critérios para evolução.
 
 ### `knowledge_articles`
+
 Biblioteca científica: título, resumo, categoria, nível de evidência, última atualização.
 
 ---

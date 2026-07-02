@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                   |
+| ----------------- | ----------------------- |
 | **Classificação** | Sprint de Implementação |
-| **Sprint** | 1.1 — Foundation Setup |
+| **Sprint**        | 1.1 — Foundation Setup  |
 
 > **Missão:** iniciar o desenvolvimento do software Montinho Nutrition Strategy.
 >

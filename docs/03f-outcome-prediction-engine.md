@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                    |
+| ----------------- | ------------------------ |
 | **Classificação** | Core Intelligence Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima                   |
 
 > Este documento define **como o software estima resultados futuros**.
 >
@@ -48,11 +48,11 @@ O software deverá mostrar **probabilidades**. Nunca certezas.
 
 Sempre construir:
 
-| Cenário | Condição |
-| --- | --- |
-| **Conservador** | Caso a aderência seja parcial. |
-| **Esperado** | Caso a estratégia seja seguida conforme planejado. |
-| **Otimista** | Caso exista excelente aderência. |
+| Cenário         | Condição                                           |
+| --------------- | -------------------------------------------------- |
+| **Conservador** | Caso a aderência seja parcial.                     |
+| **Esperado**    | Caso a estratégia seja seguida conforme planejado. |
+| **Otimista**    | Caso exista excelente aderência.                   |
 
 ---
 

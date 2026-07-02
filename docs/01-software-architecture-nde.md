@@ -4,11 +4,11 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                    |
+| ----------------- | ------------------------ |
 | **Classificação** | Documento de Arquitetura |
-| **Versão** | V1.0 |
-| **Prioridade** | Máxima |
+| **Versão**        | V1.0                     |
+| **Prioridade**    | Máxima                   |
 
 > Este documento define **como o software deverá pensar**.
 >
@@ -70,6 +70,7 @@ O NDE é o **cérebro do software**.
 O NDE deverá receber informações de:
 
 ### Perfil
+
 - Idade
 - Sexo
 - Peso
@@ -79,6 +80,7 @@ O NDE deverá receber informações de:
 - Prazo
 
 ### Histórico
+
 - Dietas anteriores
 - Sucessos
 - Fracassos
@@ -86,6 +88,7 @@ O NDE deverá receber informações de:
 - Experiência
 
 ### Rotina
+
 - Horário
 - Trabalho
 - Treino
@@ -97,6 +100,7 @@ O NDE deverá receber informações de:
 - Delivery
 
 ### Psicologia
+
 - Compulsão
 - Ansiedade
 - Emoção
@@ -107,6 +111,7 @@ O NDE deverá receber informações de:
 - Tudo-ou-nada
 
 ### Alimentação
+
 - Preferências
 - Restrições
 - Intolerâncias
@@ -116,6 +121,7 @@ O NDE deverá receber informações de:
 - Religião
 
 ### Saúde
+
 - Doenças
 - Medicamentos
 - Exames
@@ -124,6 +130,7 @@ O NDE deverá receber informações de:
 - Refluxo
 
 ### Treinamento
+
 - Musculação
 - Cardio
 - Passos
@@ -131,6 +138,7 @@ O NDE deverá receber informações de:
 - Competições
 
 ### Ambiente
+
 - Quem cozinha
 - Quem compra
 - Geladeira
@@ -145,18 +153,23 @@ O NDE deverá receber informações de:
 O NDE **nunca toma decisões imediatamente**. Ele executa várias camadas.
 
 ### Camada 1 — Diagnóstico
+
 Quem é este aluno?
 
 ### Camada 2 — Identificação dos problemas
+
 Quais são os verdadeiros obstáculos?
 
 ### Camada 3 — Identificação das oportunidades
+
 Quais pequenas mudanças gerarão maior impacto?
 
 ### Camada 4 — Análise de aderência
+
 O aluno realmente conseguirá seguir esta estratégia?
 
 ### Camada 5 — Análise de riscos
+
 - Fome
 - Abandono
 - Perda muscular
@@ -166,6 +179,7 @@ O aluno realmente conseguirá seguir esta estratégia?
 - Tempo
 
 ### Camada 6 — Comparação de estratégias
+
 O sistema compara automaticamente todas as estratégias disponíveis. Exemplo:
 
 - Déficit moderado
@@ -186,17 +200,19 @@ O sistema compara automaticamente todas as estratégias disponíveis. Exemplo:
 - Manutenção
 
 ### Camada 7 — Pontuação
+
 Cada estratégia recebe uma nota. Exemplo:
 
-| Métrica | Valor |
-| --- | --- |
-| Compatibilidade | 93% |
-| Aderência | 96% |
-| Praticidade | 91% |
-| Probabilidade de sucesso | 94% |
-| Risco | Baixo |
+| Métrica                  | Valor |
+| ------------------------ | ----- |
+| Compatibilidade          | 93%   |
+| Aderência                | 96%   |
+| Praticidade              | 91%   |
+| Probabilidade de sucesso | 94%   |
+| Risco                    | Baixo |
 
 ### Camada 8 — Escolha
+
 O sistema escolhe. Mas **explica. Sempre.**
 
 ---

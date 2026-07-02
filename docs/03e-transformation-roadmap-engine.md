@@ -4,10 +4,10 @@
 
 ---
 
-| Campo | Valor |
-| --- | --- |
+| Campo             | Valor                    |
+| ----------------- | ------------------------ |
 | **Classificação** | Core Intelligence Module |
-| **Prioridade** | Máxima |
+| **Prioridade**    | Máxima                   |
 
 > Este documento define **como o software planeja toda a jornada do aluno**.
 >
@@ -41,26 +41,33 @@ O software nunca entregará apenas um plano alimentar. Ele entregará um **plano
 ## As 7 Fases da Transformação
 
 ### Fase 1 — Diagnóstico
+
 Objetivos, histórico, psicologia, rotina, saúde, treino, ambiente, riscos, oportunidades.
 
 ### Fase 2 — Preparação
+
 Organizar rotina, organizar compras, planejamento, ambiente alimentar, sono, estratégias
 comportamentais, suplementação quando necessária.
 
 ### Fase 3 — Implementação
+
 Início da estratégia nutricional, construção da aderência, pequenas vitórias, baixa complexidade.
 
 ### Fase 4 — Consolidação
+
 Ajustes, monitoramento, correções, maior precisão, maior individualização.
 
 ### Fase 5 — Otimização
+
 Refeeds, Diet Break, alteração dos macros, alteração da estratégia, mudanças graduais.
 
 ### Fase 6 — Transição
+
 Preparação para manutenção, aumento gradual das calorias quando indicado, mudança do foco,
 menor dependência do plano alimentar, maior autonomia.
 
 ### Fase 7 — Manutenção
+
 Prevenção do efeito sanfona, estratégias para férias, eventos, viagens, Natal, Carnaval,
 casamentos, mudanças de rotina.
 
