@@ -67,6 +67,32 @@ export interface MacroOverride {
   fatPct: number;
 }
 
+/** Abordagem alimentar (Workflow V1 — Etapa 4). */
+export type DietApproachId =
+  | "tradicional"
+  | "flexivel"
+  | "low_carb"
+  | "alta_proteina"
+  | "jejum";
+
+/**
+ * Uma abordagem alimentar: molda a distribuição de macros e as refeições, sem
+ * mudar as calorias-alvo. O treinador escolhe; o sistema sugere uma por padrão.
+ */
+export interface DietApproach {
+  id: DietApproachId;
+  label: string;
+  /** Rótulo curto do foco (ex.: "Menos carboidrato"). */
+  emphasis: string;
+  description: string;
+  /** Alvo de proteína (g/kg) quando a abordagem a eleva. */
+  proteinGPerKg?: number;
+  /** Teto de carboidrato (g/kg) quando a abordagem o restringe. */
+  carbMaxGPerKg?: number;
+  /** Refeições/dia sugeridas (sobrepõe a estratégia). */
+  meals?: number;
+}
+
 /** Dados antropométricos que a anamnese não captura (necessários p/ macros). */
 export interface StrategyInput {
   currentWeightKg: number;
@@ -77,6 +103,8 @@ export interface StrategyInput {
   targetWeeks?: number | null;
   /** Ajuste manual de calorias/macros pelo treinador. Ausente = cálculo automático. */
   macroOverride?: MacroOverride | null;
+  /** Abordagem alimentar escolhida. Ausente = a sugerida pelo sistema. */
+  dietApproach?: DietApproachId | null;
 }
 
 /** Nível qualitativo do realismo de uma meta. */

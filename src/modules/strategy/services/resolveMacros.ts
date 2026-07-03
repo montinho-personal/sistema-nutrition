@@ -10,6 +10,7 @@
 
 import { computeMacros } from "@/modules/strategy/services/macroEngine";
 import { goalCalorieTarget } from "@/modules/strategy/services/goalProjection";
+import { applyDietApproach, resolveDietApproach } from "@/modules/strategy/services/dietApproach";
 import type { StudentGoal } from "@/modules/students/types";
 import type {
   MacroContext,
@@ -24,30 +25,36 @@ export function resolveMacros(
   strategy: Pick<NutritionStrategy, "direction" | "velocity">,
   ctx: MacroContext,
   params: MacroParams,
-  input: Pick<StrategyInput, "macroOverride" | "targetChangeKg" | "targetWeeks">,
+  input: Pick<StrategyInput, "macroOverride" | "targetChangeKg" | "targetWeeks" | "dietApproach">,
 ): MacroTargets {
   const override = input.macroOverride ?? null;
 
-  // Calorias derivadas da meta só entram quando não há ajuste manual.
-  let caloriesTarget: number | null = null;
-  if (!override) {
-    // O TDEE não depende das calorias-alvo; um cálculo base o fornece.
-    const base = computeMacros(goal, strategy.direction, strategy.velocity, ctx, params);
-    caloriesTarget = goalCalorieTarget({
-      direction: strategy.direction,
-      tdee: base.tdee,
-      targetChangeKg: input.targetChangeKg ?? null,
-      weeks: input.targetWeeks ?? null,
-    });
+  // Ajuste manual vence tudo — a abordagem alimentar não reescreve números que o
+  // treinador definiu à mão.
+  if (override) {
+    return computeMacros(goal, strategy.direction, strategy.velocity, ctx, params, override);
   }
 
-  return computeMacros(
+  // Calorias derivadas da meta (Definição Estratégica), quando houver.
+  const base = computeMacros(goal, strategy.direction, strategy.velocity, ctx, params);
+  const caloriesTarget = goalCalorieTarget({
+    direction: strategy.direction,
+    tdee: base.tdee,
+    targetChangeKg: input.targetChangeKg ?? null,
+    weeks: input.targetWeeks ?? null,
+  });
+
+  const macros = computeMacros(
     goal,
     strategy.direction,
     strategy.velocity,
     ctx,
     params,
-    override,
+    null,
     caloriesTarget,
   );
+
+  // Abordagem alimentar redistribui os macros mantendo as calorias.
+  const approach = resolveDietApproach(input.dietApproach ?? null, goal);
+  return applyDietApproach(macros, approach, ctx.weightKg);
 }

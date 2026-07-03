@@ -15,9 +15,9 @@ import { ageFromBirthDate } from "@/modules/diagnosis/services";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import {
   DIRECTION_LABELS,
-  PHILOSOPHY_LABELS,
   VELOCITY_LABELS,
 } from "@/modules/strategy/constants/parameters";
+import { resolveDietApproach } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
 
@@ -87,8 +87,20 @@ export function StrategyRail({ data, studentId }: { data: FlowData; studentId: s
           <div className="flex flex-col gap-1.5">
             <Line label="Velocidade" value={VELOCITY_LABELS[strategy.velocity]} />
             <Line label="Direção" value={DIRECTION_LABELS[strategy.direction]} />
-            <Line label="Filosofia" value={PHILOSOPHY_LABELS[strategy.philosophy]} />
-            <Line label="Refeições/dia" value={String(strategy.mealsPerDay)} />
+            {student.mainGoal ? (
+              <Line
+                label="Abordagem"
+                value={resolveDietApproach(input?.dietApproach ?? null, student.mainGoal).label}
+              />
+            ) : null}
+            <Line
+              label="Refeições/dia"
+              value={String(
+                (student.mainGoal
+                  ? resolveDietApproach(input?.dietApproach ?? null, student.mainGoal).meals
+                  : null) ?? strategy.mealsPerDay,
+              )}
+            />
           </div>
         </RailBlock>
       ) : null}

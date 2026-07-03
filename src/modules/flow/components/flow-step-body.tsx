@@ -6,7 +6,6 @@ import {
   ArrowRightIcon,
   ClipboardListIcon,
   FileTextIcon,
-  LayersIcon,
   LockIcon,
   ShieldCheckIcon,
   StethoscopeIcon,
@@ -18,8 +17,8 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { EmptyState } from "@/shared/components/empty-state";
 import { MetricCard } from "@/shared/components/metric-card";
 import { DiagnosisSummary } from "@/modules/diagnosis/components/diagnosis-summary";
-import { PHILOSOPHY_LABELS } from "@/modules/strategy/constants/parameters";
 import { FlowStrategyStep } from "@/modules/flow/components/flow-strategy-step";
+import { FlowDietStep } from "@/modules/flow/components/flow-diet-step";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
 import type { FlowStepId } from "@/modules/flow/types";
 
@@ -119,27 +118,7 @@ export function FlowStepBody({
       if (!strategy) {
         return <LockedStep description="Defina a estratégia antes de escolher a abordagem alimentar." />;
       }
-      return (
-        <div className="flex flex-col gap-3">
-          <Card>
-            <CardContent className="flex flex-col gap-2 pt-6">
-              <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Abordagem sugerida
-              </span>
-              <div className="flex items-center gap-2">
-                <LayersIcon className="size-5 text-gold" />
-                <span className="text-lg font-semibold">
-                  {PHILOSOPHY_LABELS[strategy.philosophy]}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                A escolha entre abordagens (Tradicional, Flexível, Low Carb, Jejum, Carb Cycling…) e
-                a redistribuição automática de refeições e macros chega na próxima sprint desta etapa.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      );
+      return <FlowDietStep data={data} studentId={studentId} />;
 
     case "cardapio":
       if (!macros) {

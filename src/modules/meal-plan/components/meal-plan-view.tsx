@@ -15,7 +15,7 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
-import { buildStrategy, resolveMacros } from "@/modules/strategy/services";
+import { buildStrategy, resolveDietApproach, resolveMacros } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
@@ -66,12 +66,14 @@ export function MealPlanView({ studentId }: { studentId: string }) {
       trains: (session.answers.trains as string | undefined) ?? null,
     };
     const macros = resolveMacros(student.mainGoal, strategy, macroCtx, macroParams, input);
+    // A abordagem alimentar pode redistribuir as refeições (ex.: jejum concentra).
+    const approach = resolveDietApproach(input.dietApproach ?? null, student.mainGoal);
     const restrictions = Array.isArray(session.answers.restrictions)
       ? (session.answers.restrictions as string[])
       : [];
     const ctx: MealPlanContext = {
       goal: student.mainGoal,
-      mealsPerDay: strategy.mealsPerDay,
+      mealsPerDay: approach.meals ?? strategy.mealsPerDay,
       macros: {
         kcal: macros.calories,
         protein: macros.proteinG,
