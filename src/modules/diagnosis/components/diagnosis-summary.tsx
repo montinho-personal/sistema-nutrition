@@ -10,6 +10,7 @@ import { SectionHeader } from "@/shared/components/section-header";
 import { INVERTED_SCORES, SCORE_LABELS } from "@/modules/diagnosis/constants";
 import { RecordatorioAnalysis } from "@/modules/diagnosis/components/recordatorio-analysis";
 import { EnergyExpenditure } from "@/modules/diagnosis/components/energy-expenditure";
+import { DiagnosisDashboard } from "@/modules/diagnosis/components/diagnosis-dashboard";
 import {
   ageFromBirthDate,
   buildAnamnesePortrait,
@@ -48,6 +49,9 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Dashboard executivo — objetivos, dificuldade, IMC, estimativas, parecer */}
+      <DiagnosisDashboard student={student} answers={answers} />
+
       {/* Resumo executivo */}
       <Card className="border-l-2 border-l-gold">
         <CardHeader>
