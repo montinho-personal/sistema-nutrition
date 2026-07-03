@@ -22,9 +22,12 @@ Conduzir uma anamnese inteligente por etapas e, a partir das respostas, produzir
     ("Retrato alimentar") para o treinador.
   - `recordatorioAnalysis.ts` — **leitura clínica do dia alimentar**: casa o texto livre com o
     Banco de Alimentos (reconhece o que foi comido, por refeição) e gera observações acionáveis
-    (café sem proteína, calorias líquidas, poucos vegetais, ultraprocessados...). Determinístico;
-    a camada de IA (V2) é opcional e só enriquece — o prompt vive em
-    `src/prompts/recordatorioInterpretation.ts` (seam pronto, ainda não invocado).
+    (café sem proteína, calorias líquidas, poucos vegetais, ultraprocessados...). Determinístico.
+  - `aiRecordatorio.ts` + `interpretRecordatorio.action.ts` — **camada de IA opcional (V2)**:
+    quando `ANTHROPIC_API_KEY` está configurada, um botão "Aprofundar com IA" chama a Messages API
+    da Anthropic (server action; a chave nunca chega ao cliente) para trazer o que a regra não
+    capturou. Degrada com elegância — sem chave, tudo segue determinístico. Prompt centralizado em
+    `src/prompts/recordatorioInterpretation.ts`.
   - `executiveSummary.ts` — Resumo Inteligente (Documento 05/06).
   - `diagnosisRepository.ts` — sessões com auto-save (local-first).
 - `hooks/use-diagnosis-session.ts` — sessão reativa com auto-save.
