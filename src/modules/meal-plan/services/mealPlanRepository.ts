@@ -5,7 +5,7 @@
  */
 
 import { readLocal, writeLocal } from "@/shared/lib/local-store";
-import type { MealPlanPref } from "@/modules/meal-plan/types";
+import type { MealPlanDirective, MealPlanPref } from "@/modules/meal-plan/types";
 
 const STORAGE_KEY = "meal_plan_prefs";
 
@@ -47,7 +47,20 @@ export function getMealPlanInstruction(studentId: string): string | null {
   return readAll().find((p) => p.studentId === studentId)?.instruction ?? null;
 }
 
-/** Grava a instrução do treinador (upsert, preservando a variante). */
-export function setMealPlanInstruction(studentId: string, instruction: string | null): void {
-  upsert(studentId, { instruction });
+/** Interpretação já aplicada da instrução (ou null). */
+export function getMealPlanDirective(studentId: string): MealPlanDirective | null {
+  return readAll().find((p) => p.studentId === studentId)?.directive ?? null;
+}
+
+/**
+ * Grava a instrução do treinador e sua interpretação (upsert, preservando a
+ * variante). Persistir a diretiva evita reinterpretar — e chamar a IA — a cada
+ * carregamento.
+ */
+export function setMealPlanInstruction(
+  studentId: string,
+  instruction: string | null,
+  directive: MealPlanDirective | null,
+): void {
+  upsert(studentId, { instruction, directive });
 }

@@ -3,7 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { RefreshCwIcon, TargetIcon } from "lucide-react";
+import { toast } from "sonner";
 
+import { isAiEnabled } from "@/config/env";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { EmptyState } from "@/shared/components/empty-state";
@@ -11,7 +13,8 @@ import { LoadingScreen } from "@/shared/components/loading-screen";
 import { SectionHeader } from "@/shared/components/section-header";
 import { MetricCard } from "@/shared/components/metric-card";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
-import { buildSwapItem, sumItems } from "@/modules/meal-plan/services";
+import { buildSwapItem, parseDirective, sumItems } from "@/modules/meal-plan/services";
+import { interpretMealInstructionAction } from "@/modules/meal-plan/services/interpretMealInstruction.action";
 import { MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
@@ -27,14 +30,36 @@ const pct = (value: number, target: number) => (target > 0 ? Math.round((value /
  * automático a cada troca. Reaproveitado pela tela do Plano e pela Etapa 5.
  */
 export function MealPlanBoard({ studentId }: { studentId: string }) {
-  const { plan: basePlan, restrictions, input, nextVariant, instruction, setInstruction } =
+  const { plan: basePlan, restrictions, input, nextVariant, instruction, directive, setInstruction } =
     useStudentPlan(studentId);
   const [swaps, setSwaps] = React.useState<Record<string, string>>({});
+  const [applying, setApplying] = React.useState(false);
 
-  // Nova instrução recomeça do cardápio limpo (sem trocas manuais residuais).
-  const applyInstruction = (text: string) => {
+  // Nova instrução recomeça do cardápio limpo (sem trocas manuais residuais). A
+  // interpretação é determinística; com IA habilitada, ela enriquece o que o
+  // texto esconde (degradando com elegância a qualquer falha).
+  const applyInstruction = async (text: string) => {
     setSwaps({});
-    setInstruction(text);
+    if (!text.trim()) {
+      setInstruction("", null);
+      return;
+    }
+    if (!isAiEnabled) {
+      setInstruction(text, parseDirective(text));
+      return;
+    }
+    setApplying(true);
+    try {
+      const res = await interpretMealInstructionAction(text);
+      setInstruction(text, res.directive);
+      if (res.status === "error") {
+        toast.error("A IA não respondeu — apliquei o que entendi diretamente.");
+      } else if (res.directive.unsupported.length > 0) {
+        toast.info(`Ainda não sei aplicar: ${res.directive.unsupported.join(", ")}.`);
+      }
+    } finally {
+      setApplying(false);
+    }
   };
 
   // Aplica as trocas do profissional e recalcula totais/aderência.
@@ -106,7 +131,13 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <MealInstruction key={instruction} instruction={instruction} onApply={applyInstruction} />
+      <MealInstruction
+        key={instruction}
+        instruction={instruction}
+        appliedDirective={directive}
+        applying={applying}
+        onApply={applyInstruction}
+      />
 
       <section className="flex flex-col gap-3">
         <SectionHeader title="Resumo do dia" description="Total do cardápio ante o alvo dos macros." />

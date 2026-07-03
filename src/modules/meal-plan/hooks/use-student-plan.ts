@@ -49,7 +49,7 @@ export interface StudentPlan {
   nextVariant: () => void;
   /** Instrução do treinador em linguagem natural (texto cru). */
   instruction: string;
-  setInstruction: (text: string) => void;
+  setInstruction: (text: string, directive: MealPlanDirective | null) => void;
   /** O que a instrução foi entendida como (para transparência na interface). */
   directive: MealPlanDirective;
 }
@@ -65,8 +65,13 @@ export function useStudentPlan(studentId: string): StudentPlan {
   const { input } = useStrategyInput(studentId);
   const macroParams = useMacroParams();
   const { variant, next } = useMealPlanVariant(studentId);
-  const { instruction, setInstruction } = useMealPlanInstruction(studentId);
-  const directive = React.useMemo(() => parseDirective(instruction), [instruction]);
+  const { instruction, storedDirective, setInstruction } = useMealPlanInstruction(studentId);
+  // Usa a interpretação persistida (pode ter sido enriquecida pela IA); na
+  // ausência, cai no parser determinístico (instantâneo, sem rede).
+  const directive = React.useMemo(
+    () => storedDirective ?? parseDirective(instruction),
+    [storedDirective, instruction],
+  );
 
   const student = React.useMemo(
     () => students.find((s) => s.id === studentId) ?? null,

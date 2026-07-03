@@ -14,6 +14,7 @@ export {
   getMealPlanVariant,
   setMealPlanVariant,
   getMealPlanInstruction,
+  getMealPlanDirective,
   setMealPlanInstruction,
 } from "./mealPlanRepository";
 export {
@@ -22,4 +23,6 @@ export {
   overrideCalories,
   emptyDirective,
   hasDirective,
+  describeDirective,
+  mergeDirectives,
 } from "./mealPlanDirective";

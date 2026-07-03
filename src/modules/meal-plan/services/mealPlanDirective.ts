@@ -11,6 +11,7 @@
 
 import type { MacroTotals, MealPlanDirective } from "@/modules/meal-plan/types";
 import type { MealPlanContext } from "@/modules/meal-plan/services/mealPlanEngine";
+import { RESTRICTION_LABELS } from "@/modules/meal-plan/services/dietaryFilters";
 import { DIRECTIVE_LIMITS } from "@/modules/meal-plan/constants/parameters";
 
 /** Atwater — kcal por grama, para redistribuir os macros ao trocar as calorias. */
@@ -27,7 +28,25 @@ export function emptyDirective(): MealPlanDirective {
     noCarbAtNight: false,
     addRestrictions: [],
     recognized: [],
+    unsupported: [],
   };
+}
+
+/**
+ * Descreve, em frases legíveis, o que a diretiva representa — fonte única de
+ * verdade das "tags" da interface. Assim os chips nunca divergem do que de fato
+ * foi aplicado, venha do parser determinístico ou da IA.
+ */
+export function describeDirective(d: MealPlanDirective): string[] {
+  const out: string[] = [];
+  if (d.caloriesOverride) out.push(`${d.caloriesOverride} kcal`);
+  if (d.mealsPerDay) out.push(`${d.mealsPerDay} refeições`);
+  if (d.noCarbAtNight) out.push("sem carboidrato à noite");
+  if (d.budgetTight) out.push("dieta barata");
+  if (d.emphasizePracticality) out.push("refeições rápidas");
+  if (d.emphasizeSatiety) out.push("mais saciedade");
+  for (const r of d.addRestrictions) out.push(RESTRICTION_LABELS[r] ?? r);
+  return out;
 }
 
 /** true se a instrução mudou algo — caso contrário, o cardápio segue como está. */
@@ -66,10 +85,6 @@ export function parseDirective(text: string): MealPlanDirective {
   const t = normalize(text);
   if (!t.trim()) return d;
 
-  const add = (phrase: string) => {
-    if (!d.recognized.includes(phrase)) d.recognized.push(phrase);
-  };
-
   const kcal = t.match(/(\d{3,4})\s*(kcal|calorias|cal)\b/);
   if (kcal) {
     d.caloriesOverride = clamp(
@@ -77,7 +92,6 @@ export function parseDirective(text: string): MealPlanDirective {
       DIRECTIVE_LIMITS.minCalories,
       DIRECTIVE_LIMITS.maxCalories,
     );
-    add(`${d.caloriesOverride} kcal`);
   }
 
   const meals = t.match(/(\d)\s*refei/);
@@ -87,40 +101,52 @@ export function parseDirective(text: string): MealPlanDirective {
       DIRECTIVE_LIMITS.minMeals,
       DIRECTIVE_LIMITS.maxMeals,
     );
-    add(`${d.mealsPerDay} refeições`);
   }
 
   // "zero/sem/pouco carbo" + "à noite/jantar/ceia" — as duas ideias juntas.
-  if (/(zero|sem|pouco|low|baix\w*)\s*carbo/.test(t) && /(noite|jantar|ceia)/.test(t)) {
+  if (/(zero|sem|pouco|low|baix\w*)\s*carbo/.test(t) && /(noite|jantar|ceia)/.test(t))
     d.noCarbAtNight = true;
-    add("sem carboidrato à noite");
-  }
 
-  if (/(barat|econom|em conta|gastar pouco|acessivel|pouco dinheiro)/.test(t)) {
-    d.budgetTight = true;
-    add("dieta barata");
-  }
+  if (/(barat|econom|em conta|gastar pouco|acessivel|pouco dinheiro)/.test(t)) d.budgetTight = true;
 
-  if (/(rapid|pratic|sem cozinhar|sem preparo|facil de fazer|shake|sanduich|marmita)/.test(t)) {
+  if (/(rapid|pratic|sem cozinhar|sem preparo|facil de fazer|shake|sanduich|marmita)/.test(t))
     d.emphasizePracticality = true;
-    add("refeições rápidas");
-  }
 
-  if (/(sacied|matar a fome|controlar a fome|menos fome|mais cheio|segura a fome)/.test(t)) {
+  if (/(sacied|matar a fome|controlar a fome|menos fome|mais cheio|segura a fome)/.test(t))
     d.emphasizeSatiety = true;
-    add("mais saciedade");
-  }
 
-  const restrict = (id: string, label: string) => {
-    if (!d.addRestrictions.includes(id)) d.addRestrictions.push(id);
-    add(label);
-  };
-  if (/(sem|zero|intoleran\w*\s*a?)\s*lactose/.test(t)) restrict("sem_lactose", "sem lactose");
-  if (/(sem|zero)\s*gluten|celiac/.test(t)) restrict("sem_gluten", "sem glúten");
-  if (/vegan/.test(t)) restrict("vegano", "vegano");
-  else if (/vegetarian/.test(t)) restrict("vegetariano", "vegetariano");
+  if (/(sem|zero|intoleran\w*\s*a?)\s*lactose/.test(t)) d.addRestrictions.push("sem_lactose");
+  if (/(sem|zero)\s*gluten|celiac/.test(t)) d.addRestrictions.push("sem_gluten");
+  if (/vegan/.test(t)) d.addRestrictions.push("vegano");
+  else if (/vegetarian/.test(t)) d.addRestrictions.push("vegetariano");
 
+  d.recognized = describeDirective(d);
   return d;
+}
+
+/**
+ * Funde a interpretação determinística com a da IA. O determinístico é
+ * soberano nos números que capturou (calorias, refeições) — a IA nunca os
+ * sobrescreve (evita alucinação numérica). Nos sinais booleanos, qualquer fonte
+ * que ligue vale; restrições e "não suportados" são a união dos dois.
+ */
+export function mergeDirectives(
+  base: MealPlanDirective,
+  ai: MealPlanDirective,
+): MealPlanDirective {
+  const merged: MealPlanDirective = {
+    caloriesOverride: base.caloriesOverride ?? ai.caloriesOverride,
+    mealsPerDay: base.mealsPerDay ?? ai.mealsPerDay,
+    budgetTight: base.budgetTight || ai.budgetTight,
+    emphasizePracticality: base.emphasizePracticality || ai.emphasizePracticality,
+    emphasizeSatiety: base.emphasizeSatiety || ai.emphasizeSatiety,
+    noCarbAtNight: base.noCarbAtNight || ai.noCarbAtNight,
+    addRestrictions: Array.from(new Set([...base.addRestrictions, ...ai.addRestrictions])),
+    recognized: [],
+    unsupported: Array.from(new Set([...base.unsupported, ...ai.unsupported])),
+  };
+  merged.recognized = describeDirective(merged);
+  return merged;
 }
 
 /**
