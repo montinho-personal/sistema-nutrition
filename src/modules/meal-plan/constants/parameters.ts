@@ -102,6 +102,14 @@ export const VEG_FIXED_GRAMS = 120;
  */
 export const LEGUME_FIXED_GRAMS = 120;
 
+/**
+ * Fração mínima das calorias vinda de carboidrato para o par arroz-e-feijão
+ * fazer sentido no prato. Abaixo disso — abordagens low carb — a leguminosa sai
+ * das refeições principais: a estratégia manda no prato, não o hábito. Flexível
+ * fica ~39%; Low Carb, ~24% — o limiar de 30% separa os dois com folga.
+ */
+export const RICE_AND_BEANS_MIN_CARB_SHARE = 0.3;
+
 /** Arredondamento das porções (múltiplo de gramas). */
 export const GRAMS_ROUNDING = 5;
 

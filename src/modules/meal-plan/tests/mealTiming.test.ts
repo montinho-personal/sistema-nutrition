@@ -106,6 +106,25 @@ describe("o prato brasileiro — arroz e feijão nas refeições principais", ()
     }
     expect(plan.accuracy.protein).toBeGreaterThanOrEqual(70);
   });
+
+  it("a estratégia manda: abordagem low carb tira o feijão das principais", () => {
+    // Low carb ~24% das calorias em carbo (< limiar de 30%): sem par arroz-feijão.
+    const lowCarb = buildMealPlan(curatedFoods, {
+      ...BASE_CTX,
+      macros: { kcal: 2000, protein: 190, carbs: 110, fat: 100 },
+    });
+    const mains = lowCarb.meals.filter((m) => m.timing === "lunch" || m.timing === "dinner");
+    expect(mains.length).toBeGreaterThan(0);
+    for (const meal of mains) {
+      expect(meal.items.some((i) => i.role === "legume")).toBe(false);
+    }
+    expect(lowCarb.notes.some((n) => n.includes("pouco carboidrato"))).toBe(true);
+
+    // Plano com carbo normal mantém o feijão e não traz a nota.
+    const normal = buildMealPlan(curatedFoods, BASE_CTX);
+    expect(normal.meals.some((m) => m.items.some((i) => i.role === "legume"))).toBe(true);
+    expect(normal.notes.some((n) => n.includes("pouco carboidrato"))).toBe(false);
+  });
 });
 
 describe("trocas coerentes com o horário", () => {
