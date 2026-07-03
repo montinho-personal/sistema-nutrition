@@ -5,6 +5,7 @@ import { GaugeIcon, LayersIcon, SlidersHorizontalIcon, UtensilsIcon } from "luci
 
 import { DecisionCard } from "@/shared/components/decision-card";
 import { SectionHeader } from "@/shared/components/section-header";
+import { referencesFor } from "@/modules/knowledge/services";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import {
   FLEXIBILITY_LABELS,
@@ -72,6 +73,7 @@ export function StrategyResult({ strategy }: { strategy: NutritionStrategy }) {
               benefits={d.benefits}
               risks={d.risks}
               alternatives={d.alternatives}
+              references={referencesFor(d.knowledgeIds)}
             />
           ))}
         </div>

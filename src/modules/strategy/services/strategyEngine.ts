@@ -151,6 +151,7 @@ export function buildStrategy(
         ? ["Maior fome e fadiga — monitorar de perto e desacelerar se a aderência cair"]
         : [],
       alternatives: ["Ritmos mais rápidos foram descartados quando o risco de abandono era alto"],
+      knowledgeIds: ["safe-deficit-pace", "lean-mass-preservation"],
     }),
   );
 
@@ -174,6 +175,7 @@ export function buildStrategy(
       decision: PHILOSOPHY_LABELS[philosophy],
       reason: philosophyReason[philosophy],
       benefits: ["Escolhida pela aderência provável, não pela teoria"],
+      knowledgeIds: ["flexible-dieting"],
     }),
   );
 
@@ -191,6 +193,7 @@ export function buildStrategy(
       title: "Flexibilidade",
       decision: FLEXIBILITY_LABELS[flexibility],
       reason: flexReason[flexibility],
+      knowledgeIds: ["flexible-dieting"],
     }),
   );
 
@@ -207,6 +210,7 @@ export function buildStrategy(
           : scores.practicality <= SCORE_THRESHOLDS.low
             ? `Rotina pouco prática (${scores.practicality}): menos refeições são mais fáceis de manter.`
             : "Número escolhido para maximizar aderência, não o ideal teórico.",
+      knowledgeIds: ["meal-frequency-adherence"],
     }),
   );
 
@@ -226,6 +230,7 @@ export function buildStrategy(
       decision: hungerTactics[0],
       reason: `Controle de fome em ${scores.hungerControl}. A saciedade é tratada por comida antes de qualquer restrição.`,
       benefits: hungerTactics.slice(1),
+      knowledgeIds: ["protein-satiety", "food-volume-satiety"],
     }),
   );
 
@@ -243,6 +248,7 @@ export function buildStrategy(
         ? "Perfil tudo-ou-nada: a liberdade do fim de semana precisa de moldura para não descarrilar a semana."
         : "Boa flexibilidade permite fins de semana livres sem comprometer o resultado.",
       risks: weekendPlanned ? ["Sem planejamento, o fim de semana apaga o progresso da semana"] : [],
+      knowledgeIds: ["flexible-dieting"],
     }),
   );
 
@@ -311,6 +317,7 @@ export function buildStrategy(
           ? "Considerar diet break/refeed se a aderência ou a fome piorarem"
           : "Ajustar o superávit conforme o ganho de peso semanal",
       ],
+      knowledgeIds: ["adjust-after-plateau", "refeed-diet-break"],
     }),
   );
 
@@ -327,6 +334,7 @@ function decideSupplementation(s: Scores, answers: AnswerMap): StrategyDecision 
       title: "Suplementação",
       decision: "Sem suplementos por ora — resolver tudo pela comida",
       reason: "O aluno prefere evitar suplementos; nenhuma dificuldade atual exige um.",
+      knowledgeIds: ["supplements-food-first"],
     });
   }
 
@@ -350,5 +358,6 @@ function decideSupplementation(s: Scores, answers: AnswerMap): StrategyDecision 
       ? `Primeiro a dificuldade (${difficulties.join(", ")}), depois — e só se ajudar — o suplemento.`
       : "Nenhuma dificuldade atual justifica suplementação; começa pela comida.",
     alternatives: ["Suplementos que não resolvem uma dificuldade concreta foram descartados"],
+    knowledgeIds: ["supplements-food-first"],
   });
 }
