@@ -53,6 +53,26 @@ export const MEAL_TEMPLATES: Record<number, MealTemplate[]> = {
   ],
 };
 
+/**
+ * Compatibilidade de horário: para cada momento do dia (o `timing` do template),
+ * quais `bestTimes` de um alimento o tornam apropriado ali. É a inteligência que
+ * mantém cada alimento na refeição certa — arroz e feijão no almoço/jantar, aveia
+ * e pão no café, fruta e iogurte no lanche — em vez de escolher só por macro. Os
+ * lanches e a ceia aceitam também os alimentos "de lanche"; as refeições
+ * principais e o café ficam estritos, como um brasileiro come de fato.
+ */
+export const MEAL_TIMING_COMPATIBILITY: Record<MealTiming, MealTiming[]> = {
+  breakfast: ["breakfast"],
+  lunch: ["lunch"],
+  dinner: ["dinner"],
+  snack: ["snack"],
+  supper: ["supper", "snack"],
+  pre_workout: ["pre_workout", "snack"],
+  post_workout: ["post_workout", "snack"],
+  emergency: ["emergency", "snack", "travel"],
+  travel: ["travel", "snack", "emergency"],
+};
+
 /** Limiares de classificação de papel (fração das calorias do alimento). */
 export const ROLE_THRESHOLDS = {
   /** Abaixo desta densidade energética (kcal/100 g) → vegetal (volume/fibra). */
