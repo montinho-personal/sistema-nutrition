@@ -21,9 +21,11 @@ import {
   computeEvolution,
   computeMeasurementDeltas,
   expectedWeeklyKgFromMacros,
+  predictOutcome,
 } from "@/modules/follow-ups/services";
 import { useFollowUps } from "@/modules/follow-ups/hooks/use-follow-ups";
 import { EvolutionSummary } from "@/modules/follow-ups/components/evolution-summary";
+import { OutcomePredictionCard } from "@/modules/follow-ups/components/outcome-prediction";
 import { FollowUpHistory } from "@/modules/follow-ups/components/follow-up-history";
 import { FollowUpFormDialog } from "@/modules/follow-ups/components/follow-up-form-dialog";
 
@@ -95,10 +97,20 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
       followUps,
       expectedWeeklyKg,
     );
+    const prediction = predictOutcome({
+      direction: strategy.direction,
+      startWeightKg: record.input.currentWeightKg,
+      targetChangeKg: record.input.targetChangeKg ?? null,
+      targetWeeks: record.input.targetWeeks ?? null,
+      realWeeklyKg: evolution.actualWeeklyKg,
+      weeksElapsed: evolution.weeksElapsed,
+      dataPoints: followUps.length,
+    });
     return {
       evolution,
       insights: buildEvolutionInsights(evolution),
       measurementDeltas: computeMeasurementDeltas(followUps),
+      prediction,
     };
   }, [student, session, record, followUps, macroParams]);
 
@@ -180,6 +192,10 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
           insights={analysis.insights}
           measurementDeltas={analysis.measurementDeltas}
         />
+
+        {analysis.prediction ? (
+          <OutcomePredictionCard prediction={analysis.prediction} />
+        ) : null}
 
         {followUps.length === 0 ? (
           <EmptyState

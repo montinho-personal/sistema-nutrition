@@ -93,3 +93,40 @@ export interface EvolutionInsight {
   title: string;
   detail: string;
 }
+
+/** Veredito da previsão de resultado ante a meta (Documento 03F). */
+export type PredictionVerdict =
+  | "ahead"
+  | "on_track"
+  | "behind"
+  | "stalled"
+  | "reversing"
+  | "insufficient";
+
+/**
+ * Previsão de resultado (Outcome Prediction Engine — Documento 03F).
+ * Projeta o desfecho provável a partir do ritmo REAL medido, comparando com a
+ * meta do plano (Definição Estratégica). Recalibra a cada acompanhamento.
+ */
+export interface OutcomePrediction {
+  /** Ritmo real (kg/semana, sinalizado) — base da projeção. */
+  realWeeklyKg: number | null;
+  /** Mudança projetada até a data-alvo, no ritmo atual (sinalizada). */
+  projectedChangeKg: number;
+  /** Peso projetado na data-alvo. */
+  projectedWeightAtTarget: number;
+  /** Mudança planejada (sinalizada) e o prazo (semanas). */
+  plannedChangeKg: number;
+  targetWeeks: number;
+  /** Fração da meta que o ritmo atual entrega no prazo (%). */
+  onTrackPct: number;
+  /** Semanas até bater a meta no ritmo atual (ou null). */
+  weeksToGoal: number | null;
+  /** Diferença entre planejado e projetado no prazo (kg; + = vai faltar). */
+  gapKg: number;
+  verdict: PredictionVerdict;
+  /** Confiança da previsão (0–100): mais dados e mais tempo → maior. */
+  confidence: number;
+  /** Recomendação acionável (Documento 02 — nunca só o número). */
+  detail: string;
+}
