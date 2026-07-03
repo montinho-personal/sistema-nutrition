@@ -16,7 +16,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { ROLE_LABELS } from "@/modules/meal-plan/constants/parameters";
 import { findFoodSwaps } from "@/modules/meal-plan/services";
-import type { CostRange, Food } from "@/modules/foods/types";
+import type { CostRange, Food, MealTiming } from "@/modules/foods/types";
 import type { FoodRole, MealItem, MealSlot, PlannedMeal } from "@/modules/meal-plan/types";
 
 const ROLE_DOT: Record<FoodRole, string> = {
@@ -68,14 +68,16 @@ interface SwapPanelProps {
   item: MealItem;
   foods: Food[];
   restrictions: string[];
+  /** Horário da refeição — mantém os equivalentes coerentes com o momento do dia. */
+  timing: MealTiming;
   onPick: (foodId: string) => void;
 }
 
 /** Food Intelligence Engine: equivalentes com porção recalculada e atributos. */
-function SwapPanel({ item, foods, restrictions, onPick }: SwapPanelProps) {
+function SwapPanel({ item, foods, restrictions, timing, onPick }: SwapPanelProps) {
   const swaps = React.useMemo(
-    () => findFoodSwaps(item, foods, restrictions),
-    [item, foods, restrictions],
+    () => findFoodSwaps(item, foods, restrictions, timing),
+    [item, foods, restrictions, timing],
   );
   if (swaps.length === 0) {
     return (
@@ -217,6 +219,7 @@ export function MealCard({
                       item={item}
                       foods={foods!}
                       restrictions={restrictions}
+                      timing={meal.timing}
                       onPick={(foodId) => {
                         onSwap?.(meal.slot, item.role, foodId);
                         setOpenRole(null);

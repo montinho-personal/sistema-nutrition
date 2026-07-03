@@ -3,9 +3,11 @@
  * estratégia; Documento 08 — regra, não IA).
  *
  * Recebe os macros (da Estratégia) e o Banco de Alimentos e monta o cardápio:
- * distribui as calorias nas N refeições, escolhe alimentos por papel (respeitando
- * restrições, orçamento, praticidade e saciedade) e calcula as gramas para bater
- * o alvo de cada refeição. Tudo determinístico e auditável.
+ * distribui as calorias nas N refeições, escolhe alimentos por papel E por
+ * horário — cada alimento só entra na refeição em que se come de fato (arroz e
+ * feijão no almoço/jantar, aveia e pão no café, fruta e iogurte no lanche),
+ * respeitando restrições, orçamento, praticidade e saciedade — e calcula as
+ * gramas para bater o alvo de cada refeição. Tudo determinístico e auditável.
  */
 
 import { COST_ORDER } from "@/modules/foods/constants";
@@ -15,6 +17,7 @@ import type { StudentGoal } from "@/modules/students/types";
 import {
   GRAMS_ROUNDING,
   MEAL_TEMPLATES,
+  MEAL_TIMING_COMPATIBILITY,
   PORTION_LIMITS,
   RANK_WEIGHTS,
   ROLE_THRESHOLDS,
@@ -115,6 +118,16 @@ function rankScore(food: Food, timing: MealTiming, ctx: MealPlanContext): number
   return score;
 }
 
+/**
+ * Um alimento combina com um momento do dia se algum de seus melhores horários
+ * pertence à refeição (café ≠ almoço ≠ lanche). É a regra que impede arroz no
+ * café ou aveia no almoço — cada alimento na refeição em que se come de fato.
+ */
+export function isTimingAppropriate(food: Food, timing: MealTiming): boolean {
+  const compatible = MEAL_TIMING_COMPATIBILITY[timing];
+  return food.attributes.bestTimes.some((t) => compatible.includes(t));
+}
+
 /** Candidatos de um papel, filtrados por restrição e ordenados por aderência. */
 function candidatesForRole(
   foods: Food[],
@@ -123,9 +136,13 @@ function candidatesForRole(
   ctx: MealPlanContext,
 ): Food[] {
   const allowed = buildDietaryFilter(ctx.restrictions);
-  return foods
-    .filter(allowed)
-    .filter((f) => classifyRole(f) === role)
+  const ofRole = foods.filter(allowed).filter((f) => classifyRole(f) === role);
+  // Filtro duro de horário: só alimentos que combinam com a refeição. Se o banco
+  // não tiver nenhum apto (caso raro/restrito), cai para todos do papel — a
+  // coerência cede o mínimo para o prato nunca ficar vazio.
+  const timely = ofRole.filter((f) => isTimingAppropriate(f, timing));
+  const pool = timely.length > 0 ? timely : ofRole;
+  return pool
     .map((f) => ({ f, s: rankScore(f, timing, ctx) }))
     .sort((a, b) => b.s - a.s || a.f.id.localeCompare(b.f.id))
     .map((e) => e.f);
@@ -409,16 +426,25 @@ function macroShare(food: Food): [number, number, number] {
 
 /**
  * Equivalentes de um item: mesmos papel e restrições, ordenados por semelhança
- * nutricional (distribuição de macros próxima). Cada um já traz a porção
- * recalculada — o profissional nunca refaz a conta na mão.
+ * nutricional (distribuição de macros próxima). Quando o horário da refeição é
+ * conhecido, os equivalentes também respeitam esse momento do dia — trocar o
+ * arroz do almoço oferece outros carbos de almoço, não aveia de café. Cada um já
+ * traz a porção recalculada — o profissional nunca refaz a conta na mão.
  */
 export function findFoodSwaps(
   item: MealItem,
   foods: Food[],
   restrictions: string[],
+  timing?: MealTiming,
   limit = 6,
 ): { food: Food; item: MealItem }[] {
   const allowed = buildDietaryFilter(restrictions);
+  const ofRole = foods
+    .filter(allowed)
+    .filter((f) => f.id !== item.foodId && classifyRole(f) === item.role);
+  const timely = timing ? ofRole.filter((f) => isTimingAppropriate(f, timing)) : ofRole;
+  const pool = timely.length > 0 ? timely : ofRole;
+
   const current = foods.find((f) => f.id === item.foodId);
   const ref = current ? macroShare(current) : null;
   const distance = (food: Food) => {
@@ -427,9 +453,7 @@ export function findFoodSwaps(
     return Math.hypot(s[0] - ref[0], s[1] - ref[1], s[2] - ref[2]);
   };
 
-  return foods
-    .filter(allowed)
-    .filter((f) => f.id !== item.foodId && classifyRole(f) === item.role)
+  return pool
     .map((f) => ({ f, d: distance(f) }))
     .sort((a, b) => a.d - b.d || a.f.id.localeCompare(b.f.id))
     .slice(0, limit)

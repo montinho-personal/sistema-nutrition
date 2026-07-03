@@ -3,6 +3,7 @@
 export {
   buildMealPlan,
   classifyRole,
+  isTimingAppropriate,
   findFoodSwaps,
   buildSwapItem,
   sumItems,
