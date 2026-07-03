@@ -2,19 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  PencilIcon,
-  RotateCcwIcon,
-  SlidersHorizontalIcon,
-  StethoscopeIcon,
-  TargetIcon,
-  UtensilsIcon,
-} from "lucide-react";
+import { ArrowLeftIcon, StethoscopeIcon, TargetIcon } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
 import { PageHeader } from "@/shared/components/page-header";
 import { EmptyState } from "@/shared/components/empty-state";
 import { LoadingScreen } from "@/shared/components/loading-screen";
@@ -22,34 +12,12 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
-import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
-import { buildStrategy, resolveMacros } from "@/modules/strategy/services";
-import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
+import { buildStrategy, evaluateStrategyAlerts, resolveMacros } from "@/modules/strategy/services";
+import { useMacroControls } from "@/modules/strategy/hooks/use-macro-controls";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
-import { AnthropometricsForm } from "@/modules/strategy/components/anthropometrics-form";
 import { StrategyResult } from "@/modules/strategy/components/strategy-result";
-import { MacroSummary } from "@/modules/strategy/components/macro-summary";
-import { MacroOverrideForm } from "@/modules/strategy/components/macro-override-form";
-import { GoalDefinition } from "@/modules/strategy/components/goal-definition";
-import type {
-  MacroContext,
-  MacroOverride,
-  MacroTargets,
-  StrategyInput,
-} from "@/modules/strategy/types";
-
-/** Divisão percentual dos macros a partir dos alvos atuais (soma exata = 100). */
-function overrideFromMacros(macros: MacroTargets): MacroOverride {
-  const total = macros.proteinKcal + macros.carbKcal + macros.fatKcal || 1;
-  const proteinPct = Math.round((macros.proteinKcal / total) * 100);
-  const fatPct = Math.round((macros.fatKcal / total) * 100);
-  return {
-    calories: macros.calories,
-    proteinPct,
-    fatPct,
-    carbPct: Math.max(0, 100 - proteinPct - fatPct),
-  };
-}
+import { StrategyMacrosSection } from "@/modules/strategy/components/strategy-macros-section";
+import type { MacroContext } from "@/modules/strategy/types";
 
 const EMPTY_STUDENTS: Student[] = [];
 const EMPTY_SESSIONS: DiagnosisSession[] = [];
@@ -61,10 +29,9 @@ const EMPTY_SESSIONS: DiagnosisSession[] = [];
 export function StrategyView({ studentId }: { studentId: string }) {
   const students = useLocalCollection<Student[]>("students", EMPTY_STUDENTS);
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
-  const { input, save } = useStrategyInput(studentId);
+  const { input, saveAnthropometrics, persistGoal, applyOverride, clearOverride } =
+    useMacroControls(studentId);
   const macroParams = useMacroParams();
-  const [editing, setEditing] = React.useState(false);
-  const [editingMacros, setEditingMacros] = React.useState(false);
 
   const student = React.useMemo(
     () => students.find((s) => s.id === studentId) ?? null,
@@ -102,6 +69,20 @@ export function StrategyView({ studentId }: { studentId: string }) {
     };
     return resolveMacros(student.mainGoal, strategy, ctx, macroParams, input);
   }, [student, strategy, input, session, macroParams]);
+
+  const trainsRegularly = session?.answers.trains === "regular";
+  const alerts = React.useMemo(() => {
+    if (!macros || !input || !strategy) return [];
+    return evaluateStrategyAlerts({
+      calories: macros.calories,
+      proteinG: macros.proteinG,
+      fatG: macros.fatG,
+      tdee: macros.tdee,
+      weightKg: input.currentWeightKg,
+      direction: strategy.direction,
+      trainsRegularly,
+    });
+  }, [macros, input, strategy, trainsRegularly]);
 
   // A store é lida no cliente; antes disso, evitar flash de "não encontrado".
   if (typeof window === "undefined") {
@@ -167,125 +148,28 @@ export function StrategyView({ studentId }: { studentId: string }) {
     );
   }
 
-  // Preserva a meta/prazo já definidos ao recalcular só o peso.
-  const handleSave = (values: StrategyInput) => {
-    save({ ...input, ...values });
-    setEditing(false);
-  };
-
-  const persistGoal = (targetChangeKg: number | null, targetWeeks: number | null) => {
-    if (!input) return;
-    save({ ...input, targetChangeKg, targetWeeks });
-  };
-
-  const applyOverride = (macroOverride: MacroOverride) => {
-    if (!input) return;
-    save({ ...input, macroOverride });
-    setEditingMacros(false);
-  };
-
-  const clearOverride = () => {
-    if (!input) return;
-    save({ ...input, macroOverride: null });
-    setEditingMacros(false);
-  };
-
   return (
     <>
       {header}
       <div className="flex flex-col gap-8">
         {strategy ? <StrategyResult strategy={strategy} /> : null}
 
-        {!input || editing ? (
-          <AnthropometricsForm
-            initial={input}
-            onSubmit={handleSave}
-            submitLabel={input ? "Recalcular macros" : "Calcular macros"}
+        {strategy && scores ? (
+          <StrategyMacrosSection
+            goal={student.mainGoal}
+            strategy={strategy}
+            scores={scores}
+            input={input}
+            macros={macros}
+            macroParams={macroParams}
+            alerts={alerts}
+            trainsRegularly={trainsRegularly}
+            mealPlanHref={`/meal-plan/${student.id}`}
+            onSaveAnthropometrics={saveAnthropometrics}
+            onPersistGoal={persistGoal}
+            onApplyOverride={applyOverride}
+            onClearOverride={clearOverride}
           />
-        ) : macros ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">
-                  {input.currentWeightKg} kg
-                  {input.bodyFatPct ? ` · ${input.bodyFatPct}% gordura` : ""}
-                  {` · objetivo: ${STUDENT_GOAL_LABELS[student.mainGoal]}`}
-                </Badge>
-                {macros.manual ? (
-                  <Badge className="bg-gold text-gold-foreground hover:bg-gold">
-                    <SlidersHorizontalIcon className="size-3" />
-                    Ajuste manual
-                  </Badge>
-                ) : input.targetChangeKg &&
-                  input.targetWeeks &&
-                  strategy &&
-                  strategy.direction !== "manutencao" ? (
-                  <Badge variant="secondary">
-                    <TargetIcon className="size-3" />
-                    Calorias pela meta
-                  </Badge>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
-                  <PencilIcon className="size-4" />
-                  Ajustar peso
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditingMacros((v) => !v)}
-                >
-                  <SlidersHorizontalIcon className="size-4" />
-                  Ajustar macros
-                </Button>
-                {macros.manual ? (
-                  <Button variant="ghost" size="sm" onClick={clearOverride}>
-                    <RotateCcwIcon className="size-4" />
-                    Voltar ao automático
-                  </Button>
-                ) : null}
-                <Button asChild size="sm">
-                  <Link href={`/meal-plan/${student.id}`}>
-                    <UtensilsIcon className="size-4" />
-                    Ver plano alimentar
-                    <ArrowRightIcon className="size-4" />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            {editingMacros ? (
-              <MacroOverrideForm
-                initial={overrideFromMacros(macros)}
-                onSubmit={applyOverride}
-                onCancel={() => setEditingMacros(false)}
-              />
-            ) : null}
-
-            <MacroSummary macros={macros} />
-
-            {strategy && scores && strategy.direction !== "manutencao" ? (
-              <GoalDefinition
-                direction={strategy.direction}
-                velocity={strategy.velocity}
-                tdee={macros.tdee}
-                currentWeightKg={input.currentWeightKg}
-                capacity={scores.adherence + scores.consistency - scores.abandonmentRisk}
-                prescribedDeltaPct={
-                  strategy.direction === "deficit"
-                    ? macroParams.velocityDeficitPct[strategy.velocity]
-                    : macroParams.velocitySurplusPct[strategy.velocity]
-                }
-                trainsRegularly={session?.answers.trains === "regular"}
-                proteinAdequate={macroParams.proteinGPerKg[student.mainGoal] >= 1.6}
-                initialTargetKg={input.targetChangeKg ?? null}
-                initialWeeks={input.targetWeeks ?? null}
-                drivesPlan={!macros.manual}
-                onPersist={persistGoal}
-              />
-            ) : null}
-          </div>
         ) : null}
       </div>
     </>

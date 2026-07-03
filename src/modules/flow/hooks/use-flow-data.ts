@@ -6,7 +6,7 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
-import { buildStrategy, resolveMacros } from "@/modules/strategy/services";
+import { buildStrategy, evaluateStrategyAlerts, resolveMacros } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import type { MacroContext, MacroTargets, NutritionStrategy } from "@/modules/strategy/types";
@@ -115,10 +115,23 @@ export function useFlowData(studentId: string): FlowData {
       strategy.direction !== "manutencao"
     )
       out.push({ level: "info", text: "Calorias seguindo a meta definida." });
-    if (proteinPerKg !== null && proteinPerKg < 1.6)
-      out.push({ level: "high", text: "Proteína abaixo de 1,6 g/kg." });
+    // Alertas inteligentes da estratégia (mesmo motor da Etapa 3).
+    if (macros && input && strategy) {
+      for (const a of evaluateStrategyAlerts({
+        calories: macros.calories,
+        proteinG: macros.proteinG,
+        fatG: macros.fatG,
+        tdee: macros.tdee,
+        weightKg: input.currentWeightKg,
+        direction: strategy.direction,
+        trainsRegularly: session?.answers.trains === "regular",
+      })) {
+        if (a.level === "green") continue;
+        out.push({ level: a.level === "red" ? "high" : "warn", text: a.title });
+      }
+    }
     return out;
-  }, [hasGoal, anamneseComplete, diagnosticoReady, input, macros, strategy, proteinPerKg]);
+  }, [hasGoal, anamneseComplete, diagnosticoReady, input, macros, strategy, session]);
 
   const ready = typeof window !== "undefined";
 
