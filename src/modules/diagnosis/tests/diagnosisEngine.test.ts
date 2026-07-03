@@ -216,9 +216,20 @@ describe("retrato alimentar", () => {
     expect(buildAnamnesePortrait({})).toHaveLength(0);
   });
 
-  it("todas as perguntas aplicáveis padrão são não-condicionais", () => {
-    // Sanidade: sem respostas, só as perguntas incondicionais aparecem.
-    const base = visibleQuestions({});
-    expect(base.every((q) => !q.showIf)).toBe(true);
+  it("sem respostas, as condicionais fechadas ficam de fora e o recordatório aparece", () => {
+    const keys = visibleQuestions({}).map((q) => q.key);
+    // Condicionais que só surgem com um gatilho não entram no set padrão.
+    expect(keys).not.toContain("current_diet_detail"); // só se já segue dieta
+    expect(keys).not.toContain("regain_trigger"); // só no efeito sanfona
+    expect(keys).not.toContain("training_type"); // só se treina
+    expect(keys).not.toContain("meals_out_food"); // só se come fora
+    // Por padrão, descobrimos o dia alimentar (quem não segue dieta).
+    expect(keys).toContain("breakfast");
+  });
+
+  it("quem já segue dieta troca o recordatório pelo relato detalhado", () => {
+    const keys = visibleQuestions({ follows_diet: "sim" }).map((q) => q.key);
+    expect(keys).toContain("current_diet_detail");
+    expect(keys).not.toContain("breakfast");
   });
 });
