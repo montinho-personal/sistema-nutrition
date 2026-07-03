@@ -99,3 +99,13 @@ export const ROLE_LABELS: Record<FoodRole, string> = {
   fat: "Gordura boa",
   veg: "Vegetal",
 };
+
+/** Objetivo de cada refeição — o "porquê" de cada momento do dia. */
+export const MEAL_OBJECTIVES: Record<MealSlot, string> = {
+  breakfast: "Energia para começar o dia",
+  morning_snack: "Sustentar a fome até o almoço",
+  lunch: "Refeição principal — a base do dia",
+  afternoon_snack: "Controle da fome e combustível para o treino",
+  dinner: "Refeição da noite — proteína e leveza",
+  supper: "Ceia — saciedade para uma boa noite",
+};

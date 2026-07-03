@@ -9,14 +9,13 @@ import {
   LockIcon,
   ShieldCheckIcon,
   StethoscopeIcon,
-  UtensilsIcon,
 } from "lucide-react";
 
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { EmptyState } from "@/shared/components/empty-state";
-import { MetricCard } from "@/shared/components/metric-card";
 import { DiagnosisSummary } from "@/modules/diagnosis/components/diagnosis-summary";
+import { MealPlanBoard } from "@/modules/meal-plan/components/meal-plan-board";
 import { FlowStrategyStep } from "@/modules/flow/components/flow-strategy-step";
 import { FlowDietStep } from "@/modules/flow/components/flow-diet-step";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
@@ -124,23 +123,7 @@ export function FlowStepBody({
       if (!macros) {
         return <LockedStep description="Defina a estratégia e os macros antes de montar o cardápio." />;
       }
-      return (
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <MetricCard label="Calorias-alvo" value={`${macros.calories} kcal`} />
-            <MetricCard label="Proteína" value={`${macros.proteinG} g`} />
-            <MetricCard label="Carboidrato" value={`${macros.carbG} g`} />
-            <MetricCard label="Gordura" value={`${macros.fatG} g`} />
-          </div>
-          <OpenToolCard
-            icon={<UtensilsIcon />}
-            title="Montar o cardápio"
-            description="O plano do dia é montado a partir destes macros e do banco de alimentos."
-            href={`/meal-plan/${studentId}`}
-            cta="Abrir plano alimentar"
-          />
-        </div>
-      );
+      return <MealPlanBoard studentId={studentId} />;
 
     case "validacao":
       if (!macros) {

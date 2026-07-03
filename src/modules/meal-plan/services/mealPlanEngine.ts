@@ -355,3 +355,75 @@ export function buildMealPlan(foods: Food[], ctx: MealPlanContext): MealPlan {
     variant: ctx.variant,
   };
 }
+
+// ── Food Intelligence: troca de alimentos (Workflow V1 — Etapa 5) ─────────────
+
+/** Soma os macros de uma lista de itens (já arredondados). */
+export function sumItems(items: MealItem[]): MacroTotals {
+  return items.reduce(
+    (acc, i) => ({
+      kcal: acc.kcal + i.kcal,
+      protein: acc.protein + i.protein,
+      carbs: acc.carbs + i.carbs,
+      fat: acc.fat + i.fat,
+    }),
+    { ...EMPTY_MACROS },
+  );
+}
+
+/**
+ * Constrói o item de substituição: resolve as gramas do novo alimento para
+ * manter a contribuição do papel (proteína/gordura por macro, carboidrato por
+ * kcal, vegetal por volume) — assim a refeição segue batendo o alvo.
+ */
+export function buildSwapItem(food: Food, role: FoodRole, ref: MealItem): MealItem {
+  let grams: number;
+  if (role === "protein") grams = solveGrams(food, "protein", ref.protein);
+  else if (role === "fat") grams = solveGrams(food, "fat", ref.fat);
+  else if (role === "carb") grams = solveGramsForKcal(food, ref.kcal);
+  else {
+    const limits = PORTION_LIMITS.veg;
+    grams = Math.min(limits.max, Math.max(limits.min, ref.grams));
+  }
+  return toItem(food, role, grams);
+}
+
+/** Distribuição de macros (fração das kcal) de um alimento, para similaridade. */
+function macroShare(food: Food): [number, number, number] {
+  const kcal = food.nutrition.energyKcal ?? 0;
+  if (kcal <= 0) return [0, 0, 0];
+  return [
+    ((food.nutrition.proteinG ?? 0) * 4) / kcal,
+    ((food.nutrition.carbsG ?? 0) * 4) / kcal,
+    ((food.nutrition.fatG ?? 0) * 9) / kcal,
+  ];
+}
+
+/**
+ * Equivalentes de um item: mesmos papel e restrições, ordenados por semelhança
+ * nutricional (distribuição de macros próxima). Cada um já traz a porção
+ * recalculada — o profissional nunca refaz a conta na mão.
+ */
+export function findFoodSwaps(
+  item: MealItem,
+  foods: Food[],
+  restrictions: string[],
+  limit = 6,
+): { food: Food; item: MealItem }[] {
+  const allowed = buildDietaryFilter(restrictions);
+  const current = foods.find((f) => f.id === item.foodId);
+  const ref = current ? macroShare(current) : null;
+  const distance = (food: Food) => {
+    if (!ref) return 0;
+    const s = macroShare(food);
+    return Math.hypot(s[0] - ref[0], s[1] - ref[1], s[2] - ref[2]);
+  };
+
+  return foods
+    .filter(allowed)
+    .filter((f) => f.id !== item.foodId && classifyRole(f) === item.role)
+    .map((f) => ({ f, d: distance(f) }))
+    .sort((a, b) => a.d - b.d || a.f.id.localeCompare(b.f.id))
+    .slice(0, limit)
+    .map(({ f }) => ({ food: f, item: buildSwapItem(f, item.role, item) }));
+}
