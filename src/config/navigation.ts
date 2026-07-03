@@ -1,4 +1,5 @@
 import {
+  BookOpenIcon,
   CalendarCheckIcon,
   FileTextIcon,
   LayoutDashboardIcon,
@@ -43,5 +44,6 @@ export const mainNavigation: NavigationItem[] = [
 ];
 
 export const secondaryNavigation: NavigationItem[] = [
+  { title: "Fundamentos", href: "/knowledge", icon: BookOpenIcon },
   { title: "Configurações", href: "/settings", icon: SettingsIcon },
 ];

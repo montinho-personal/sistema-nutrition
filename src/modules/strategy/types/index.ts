@@ -38,6 +38,8 @@ export interface StrategyDecision {
   benefits: string[];
   risks: string[];
   alternatives: string[];
+  /** Ids de entradas da Base de Conhecimento que embasam a decisão. */
+  knowledgeIds?: string[];
 }
 
 /** A Estratégia Nutricional completa (as 12 etapas do SPE). */
