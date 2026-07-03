@@ -9,6 +9,7 @@ import { InsightCard, type InsightKind } from "@/shared/components/insight-card"
 import { SectionHeader } from "@/shared/components/section-header";
 import { INVERTED_SCORES, SCORE_LABELS } from "@/modules/diagnosis/constants";
 import { RecordatorioAnalysis } from "@/modules/diagnosis/components/recordatorio-analysis";
+import { AnamneseDeepening } from "@/modules/diagnosis/components/anamnese-deepening";
 import { EnergyExpenditure } from "@/modules/diagnosis/components/energy-expenditure";
 import { DiagnosisDashboard } from "@/modules/diagnosis/components/diagnosis-dashboard";
 import {
@@ -131,6 +132,9 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
 
       {/* Análise do dia alimentar — leitura clínica do recordatório */}
       <RecordatorioAnalysis answers={answers} />
+
+      {/* Aprofundamento por IA — perguntas de maior peso que ainda faltam */}
+      <AnamneseDeepening answers={answers} goal={student.mainGoal} />
 
       {/* Retrato alimentar — o que o aluno de fato come e prefere */}
       {portrait.length > 0 ? (
