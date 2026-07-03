@@ -116,6 +116,25 @@ export const MACRO_OVERRIDE_LIMITS = {
 } as const;
 
 /**
+ * Limiares dos alertas inteligentes da estratégia (🟢🟡🟠🔴). Orientam, nunca
+ * bloqueiam. Todos configuráveis (Doc 08 — sem número mágico).
+ */
+export const STRATEGY_ALERT_THRESHOLDS = {
+  /** Proteína (g por kg de peso). */
+  proteinLowGPerKg: 1.6,
+  proteinCriticalGPerKg: 1.2,
+  /** Gordura mínima (g por kg de peso). */
+  fatFloorGPerKg: 0.6,
+  /** Déficit como fração do TDEE. */
+  deficitAttention: 0.2,
+  deficitHigh: 0.25,
+  deficitCritical: 0.35,
+  /** Superávit como fração do TDEE. */
+  surplusAttention: 0.1,
+  surplusHigh: 0.2,
+} as const;
+
+/**
  * Piso de segurança para as calorias derivadas da meta (Definição Estratégica).
  * Metas muito agressivas exigiriam calorias baixas/negativas; o cardápio nunca
  * mira abaixo deste piso, ainda que a meta peça mais.

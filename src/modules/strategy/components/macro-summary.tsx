@@ -2,11 +2,47 @@
 
 import { FlameIcon } from "lucide-react";
 
+import { cn } from "@/shared/lib/utils";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { MetricCard } from "@/shared/components/metric-card";
 import { SectionHeader } from "@/shared/components/section-header";
 import { KCAL_PER_GRAM } from "@/modules/strategy/constants/parameters";
+import type { AlertLevel, StrategyAlert } from "@/modules/strategy/services";
 import type { MacroTargets } from "@/modules/strategy/types";
+
+const ALERT_EMOJI: Record<AlertLevel, string> = {
+  green: "🟢",
+  yellow: "🟡",
+  orange: "🟠",
+  red: "🔴",
+};
+
+/** Painel de alertas inteligentes (🟢🟡🟠🔴) — orienta, nunca bloqueia. */
+function StrategyAlerts({ alerts }: { alerts: StrategyAlert[] }) {
+  if (alerts.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      {alerts.map((a) => (
+        <div
+          key={a.title}
+          className={cn(
+            "flex items-start gap-2.5 rounded-lg border px-3 py-2.5",
+            a.level === "green" && "border-success/30 bg-success/5",
+            a.level === "yellow" && "border-warning/30 bg-warning/5",
+            a.level === "orange" && "border-warning/40 bg-warning/10",
+            a.level === "red" && "border-danger/40 bg-danger/5",
+          )}
+        >
+          <span className="text-sm leading-none">{ALERT_EMOJI[a.level]}</span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-sm font-medium">{a.title}</span>
+            <span className="text-xs text-muted-foreground">{a.detail}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 /** Barra de proporção dos macros nas calorias totais. */
 function MacroBar({ macros }: { macros: MacroTargets }) {
@@ -40,14 +76,22 @@ function MacroBar({ macros }: { macros: MacroTargets }) {
   );
 }
 
-/** Resumo dos macros: calorias-alvo, gramas e as justificativas do cálculo. */
-export function MacroSummary({ macros }: { macros: MacroTargets }) {
+/** Resumo dos macros: calorias-alvo, gramas, alertas e as justificativas do cálculo. */
+export function MacroSummary({
+  macros,
+  alerts = [],
+}: {
+  macros: MacroTargets;
+  alerts?: StrategyAlert[];
+}) {
   return (
     <section className="flex flex-col gap-4">
       <SectionHeader
         title="Macros"
         description="A matemática vem depois da estratégia — e cada número tem justificativa."
       />
+
+      <StrategyAlerts alerts={alerts} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard

@@ -3,5 +3,11 @@
 export { buildStrategy } from "./strategyEngine";
 export { computeMacros, computeEnergyBreakdown } from "./macroEngine";
 export { resolveMacros } from "./resolveMacros";
+export {
+  evaluateStrategyAlerts,
+  type StrategyAlert,
+  type StrategyAlertInput,
+  type AlertLevel,
+} from "./strategyAlerts";
 export { projectGoal, goalCalorieTarget, dailyEnergyDeltaForGoal } from "./goalProjection";
 export { getStrategyRecord, saveStrategyInput } from "./strategyRepository";

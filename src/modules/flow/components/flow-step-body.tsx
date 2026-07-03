@@ -18,9 +18,8 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { EmptyState } from "@/shared/components/empty-state";
 import { MetricCard } from "@/shared/components/metric-card";
 import { DiagnosisSummary } from "@/modules/diagnosis/components/diagnosis-summary";
-import { StrategyResult } from "@/modules/strategy/components/strategy-result";
-import { MacroSummary } from "@/modules/strategy/components/macro-summary";
 import { PHILOSOPHY_LABELS } from "@/modules/strategy/constants/parameters";
+import { FlowStrategyStep } from "@/modules/flow/components/flow-strategy-step";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
 import type { FlowStepId } from "@/modules/flow/types";
 
@@ -114,23 +113,7 @@ export function FlowStepBody({
           <LockedStep description="Conclua a anamnese e defina o objetivo do aluno para montar a estratégia." />
         );
       }
-      if (strategy && macros) {
-        return (
-          <div className="flex flex-col gap-8">
-            <StrategyResult strategy={strategy} />
-            <MacroSummary macros={macros} />
-          </div>
-        );
-      }
-      return (
-        <OpenToolCard
-          icon={<LayersIcon />}
-          title="Falta o peso do aluno"
-          description="Informe o peso atual para o sistema calcular as calorias e os macros."
-          href={`/strategy/${studentId}`}
-          cta="Abrir estratégia"
-        />
-      );
+      return <FlowStrategyStep data={data} studentId={studentId} />;
 
     case "alimentar":
       if (!strategy) {
