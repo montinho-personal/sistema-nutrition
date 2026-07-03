@@ -1,16 +1,48 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, SparklesIcon } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  BrainIcon,
+  CheckIcon,
+  ClockIcon,
+  DumbbellIcon,
+  FlameIcon,
+  HeartIcon,
+  HomeIcon,
+  type LucideIcon,
+  ScaleIcon,
+  SparklesIcon,
+  StethoscopeIcon,
+  TargetIcon,
+  UtensilsIcon,
+  WalletIcon,
+} from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/components/ui/button";
-import { Progress } from "@/shared/components/ui/progress";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { STAGES, visibleQuestionsForStage } from "@/modules/diagnosis/constants/questionnaire";
 import { QuestionField } from "@/modules/diagnosis/components/question-field";
 import { DiagnosisInsights } from "@/modules/diagnosis/components/diagnosis-insights";
 import type { AnswerMap, AnswerValue } from "@/modules/diagnosis/types";
+
+/** Ícone de cada etapa — puramente visual (o dado da etapa vive em `questionnaire`). */
+const STAGE_ICONS: Record<string, LucideIcon> = {
+  objetivo: TargetIcon,
+  corporal: ScaleIcon,
+  rotina: ClockIcon,
+  saude: StethoscopeIcon,
+  comportamento: FlameIcon,
+  alimentacao: UtensilsIcon,
+  psicologico: BrainIcon,
+  ambiente: HomeIcon,
+  treino: DumbbellIcon,
+  preferencias: HeartIcon,
+  orcamento: WalletIcon,
+};
 
 interface InterviewProps {
   answers: AnswerMap;
@@ -39,6 +71,9 @@ export function Interview({
   const stage = STAGES[index];
   const questions = visibleQuestionsForStage(stage.id, answers);
   const isLast = index === total - 1;
+  const StageIcon = STAGE_ICONS[stage.id] ?? SparklesIcon;
+  const percent = Math.round(((index + 1) / total) * 100);
+  const nextStage = isLast ? null : STAGES[index + 1];
 
   return (
     <div
@@ -47,53 +82,81 @@ export function Interview({
         showInsights && "2xl:grid-cols-[1fr_340px]",
       )}
     >
-      <div className="flex min-w-0 flex-col gap-5">
-        {/* Progresso */}
+      <div className="flex min-w-0 flex-col gap-6">
+        {/* Trilha da jornada — barra segmentada (progresso + navegação de volta).
+            Cada segmento é uma etapa; concluídas e atual em dourado. Não é uma
+            pergunta: é o mapa do percurso (Documento 07 — nunca parecer formulário). */}
         <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium">
-              Etapa {index + 1} de {total} · {stage.title}
+          <div className="flex items-center gap-1" role="list" aria-label="Progresso da anamnese">
+            {STAGES.map((s, i) => {
+              const reachable = i <= index;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="listitem"
+                  aria-label={`Etapa ${i + 1} de ${total}: ${s.title}`}
+                  aria-current={i === index ? "step" : undefined}
+                  title={s.title}
+                  disabled={!reachable}
+                  onClick={() => reachable && onStageChange(i)}
+                  className={cn(
+                    "h-1.5 flex-1 rounded-full transition-all duration-500",
+                    reachable ? "cursor-pointer bg-gold" : "cursor-default bg-primary/10",
+                    i === index && "h-2 shadow-[0_1px_10px] shadow-gold/40",
+                    i < index && "bg-gold/70 hover:bg-gold",
+                  )}
+                />
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-between text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+            <span>
+              Etapa {index + 1} de {total}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {Math.round(((index + 1) / total) * 100)}%
+            <span>
+              {nextStage ? (
+                <>A seguir · {nextStage.title}</>
+              ) : (
+                "Última etapa"
+              )}
             </span>
           </div>
-          <Progress value={((index + 1) / total) * 100} />
-          <p className="text-sm text-muted-foreground">{stage.description}</p>
         </div>
 
-        {/* Navegação por etapas (permitir voltar — Documento 07) */}
-        <div className="flex flex-wrap gap-1.5">
-          {STAGES.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => onStageChange(i)}
-              className={cn(
-                "rounded-md px-2 py-1 text-xs transition-colors",
-                i === index
-                  ? "bg-primary text-primary-foreground"
-                  : i < index
-                    ? "bg-accent text-accent-foreground hover:bg-accent/80"
-                    : "text-muted-foreground hover:bg-accent",
-              )}
-            >
-              {s.title}
-            </button>
-          ))}
-        </div>
+        {/* Conteúdo da etapa — cabeçalho editorial + perguntas, com transição suave */}
+        <motion.div
+          key={stage.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+          className="flex flex-col gap-6"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gold/10 ring-1 ring-gold/20 [&>svg]:size-6 [&>svg]:text-gold">
+              <StageIcon />
+            </div>
+            <div className="flex min-w-0 flex-col gap-1 pt-0.5">
+              <span className="text-[11px] font-semibold tracking-[0.14em] text-gold uppercase">
+                {percent}% do caminho
+              </span>
+              <h2 className="text-xl font-semibold tracking-tight text-balance">{stage.title}</h2>
+              <p className="text-sm text-pretty text-muted-foreground">{stage.description}</p>
+            </div>
+          </div>
 
-        {/* Perguntas da etapa */}
-        <div className="flex flex-col gap-6">
-          {questions.map((question) => (
-            <QuestionField
-              key={question.key}
-              question={question}
-              value={answers[question.key]}
-              onChange={(value) => onAnswer(question.key, value)}
-            />
-          ))}
-        </div>
+          {/* Perguntas da etapa */}
+          <div className="flex flex-col gap-6">
+            {questions.map((question) => (
+              <QuestionField
+                key={question.key}
+                question={question}
+                value={answers[question.key]}
+                onChange={(value) => onAnswer(question.key, value)}
+              />
+            ))}
+          </div>
+        </motion.div>
 
         {/* Rodapé */}
         <div className="flex items-center justify-between border-t pt-4">
