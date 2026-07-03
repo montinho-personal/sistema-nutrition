@@ -68,6 +68,25 @@ export const MEASUREMENT_LABELS: Record<MeasurementKey, string> = {
   thigh: "Coxa",
 };
 
+/**
+ * Previsão de resultado (Documento 03F). Bandas de "no ritmo" ante o planejado
+ * e pesos da confiança (mais dados + mais tempo → maior confiança).
+ */
+export const PREDICTION = {
+  /** Abaixo desta fração da meta no prazo → "abaixo do previsto". */
+  behindBelowPct: 80,
+  /** Acima desta fração → "acima do previsto". */
+  aheadAbovePct: 120,
+  /** Ritmo (kg/semana, em módulo) abaixo do qual é considerado estagnado. */
+  stallWeeklyKg: 0.1,
+  /** Confiança: nº de acompanhamentos que satura o peso, e o peso (0–100). */
+  confidencePointsCap: 5,
+  confidencePointsWeight: 60,
+  /** Confiança: semanas decorridas que saturam o peso, e o peso (0–100). */
+  confidenceWeeksCap: 8,
+  confidenceWeeksWeight: 40,
+} as const;
+
 /** Rótulos pt-BR dos status de evolução. */
 export const STATUS_LABELS: Record<string, string> = {
   on_track: "No ritmo esperado",

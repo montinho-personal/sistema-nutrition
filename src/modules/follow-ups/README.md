@@ -26,6 +26,10 @@ e os macros). Diagnóstico → Estratégia/Macros → **Acompanhamentos**.
     (déficit → kg/semana), status (no ritmo / lento / acelerado / estagnado / contrário),
     recomendações ligadas ao plano de ajustes, e a **evolução das circunferências**
     (`computeMeasurementDeltas` — primeiro × último; a cintura cai mesmo quando a balança empaca).
+  - `outcomePrediction.ts` — **Outcome Prediction Engine** (Documento 03F): a partir do ritmo
+    REAL medido, projeta o desfecho ante a meta do plano (Definição Estratégica) — projeção no
+    prazo, semanas até a meta, % no ritmo, veredito e confiança que cresce a cada acompanhamento.
+    Fecha o loop entre o plano (Sprint C) e a realidade (evolução).
   - `followUpRepository.ts` — CRUD local-first (tabela `montinho.followups` no futuro).
 - `validators/` — schema Zod do registro (peso, escalas e medidas opcionais).
 - `hooks/use-follow-ups.ts` — lista reativa por aluno.
