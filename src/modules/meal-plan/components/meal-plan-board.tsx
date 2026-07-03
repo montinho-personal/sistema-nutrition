@@ -15,6 +15,7 @@ import { buildSwapItem, sumItems } from "@/modules/meal-plan/services";
 import { MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
+import { MealInstruction } from "@/modules/meal-plan/components/meal-instruction";
 import type { FoodRole, MealPlan, MealSlot } from "@/modules/meal-plan/types";
 
 const foodById = new Map(curatedFoods.map((f) => [f.id, f]));
@@ -26,8 +27,15 @@ const pct = (value: number, target: number) => (target > 0 ? Math.round((value /
  * automático a cada troca. Reaproveitado pela tela do Plano e pela Etapa 5.
  */
 export function MealPlanBoard({ studentId }: { studentId: string }) {
-  const { plan: basePlan, restrictions, input, nextVariant } = useStudentPlan(studentId);
+  const { plan: basePlan, restrictions, input, nextVariant, instruction, setInstruction } =
+    useStudentPlan(studentId);
   const [swaps, setSwaps] = React.useState<Record<string, string>>({});
+
+  // Nova instrução recomeça do cardápio limpo (sem trocas manuais residuais).
+  const applyInstruction = (text: string) => {
+    setSwaps({});
+    setInstruction(text);
+  };
 
   // Aplica as trocas do profissional e recalcula totais/aderência.
   const plan = React.useMemo<MealPlan | null>(() => {
@@ -98,6 +106,8 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
+      <MealInstruction key={instruction} instruction={instruction} onApply={applyInstruction} />
+
       <section className="flex flex-col gap-3">
         <SectionHeader title="Resumo do dia" description="Total do cardápio ante o alvo dos macros." />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

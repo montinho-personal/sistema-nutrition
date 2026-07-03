@@ -22,9 +22,15 @@ import type {
   StrategyInput,
 } from "@/modules/strategy/types";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
-import { buildMealPlan, type MealPlanContext } from "@/modules/meal-plan/services";
+import {
+  applyDirective,
+  buildMealPlan,
+  parseDirective,
+  type MealPlanContext,
+} from "@/modules/meal-plan/services";
 import { useMealPlanVariant } from "@/modules/meal-plan/hooks/use-meal-plan-variant";
-import type { MealPlan } from "@/modules/meal-plan/types";
+import { useMealPlanInstruction } from "@/modules/meal-plan/hooks/use-meal-plan-instruction";
+import type { MealPlan, MealPlanDirective } from "@/modules/meal-plan/types";
 
 const EMPTY_STUDENTS: Student[] = [];
 const EMPTY_SESSIONS: DiagnosisSession[] = [];
@@ -41,6 +47,11 @@ export interface StudentPlan {
   mealsPerDay: number | null;
   variant: number;
   nextVariant: () => void;
+  /** Instrução do treinador em linguagem natural (texto cru). */
+  instruction: string;
+  setInstruction: (text: string) => void;
+  /** O que a instrução foi entendida como (para transparência na interface). */
+  directive: MealPlanDirective;
 }
 
 /**
@@ -54,6 +65,8 @@ export function useStudentPlan(studentId: string): StudentPlan {
   const { input } = useStrategyInput(studentId);
   const macroParams = useMacroParams();
   const { variant, next } = useMealPlanVariant(studentId);
+  const { instruction, setInstruction } = useMealPlanInstruction(studentId);
+  const directive = React.useMemo(() => parseDirective(instruction), [instruction]);
 
   const student = React.useMemo(
     () => students.find((s) => s.id === studentId) ?? null,
@@ -93,7 +106,7 @@ export function useStudentPlan(studentId: string): StudentPlan {
     const macros = resolveMacros(student.mainGoal, strategy, macroCtx, macroParams, input);
     const approach = resolveDietApproach(input.dietApproach ?? null, student.mainGoal);
     const mealsPerDay = approach.meals ?? strategy.mealsPerDay;
-    const ctx: MealPlanContext = {
+    const baseCtx: MealPlanContext = {
       goal: student.mainGoal,
       mealsPerDay,
       macros: { kcal: macros.calories, protein: macros.proteinG, carbs: macros.carbG, fat: macros.fatG },
@@ -104,8 +117,10 @@ export function useStudentPlan(studentId: string): StudentPlan {
       variant,
       habitualFoodIds: extractHabitualFoodIds(session.answers),
     };
+    // A instrução do treinador ajusta o contexto — a estratégia continua a base.
+    const ctx = applyDirective(baseCtx, directive);
     return { strategy, macros, scores, plan: buildMealPlan(curatedFoods, ctx), mealsPerDay };
-  }, [student, session, input, restrictions, variant, macroParams]);
+  }, [student, session, input, restrictions, variant, macroParams, directive]);
 
   return {
     student,
@@ -114,6 +129,9 @@ export function useStudentPlan(studentId: string): StudentPlan {
     restrictions,
     variant,
     nextVariant: next,
+    instruction,
+    setInstruction,
+    directive,
     ...derived,
   };
 }

@@ -66,9 +66,35 @@ export interface MealPlan {
   variant: number;
 }
 
-/** Preferência persistida (local-first): apenas a variante escolhida. */
+/** Preferência persistida (local-first): variante e instrução do treinador. */
 export interface MealPlanPref {
   studentId: string;
   variant: number;
+  /** Instrução em linguagem natural do treinador ("1700 kcal, sem carbo à noite"). */
+  instruction?: string | null;
   updatedAt: string;
+}
+
+/**
+ * Restrições estruturadas extraídas de uma instrução em linguagem natural do
+ * treinador (Personal Nutrition AI — Fatia A). O motor determinístico é a base;
+ * a instrução apenas ajusta o contexto — nunca reescreve a estratégia.
+ */
+export interface MealPlanDirective {
+  /** Sobrescreve as calorias-alvo do cardápio (ex.: "1700 kcal"). */
+  caloriesOverride: number | null;
+  /** Sobrescreve o número de refeições (ex.: "5 refeições"). */
+  mealsPerDay: number | null;
+  /** "Dieta barata" — prioriza alimentos de menor custo. */
+  budgetTight: boolean;
+  /** "Refeições rápidas" — prioriza praticidade. */
+  emphasizePracticality: boolean;
+  /** "Mais saciedade" — prioriza alimentos saciantes. */
+  emphasizeSatiety: boolean;
+  /** "Zero carboidrato à noite" — jantar/ceia sem carbo (gordura fecha a energia). */
+  noCarbAtNight: boolean;
+  /** Restrições adicionadas pela instrução (ex.: "sem lactose"). */
+  addRestrictions: string[];
+  /** Frases reconhecidas, para transparência na interface. */
+  recognized: string[];
 }

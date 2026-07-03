@@ -15,6 +15,7 @@ import { goalFitScore } from "@/modules/foods/services";
 import type { Food, FoodGoal, MealTiming } from "@/modules/foods/types";
 import type { StudentGoal } from "@/modules/students/types";
 import {
+  EVENING_TIMINGS,
   GRAMS_ROUNDING,
   LEGUME_FIXED_GRAMS,
   MEAL_TEMPLATES,
@@ -52,6 +53,8 @@ export interface MealPlanContext {
   variant: number;
   /** Ids dos alimentos que o aluno já come — priorizados no cardápio (aderência). */
   habitualFoodIds?: string[];
+  /** "Zero carboidrato à noite": jantar/ceia sem carbo — a gordura fecha a energia. */
+  noCarbAtNight?: boolean;
 }
 
 /** Objetivo do aluno → objetivo do Banco de Alimentos (que tem menos opções). */
@@ -188,10 +191,14 @@ function solveGrams(food: Food, role: FoodRole, targetMacroG: number): number {
   return Math.min(limits.max, Math.max(limits.min, round(grams, GRAMS_ROUNDING)));
 }
 
-/** Gramas do carboidrato para preencher as calorias restantes da refeição. */
-function solveGramsForKcal(food: Food, targetKcal: number): number {
+/**
+ * Gramas do alimento "fechador de energia" para preencher as calorias restantes
+ * da refeição. Normalmente o carboidrato; quando não há carbo (ex.: jantar sem
+ * carboidrato), a gordura assume o papel — dentro da faixa de porção do papel.
+ */
+function solveGramsForKcal(food: Food, targetKcal: number, role: FoodRole = "carb"): number {
   const per100 = food.nutrition.energyKcal ?? 0;
-  const limits = PORTION_LIMITS.carb;
+  const limits = PORTION_LIMITS[role];
   if (per100 <= 0) return limits.min;
   const grams = (Math.max(0, targetKcal) * 100) / per100;
   return Math.min(limits.max, Math.max(limits.min, round(grams, GRAMS_ROUNDING)));
@@ -252,22 +259,28 @@ function buildMeal(
   // Fica setado antes do solver para ser descontado da proteína e das calorias.
   if (selected.has("legume")) grams.set("legume", LEGUME_FIXED_GRAMS);
 
-  // Proteína e gordura são alvos "duros" (massa magra / suporte hormonal);
-  // o carboidrato é o macro flexível que fecha as CALORIAS restantes — o mesmo
-  // princípio do motor de macros. A proteína é resolvida antes, descontando o
-  // que os outros alimentos já contribuem; o carbo entra por último por energia.
+  // Proteína e gordura são alvos "duros" (massa magra / suporte hormonal); o
+  // carboidrato é o macro flexível que fecha as CALORIAS restantes — o mesmo
+  // princípio do motor de macros. Sem carbo (jantar "zero carbo à noite"), a
+  // gordura assume o papel de fechar a energia; a proteína é sempre resolvida
+  // pelo seu alvo, descontando o que os outros alimentos já contribuem.
+  const energyCloser: FoodRole | null = selected.has("carb")
+    ? "carb"
+    : selected.has("fat")
+      ? "fat"
+      : null;
   for (let pass = 0; pass < SOLVER_PASSES; pass++) {
     for (const role of ["protein", "fat", "carb"] as FoodRole[]) {
       const food = selected.get(role);
       if (!food) continue;
 
-      if (role === "carb") {
+      if (role === energyCloser) {
         let othersKcal = 0;
         for (const [otherRole, otherFood] of selected) {
-          if (otherRole === "carb") continue;
+          if (otherRole === role) continue;
           othersKcal += scaleFood(otherFood, grams.get(otherRole) ?? 0).kcal;
         }
-        grams.set("carb", solveGramsForKcal(food, target.kcal - othersKcal));
+        grams.set(role, solveGramsForKcal(food, target.kcal - othersKcal, role));
         continue;
       }
 
@@ -334,6 +347,25 @@ function pairsRiceAndBeans(macros: MacroTotals): boolean {
   return (macros.carbs * CARB_KCAL_PER_GRAM) / macros.kcal >= RICE_AND_BEANS_MIN_CARB_SHARE;
 }
 
+/**
+ * Papéis efetivos de uma refeição, depois dos ajustes da estratégia e da
+ * instrução: sem carbo suficiente a leguminosa sai; "zero carbo à noite" tira
+ * carbo e leguminosa do jantar/ceia e garante uma gordura para fechar a energia.
+ */
+function resolveMealRoles(
+  meal: MealTemplate,
+  ctx: MealPlanContext,
+  pairRiceAndBeans: boolean,
+): MealTemplate {
+  let roles = meal.roles;
+  if (!pairRiceAndBeans) roles = roles.filter((r) => r !== "legume");
+  if (ctx.noCarbAtNight && EVENING_TIMINGS.includes(meal.timing)) {
+    roles = roles.filter((r) => r !== "carb" && r !== "legume");
+    if (!roles.includes("fat")) roles = [...roles, "fat"];
+  }
+  return roles === meal.roles ? meal : { ...meal, roles };
+}
+
 function buildNotes(
   ctx: MealPlanContext,
   accuracy: MacroTotals,
@@ -362,6 +394,11 @@ function buildNotes(
       "Abordagem com pouco carboidrato: o feijão saiu das refeições principais para respeitar a estratégia.",
     );
 
+  if (ctx.noCarbAtNight)
+    notes.push(
+      "Instrução do treinador: jantar e ceia sem carboidrato — a gordura fecha a energia da noite.",
+    );
+
   notes.push(
     `Fechamento: ${accuracy.kcal}% das calorias e ${accuracy.protein}% da proteína do alvo.`,
   );
@@ -384,11 +421,7 @@ export function buildMealPlan(foods: Food[], ctx: MealPlanContext): MealPlan {
       carbs: ctx.macros.carbs * meal.kcalFraction,
       fat: ctx.macros.fat * meal.kcalFraction,
     };
-    // Sem carbo suficiente na estratégia, a leguminosa sai do prato.
-    const effective =
-      pairRiceAndBeans || !meal.roles.includes("legume")
-        ? meal
-        : { ...meal, roles: meal.roles.filter((r) => r !== "legume") };
+    const effective = resolveMealRoles(meal, ctx, pairRiceAndBeans);
     return buildMeal(effective, target, foods, ctx, usedDay);
   });
 
