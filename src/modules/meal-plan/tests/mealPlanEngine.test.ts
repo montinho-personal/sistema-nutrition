@@ -29,6 +29,12 @@ describe("classifyRole", () => {
     expect(classifyRole(food("FIE019"))).toBe("fat"); // Azeite
     expect(classifyRole(food("FIE023"))).toBe("veg"); // Brócolis (baixa caloria)
   });
+
+  it("feijão é leguminosa; tofu/PTS (proteína-dominantes) seguem proteína", () => {
+    expect(classifyRole(food("FIE013"))).toBe("legume"); // Feijão carioca
+    expect(classifyRole(food("FIE049"))).toBe("legume"); // Feijão preto
+    expect(classifyRole(food("FIE051"))).toBe("protein"); // Tofu — fonte proteica
+  });
 });
 
 describe("buildMealPlan — estrutura", () => {

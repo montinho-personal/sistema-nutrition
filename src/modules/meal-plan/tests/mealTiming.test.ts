@@ -75,6 +75,39 @@ describe("coerência de horário — cada alimento na refeição certa", () => {
   });
 });
 
+describe("o prato brasileiro — arroz e feijão nas refeições principais", () => {
+  it("almoço e jantar trazem um grão (carbo) E uma leguminosa (feijão)", () => {
+    const plan = buildMealPlan(curatedFoods, BASE_CTX);
+    const mains = plan.meals.filter((m) => m.timing === "lunch" || m.timing === "dinner");
+    expect(mains.length).toBeGreaterThan(0);
+    for (const meal of mains) {
+      const roles = meal.items.map((i) => i.role);
+      expect(roles).toContain("carb"); // arroz/batata/macarrão
+      expect(roles).toContain("legume"); // feijão/lentilha/grão-de-bico
+      // A leguminosa é do grupo certo (feijão e afins), não tofu/PTS.
+      const legume = meal.items.find((i) => i.role === "legume")!;
+      expect(byId(legume.foodId).foodGroup).toBe("Leguminosas");
+    }
+  });
+
+  it("café da manhã e lanches nunca têm o papel de leguminosa", () => {
+    const plan = buildMealPlan(curatedFoods, BASE_CTX);
+    const light = plan.meals.filter((m) => m.timing === "breakfast" || m.timing === "snack");
+    for (const meal of light) {
+      expect(meal.items.some((i) => i.role === "legume")).toBe(false);
+    }
+  });
+
+  it("planos veganos mantêm a proteína (tofu/PTS não viram só acompanhamento)", () => {
+    const plan = buildMealPlan(curatedFoods, { ...BASE_CTX, restrictions: ["vegano"] });
+    const mains = plan.meals.filter((m) => m.timing === "lunch" || m.timing === "dinner");
+    for (const meal of mains) {
+      expect(meal.items.some((i) => i.role === "protein")).toBe(true);
+    }
+    expect(plan.accuracy.protein).toBeGreaterThanOrEqual(70);
+  });
+});
+
 describe("trocas coerentes com o horário", () => {
   it("os equivalentes de um carbo de almoço respeitam o almoço", () => {
     const plan = buildMealPlan(curatedFoods, BASE_CTX);
