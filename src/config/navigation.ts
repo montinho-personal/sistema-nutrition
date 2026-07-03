@@ -11,6 +11,7 @@ import {
   TargetIcon,
   UsersIcon,
   UtensilsIcon,
+  WorkflowIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ export interface NavigationItem {
 export const mainNavigation: NavigationItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
   { title: "Alunos", href: "/students", icon: UsersIcon },
+  { title: "Montar Estratégia", href: "/flow", icon: WorkflowIcon },
   { title: "Diagnóstico", href: "/diagnosis", icon: StethoscopeIcon },
   { title: "Estratégia", href: "/strategy", icon: TargetIcon },
   { title: "Plano Alimentar", href: "/meal-plan", icon: UtensilsIcon },
