@@ -151,6 +151,40 @@ describe("computeEnergyBreakdown — gasto energético decomposto", () => {
     expect(e.tdee).toBe(m.tdee);
     expect(e.bmr).toBe(m.bmr);
   });
+
+  it("treino quantificado (dias × duração) refina o gasto e o TDEE", () => {
+    const semTreino = computeEnergyBreakdown({ ...MALE, trains: "nao" });
+    const comTreino = computeEnergyBreakdown({
+      ...MALE,
+      trains: "regular",
+      trainingDaysPerWeek: 5,
+      trainingMinutes: 60,
+    });
+    expect(comTreino.trainingKcal).toBeGreaterThan(0);
+    expect(comTreino.tdee).toBeGreaterThan(semTreino.tdee);
+    // As partes seguem somando o total.
+    expect(comTreino.bmr + comTreino.dailyActivityKcal + comTreino.trainingKcal).toBe(comTreino.tdee);
+    // Macros usam o mesmo TDEE refinado.
+    const m = computeMacros("weight_loss", "deficit", "moderada", {
+      ...MALE,
+      trainingDaysPerWeek: 5,
+      trainingMinutes: 60,
+    });
+    expect(m.tdee).toBe(comTreino.tdee);
+  });
+
+  it("mais volume de treino → mais gasto", () => {
+    const pouco = computeEnergyBreakdown({ ...MALE, trainingDaysPerWeek: 3, trainingMinutes: 45 });
+    const muito = computeEnergyBreakdown({ ...MALE, trainingDaysPerWeek: 6, trainingMinutes: 90 });
+    expect(muito.trainingKcal).toBeGreaterThan(pouco.trainingKcal);
+    expect(muito.tdee).toBeGreaterThan(pouco.tdee);
+  });
+
+  it("sem dias/duração, cai no bônus por frequência (comportamento anterior preservado)", () => {
+    const m = computeMacros("weight_loss", "deficit", "moderada", MALE);
+    // MALE (80 kg, moderado, treina) sem dado quantificado → TDEE do bônus, como antes.
+    expect(m.tdee).toBe(2695);
+  });
 });
 
 describe("goalCalorieTarget — calorias que perseguem a meta", () => {

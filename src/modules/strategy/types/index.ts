@@ -208,6 +208,10 @@ export interface MacroContext {
   activity: string | null;
   /** Frequência de treino vinda do diagnóstico (regular/irregular/nao). */
   trains: string | null;
+  /** Dias de treino por semana (anamnese) — refina o gasto quando informado. */
+  trainingDaysPerWeek?: number | null;
+  /** Duração média de cada treino em minutos (anamnese). */
+  trainingMinutes?: number | null;
 }
 
 /** Registro persistido (local-first): apenas o input; o resto é derivado. */

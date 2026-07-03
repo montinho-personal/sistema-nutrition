@@ -10,7 +10,7 @@ import { Input } from "@/shared/components/ui/input";
 import { SectionHeader } from "@/shared/components/section-header";
 import { computeEnergyBreakdown } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
-import { ageFromBirthDate } from "@/modules/diagnosis/services";
+import { ageFromBirthDate, readTrainingContext } from "@/modules/diagnosis/services";
 import type { AnswerMap } from "@/modules/diagnosis/types";
 import type { EnergyBreakdown, MacroContext, StrategyInput } from "@/modules/strategy/types";
 import type { Student } from "@/modules/students/types";
@@ -161,6 +161,7 @@ export function EnergyExpenditure({ student, answers }: { student: Student; answ
     sex: student.sex,
     activity: (answers.activity as string | undefined) ?? null,
     trains: (answers.trains as string | undefined) ?? null,
+    ...readTrainingContext(answers),
   };
   const energy = computeEnergyBreakdown(ctx);
 

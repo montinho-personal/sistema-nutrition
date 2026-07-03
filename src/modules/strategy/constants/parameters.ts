@@ -51,6 +51,20 @@ export const TRAINING_BONUS: Record<string, number> = {
 /** Teto do fator de atividade total, para não superestimar o TDEE. */
 export const MAX_ACTIVITY_FACTOR = 1.9;
 
+/**
+ * Gasto médio por minuto de treino (kcal) — estimativa determinística para
+ * converter frequência × duração (anamnese) em gasto diário. Considera treino
+ * misto (força + condicionamento) de intensidade moderada.
+ */
+export const TRAINING_KCAL_PER_MIN = 6;
+
+/**
+ * Teto do fator de atividade quando o treino é quantificado (dias × duração).
+ * Maior que MAX_ACTIVITY_FACTOR porque volumes altos de treino são reais, mas
+ * ainda limita entradas absurdas.
+ */
+export const TRAINING_MAX_FACTOR = 2.5;
+
 /** Objetivo → direção energética (déficit, manutenção ou superávit). */
 export const GOAL_DIRECTION: Record<StudentGoal, EnergyDirection> = {
   weight_loss: "deficit",

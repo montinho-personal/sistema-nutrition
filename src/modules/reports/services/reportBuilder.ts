@@ -17,6 +17,7 @@ import {
   computeOverallConfidence,
   computeScoreMap,
   computeScores,
+  readTrainingContext,
 } from "@/modules/diagnosis/services";
 import { DEFAULT_MACRO_PARAMS, SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
@@ -73,6 +74,7 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
     sex: student.sex,
     activity: (answers.activity as string | undefined) ?? null,
     trains: (answers.trains as string | undefined) ?? null,
+    ...readTrainingContext(answers),
   };
   const macros = computeMacros(goal, strategy.direction, strategy.velocity, macroCtx, macroParams);
 

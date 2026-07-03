@@ -18,6 +18,8 @@ import {
   MAX_ACTIVITY_FACTOR,
   MIFFLIN,
   TRAINING_BONUS,
+  TRAINING_KCAL_PER_MIN,
+  TRAINING_MAX_FACTOR,
 } from "@/modules/strategy/constants/parameters";
 import type { StudentGoal } from "@/modules/students/types";
 import type {
@@ -56,9 +58,30 @@ function computeBmr(ctx: MacroContext): { bmr: number; method: BmrMethod } {
   return { bmr: ctx.weightKg * FALLBACK_KCAL_PER_KG, method: "fallback" };
 }
 
-/** Fator de atividade total (base + bônus de treino), limitado pelo teto. */
-function computeActivityFactor(ctx: MacroContext): number {
-  const base = (ctx.activity && ACTIVITY_FACTORS[ctx.activity]) || DEFAULT_ACTIVITY_FACTOR;
+/** Fator de atividade fora do treino (só o dia a dia). */
+function baseActivityFactor(ctx: MacroContext): number {
+  return (ctx.activity && ACTIVITY_FACTORS[ctx.activity]) || DEFAULT_ACTIVITY_FACTOR;
+}
+
+/** Gasto diário do treino (kcal) a partir de dias × duração, quando informados. */
+function quantifiedTrainingKcal(ctx: MacroContext): number | null {
+  const days = ctx.trainingDaysPerWeek ?? null;
+  const minutes = ctx.trainingMinutes ?? null;
+  if (!days || !minutes || days <= 0 || minutes <= 0) return null;
+  return (days * minutes * TRAINING_KCAL_PER_MIN) / 7;
+}
+
+/**
+ * Fator de atividade total. Quando há dias × duração de treino, o gasto do
+ * treino entra de forma aditiva (mais preciso); senão, cai para o bônus por
+ * frequência (regular/irregular). Sempre limitado por um teto de sanidade.
+ */
+function computeActivityFactor(ctx: MacroContext, bmr: number): number {
+  const base = baseActivityFactor(ctx);
+  const training = quantifiedTrainingKcal(ctx);
+  if (training !== null && bmr > 0) {
+    return Math.min(TRAINING_MAX_FACTOR, base + training / bmr);
+  }
   const bonus = (ctx.trains && TRAINING_BONUS[ctx.trains]) || 0;
   return Math.min(MAX_ACTIVITY_FACTOR, base + bonus);
 }
@@ -77,16 +100,18 @@ const METHOD_LABEL: Record<BmrMethod, string> = {
  */
 export function computeEnergyBreakdown(ctx: MacroContext): EnergyBreakdown {
   const { bmr, method } = computeBmr(ctx);
-  const base = (ctx.activity && ACTIVITY_FACTORS[ctx.activity]) || DEFAULT_ACTIVITY_FACTOR;
+  const base = baseActivityFactor(ctx);
+  const factor = computeActivityFactor(ctx, bmr);
+  const quantified = quantifiedTrainingKcal(ctx) !== null;
   const bonus = (ctx.trains && TRAINING_BONUS[ctx.trains]) || 0;
-  const factor = Math.min(MAX_ACTIVITY_FACTOR, base + bonus);
 
   const bmrKcal = Math.round(bmr);
   const tdee = Math.round(bmr * factor);
 
   let dailyActivityKcal: number;
   let trainingKcal: number;
-  if (bonus <= 0) {
+  if (!quantified && bonus <= 0) {
+    // Sem treino: todo o excedente é atividade do dia a dia.
     trainingKcal = 0;
     dailyActivityKcal = tdee - bmrKcal;
   } else {
@@ -119,7 +144,7 @@ export function computeMacros(
   caloriesTarget?: number | null,
 ): MacroTargets {
   const { bmr, method } = computeBmr(ctx);
-  const activityFactor = computeActivityFactor(ctx);
+  const activityFactor = computeActivityFactor(ctx, bmr);
   const tdee = bmr * activityFactor;
   const reference = {
     bmr: Math.round(bmr),
