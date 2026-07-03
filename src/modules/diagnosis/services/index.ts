@@ -16,6 +16,7 @@ export {
 } from "./anamnesePortrait";
 export {
   analyzeRecordatorio,
+  extractHabitualFoodIds,
   type RecordatorioAnalysis,
   type RecordatorioObservation,
   type MealReading,

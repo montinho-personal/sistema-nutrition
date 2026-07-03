@@ -85,6 +85,32 @@ function matchFoods(text: string): Food[] {
   return FOOD_KEYWORDS.filter((e) => e.keywords.some((k) => keywordInText(t, k))).map((e) => e.food);
 }
 
+/** Campos da anamnese que revelam o que o aluno já come. */
+const HABITUAL_KEYS = [
+  "breakfast",
+  "lunch",
+  "dinner",
+  "snacks",
+  "current_diet_detail",
+  "meals_out_food",
+  "favorite_foods",
+];
+
+/**
+ * Ids dos alimentos que o aluno já come, reconhecidos nos relatos da anamnese —
+ * base para o cardápio seguir os hábitos (máxima aderência, Documento 00).
+ */
+export function extractHabitualFoodIds(answers: AnswerMap): string[] {
+  const ids = new Set<string>();
+  for (const key of HABITUAL_KEYS) {
+    const value = answers[key];
+    if (typeof value === "string" && value.trim()) {
+      for (const food of matchFoods(value)) ids.add(food.id);
+    }
+  }
+  return Array.from(ids);
+}
+
 function role(food: Food): "protein" | "veg" | "other" {
   const kcal = food.nutrition.energyKcal ?? 0;
   if (kcal > 0 && kcal <= VEG_MAX_KCAL) return "veg";

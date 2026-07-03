@@ -17,6 +17,7 @@ import {
   computeOverallConfidence,
   computeScoreMap,
   computeScores,
+  extractHabitualFoodIds,
   readTrainingContext,
 } from "@/modules/diagnosis/services";
 import { DEFAULT_MACRO_PARAMS, SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
@@ -95,6 +96,7 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
     budgetTight: answers.budget === "apertado",
     restrictions,
     variant: 0,
+    habitualFoodIds: extractHabitualFoodIds(answers),
   };
   const mealPlan = buildMealPlan(foods, mealCtx);
 

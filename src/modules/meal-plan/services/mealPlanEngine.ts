@@ -45,6 +45,8 @@ export interface MealPlanContext {
   budgetTight: boolean;
   restrictions: string[];
   variant: number;
+  /** Ids dos alimentos que o aluno já come — priorizados no cardápio (aderência). */
+  habitualFoodIds?: string[];
 }
 
 /** Objetivo do aluno → objetivo do Banco de Alimentos (que tem menos opções). */
@@ -100,6 +102,8 @@ function addMacros(a: MacroTotals, b: MacroTotals): MacroTotals {
 /** Ranqueamento determinístico de um alimento para um papel/timing. */
 function rankScore(food: Food, timing: MealTiming, ctx: MealPlanContext): number {
   let score = goalFitScore(food, GOAL_TO_FOOD_GOAL[ctx.goal]);
+  // Alimentos que o aluno já come vêm primeiro — o cardápio segue os hábitos.
+  if (ctx.habitualFoodIds?.includes(food.id)) score += RANK_WEIGHTS.habitualBonus;
   if (food.attributes.bestTimes.includes(timing)) score += RANK_WEIGHTS.timingMatch;
   if (ctx.emphasizeSatiety) score += (food.attributes.satietyScore ?? 0) * RANK_WEIGHTS.satietyEmphasis;
   if (ctx.emphasizePracticality) {
@@ -292,6 +296,10 @@ function buildNotes(ctx: MealPlanContext, accuracy: MacroTotals): string[] {
   const notes: string[] = [
     `Cardápio distribuído em ${ctx.mealsPerDay} refeições, conforme a estratégia.`,
   ];
+  if (ctx.habitualFoodIds && ctx.habitualFoodIds.length > 0)
+    notes.push(
+      "Cardápio baseado no que você já come — priorizamos seus alimentos e ajustamos a proteína e o que faltava.",
+    );
   if (ctx.emphasizeSatiety)
     notes.push("Seleção priorizou alimentos saciantes (controle de fome baixo).");
   if (ctx.emphasizePracticality)
