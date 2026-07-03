@@ -15,7 +15,7 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
-import { buildStrategy, computeMacros } from "@/modules/strategy/services";
+import { buildStrategy, resolveMacros } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
@@ -65,14 +65,7 @@ export function MealPlanView({ studentId }: { studentId: string }) {
       activity: (session.answers.activity as string | undefined) ?? null,
       trains: (session.answers.trains as string | undefined) ?? null,
     };
-    const macros = computeMacros(
-      student.mainGoal,
-      strategy.direction,
-      strategy.velocity,
-      macroCtx,
-      macroParams,
-      input.macroOverride ?? null,
-    );
+    const macros = resolveMacros(student.mainGoal, strategy, macroCtx, macroParams, input);
     const restrictions = Array.isArray(session.answers.restrictions)
       ? (session.answers.restrictions as string[])
       : [];

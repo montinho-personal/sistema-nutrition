@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { GaugeIcon, HeartPulseIcon, ScaleIcon, TrendingUpIcon, WandSparklesIcon } from "lucide-react";
+import {
+  GaugeIcon,
+  HeartPulseIcon,
+  ScaleIcon,
+  TargetIcon,
+  TrendingUpIcon,
+  WandSparklesIcon,
+} from "lucide-react";
 
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
@@ -25,6 +32,8 @@ interface GoalDefinitionProps {
   proteinAdequate: boolean;
   initialTargetKg: number | null;
   initialWeeks: number | null;
+  /** Quando true, as calorias do cardápio seguem esta meta (sem ajuste manual ativo). */
+  drivesPlan?: boolean;
   onPersist: (targetChangeKg: number | null, weeks: number | null) => void;
 }
 
@@ -53,6 +62,7 @@ export function GoalDefinition({
   proteinAdequate,
   initialTargetKg,
   initialWeeks,
+  drivesPlan = false,
   onPersist,
 }: GoalDefinitionProps) {
   const [targetKg, setTargetKg] = React.useState<number | null>(initialTargetKg);
@@ -151,6 +161,19 @@ export function GoalDefinition({
         </p>
       ) : (
         <div className="flex flex-col gap-4">
+          {drivesPlan ? (
+            <p className="flex items-center gap-2 rounded-md bg-gold/10 px-3 py-2 text-sm text-muted-foreground ring-1 ring-gold/20">
+              <TargetIcon className="size-4 shrink-0 text-gold" />
+              <span>
+                O cardápio deste aluno segue estas calorias:{" "}
+                <strong className="text-foreground">
+                  {direction === "deficit" ? "TDEE menos" : "TDEE mais"} o{" "}
+                  {direction === "deficit" ? "déficit" : "superávit"} diário da meta
+                </strong>
+                . Metas muito agressivas respeitam um piso de segurança.
+              </span>
+            </p>
+          ) : null}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <MetricCard
               label="Ritmo semanal"

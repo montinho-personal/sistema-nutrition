@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { computeMacros } from "@/modules/strategy/services";
 import {
+  computeMacros,
+  dailyEnergyDeltaForGoal,
+  goalCalorieTarget,
+  resolveMacros,
+} from "@/modules/strategy/services";
+import {
+  DEFAULT_MACRO_PARAMS,
   FAT_G_PER_KG,
+  GOAL_CALORIES_FLOOR,
   KCAL_PER_GRAM,
   PROTEIN_G_PER_KG,
   VELOCITY_DEFICIT_PCT,
@@ -109,5 +116,82 @@ describe("computeMacros — ajuste manual do treinador", () => {
     expect(manual.tdee).toBe(auto.tdee);
     expect(manual.bmr).toBe(auto.bmr);
     expect(manual.justifications.some((j) => j.includes("Ajuste manual"))).toBe(true);
+  });
+});
+
+describe("goalCalorieTarget — calorias que perseguem a meta", () => {
+  it("déficit = TDEE menos o gasto diário exigido pela meta", () => {
+    // 4 kg em 8 semanas = 0.5 kg/semana → 7700*0.5/7 ≈ 550 kcal/dia
+    const delta = dailyEnergyDeltaForGoal(4, 8);
+    const target = goalCalorieTarget({
+      direction: "deficit",
+      tdee: 2500,
+      targetChangeKg: 4,
+      weeks: 8,
+    });
+    expect(delta).toBe(550);
+    expect(target).toBe(Math.round((2500 - 550) / 10) * 10);
+  });
+
+  it("superávit soma o gasto diário exigido ao TDEE", () => {
+    const target = goalCalorieTarget({
+      direction: "superavit",
+      tdee: 2500,
+      targetChangeKg: 4,
+      weeks: 8,
+    });
+    expect(target).toBeGreaterThan(2500);
+  });
+
+  it("respeita o piso de segurança em metas agressivas", () => {
+    // 5 kg em 2 semanas exige ~2750 kcal/dia — acima do TDEE, viraria negativo
+    const target = goalCalorieTarget({
+      direction: "deficit",
+      tdee: 2500,
+      targetChangeKg: 5,
+      weeks: 2,
+    });
+    expect(target).toBe(GOAL_CALORIES_FLOOR);
+  });
+
+  it("retorna null sem meta ou na manutenção", () => {
+    expect(goalCalorieTarget({ direction: "deficit", tdee: 2500, targetChangeKg: null, weeks: 8 })).toBeNull();
+    expect(goalCalorieTarget({ direction: "manutencao", tdee: 2500, targetChangeKg: 4, weeks: 8 })).toBeNull();
+  });
+});
+
+describe("resolveMacros — precedência das calorias-alvo", () => {
+  const strat = { direction: "deficit" as const, velocity: "moderada" as const };
+
+  it("sem meta nem ajuste: usa a velocidade prescrita (automático)", () => {
+    const m = resolveMacros("weight_loss", strat, MALE, DEFAULT_MACRO_PARAMS, {});
+    const auto = computeMacros("weight_loss", "deficit", "moderada", MALE);
+    expect(m.calories).toBe(auto.calories);
+    expect(m.manual).toBe(false);
+  });
+
+  it("com meta: o cardápio segue as calorias da meta", () => {
+    const m = resolveMacros("weight_loss", strat, MALE, DEFAULT_MACRO_PARAMS, {
+      targetChangeKg: 4,
+      targetWeeks: 8,
+    });
+    const target = goalCalorieTarget({
+      direction: "deficit",
+      tdee: m.tdee,
+      targetChangeKg: 4,
+      weeks: 8,
+    });
+    expect(m.calories).toBe(target);
+    expect(m.justifications.some((j) => j.includes("definidas pela meta"))).toBe(true);
+  });
+
+  it("ajuste manual vence a meta", () => {
+    const m = resolveMacros("weight_loss", strat, MALE, DEFAULT_MACRO_PARAMS, {
+      targetChangeKg: 4,
+      targetWeeks: 8,
+      macroOverride: { calories: 1900, proteinPct: 30, carbPct: 45, fatPct: 25 },
+    });
+    expect(m.manual).toBe(true);
+    expect(m.calories).toBe(1900);
   });
 });
