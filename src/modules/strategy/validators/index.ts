@@ -4,6 +4,30 @@
 
 import { z } from "zod";
 
+import { MACRO_OVERRIDE_LIMITS } from "@/modules/strategy/constants/parameters";
+
+/**
+ * Ajuste manual de macros: calorias-alvo + divisão percentual (P/C/G).
+ * Os percentuais precisam somar 100 (com tolerância de 1% para arredondamento).
+ */
+export const macroOverrideSchema = z
+  .object({
+    calories: z
+      .number({ message: "Informe as calorias." })
+      .int("Use calorias inteiras.")
+      .min(MACRO_OVERRIDE_LIMITS.minCalories, "Calorias muito baixas.")
+      .max(MACRO_OVERRIDE_LIMITS.maxCalories, "Calorias muito altas."),
+    proteinPct: z.number().min(0, "Mín. 0%.").max(100, "Máx. 100%."),
+    carbPct: z.number().min(0, "Mín. 0%.").max(100, "Máx. 100%."),
+    fatPct: z.number().min(0, "Mín. 0%.").max(100, "Máx. 100%."),
+  })
+  .refine((v) => Math.abs(v.proteinPct + v.carbPct + v.fatPct - 100) <= 1, {
+    message: "Os percentuais precisam somar 100%.",
+    path: ["carbPct"],
+  });
+
+export type MacroOverrideValues = z.infer<typeof macroOverrideSchema>;
+
 export const strategyInputSchema = z.object({
   currentWeightKg: z
     .number()
