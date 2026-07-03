@@ -90,6 +90,12 @@ export const RANK_WEIGHTS = {
   satietyEmphasis: 0.4,
   practicalityEmphasis: 0.4,
   budgetPenaltyPerLevel: 8,
+  /**
+   * Bônus para alimentos que o aluno já come (recordatório). Grande o bastante
+   * para o cardápio priorizar o que ele já tem no dia a dia — máxima aderência —
+   * mantendo a lógica de papéis (a proteína entra quando falta).
+   */
+  habitualBonus: 1000,
 } as const;
 
 /** Rótulos pt-BR dos papéis. */

@@ -5,7 +5,12 @@ import * as React from "react";
 import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession, ScoreKey } from "@/modules/diagnosis/types";
-import { ageFromBirthDate, computeScoreMap, readTrainingContext } from "@/modules/diagnosis/services";
+import {
+  ageFromBirthDate,
+  computeScoreMap,
+  extractHabitualFoodIds,
+  readTrainingContext,
+} from "@/modules/diagnosis/services";
 import { buildStrategy, resolveDietApproach, resolveMacros } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
@@ -97,6 +102,7 @@ export function useStudentPlan(studentId: string): StudentPlan {
       budgetTight: session.answers.budget === "apertado",
       restrictions,
       variant,
+      habitualFoodIds: extractHabitualFoodIds(session.answers),
     };
     return { strategy, macros, scores, plan: buildMealPlan(curatedFoods, ctx), mealsPerDay };
   }, [student, session, input, restrictions, variant, macroParams]);
