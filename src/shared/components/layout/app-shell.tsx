@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
 import { AppHeader } from "@/shared/components/layout/app-header";
@@ -24,6 +25,10 @@ import { ErrorBoundary } from "@/shared/components/error-boundary";
  */
 function AppShell({ children }: { children: React.ReactNode }) {
   const [showIntelligencePanels, setShowIntelligencePanels] = React.useState(true);
+  const pathname = usePathname();
+  // O fluxo (Workflow V1) tem a sua própria Strategy Rail — os painéis genéricos
+  // do shell ficam ocultos ali para não duplicar o resumo lateral.
+  const ownsRightRail = pathname.startsWith("/flow");
 
   return (
     <div className="flex h-dvh overflow-hidden print:h-auto print:overflow-visible">
@@ -41,7 +46,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <div
             className={cn(
               "hidden w-[560px] shrink-0 grid-cols-2 xl:grid print:hidden",
-              !showIntelligencePanels && "xl:hidden",
+              (!showIntelligencePanels || ownsRightRail) && "xl:hidden",
             )}
           >
             <InsightsPanel />
