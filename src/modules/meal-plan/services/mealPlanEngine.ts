@@ -21,6 +21,7 @@ import {
   MEAL_TIMING_COMPATIBILITY,
   PORTION_LIMITS,
   RANK_WEIGHTS,
+  RICE_AND_BEANS_MIN_CARB_SHARE,
   ROLE_THRESHOLDS,
   SOLVER_PASSES,
   VEG_FIXED_GRAMS,
@@ -320,7 +321,24 @@ function pct(value: number, target: number): number {
   return Math.round((value / target) * 100);
 }
 
-function buildNotes(ctx: MealPlanContext, accuracy: MacroTotals): string[] {
+/** kcal por grama de carboidrato (Atwater) — para a fração calórica do carbo. */
+const CARB_KCAL_PER_GRAM = 4;
+
+/**
+ * O prato leva arroz e feijão quando a estratégia tem carboidrato suficiente. Em
+ * abordagens low carb (fração calórica de carbo abaixo do limiar), a leguminosa
+ * sai das refeições principais — a estratégia manda no prato, não o hábito.
+ */
+function pairsRiceAndBeans(macros: MacroTotals): boolean {
+  if (macros.kcal <= 0) return true;
+  return (macros.carbs * CARB_KCAL_PER_GRAM) / macros.kcal >= RICE_AND_BEANS_MIN_CARB_SHARE;
+}
+
+function buildNotes(
+  ctx: MealPlanContext,
+  accuracy: MacroTotals,
+  pairRiceAndBeans: boolean,
+): string[] {
   const notes: string[] = [
     `Cardápio distribuído em ${ctx.mealsPerDay} refeições, conforme a estratégia.`,
   ];
@@ -339,6 +357,11 @@ function buildNotes(ctx: MealPlanContext, accuracy: MacroTotals): string[] {
     .map((r) => RESTRICTION_LABELS[r]);
   if (applied.length) notes.push(`Restrições respeitadas: ${applied.join(", ")}.`);
 
+  if (!pairRiceAndBeans)
+    notes.push(
+      "Abordagem com pouco carboidrato: o feijão saiu das refeições principais para respeitar a estratégia.",
+    );
+
   notes.push(
     `Fechamento: ${accuracy.kcal}% das calorias e ${accuracy.protein}% da proteína do alvo.`,
   );
@@ -352,6 +375,7 @@ function buildNotes(ctx: MealPlanContext, accuracy: MacroTotals): string[] {
 export function buildMealPlan(foods: Food[], ctx: MealPlanContext): MealPlan {
   const template = MEAL_TEMPLATES[ctx.mealsPerDay] ?? MEAL_TEMPLATES[4];
   const usedDay = new Set<string>();
+  const pairRiceAndBeans = pairsRiceAndBeans(ctx.macros);
 
   const meals = template.map((meal) => {
     const target: MacroTotals = {
@@ -360,7 +384,12 @@ export function buildMealPlan(foods: Food[], ctx: MealPlanContext): MealPlan {
       carbs: ctx.macros.carbs * meal.kcalFraction,
       fat: ctx.macros.fat * meal.kcalFraction,
     };
-    return buildMeal(meal, target, foods, ctx, usedDay);
+    // Sem carbo suficiente na estratégia, a leguminosa sai do prato.
+    const effective =
+      pairRiceAndBeans || !meal.roles.includes("legume")
+        ? meal
+        : { ...meal, roles: meal.roles.filter((r) => r !== "legume") };
+    return buildMeal(effective, target, foods, ctx, usedDay);
   });
 
   const totals = meals.reduce((acc, m) => addMacros(acc, m.totals), { ...EMPTY_MACROS });
@@ -387,7 +416,7 @@ export function buildMealPlan(foods: Food[], ctx: MealPlanContext): MealPlan {
       fat: round(totals.fat),
     },
     accuracy,
-    notes: buildNotes(ctx, accuracy),
+    notes: buildNotes(ctx, accuracy, pairRiceAndBeans),
     variant: ctx.variant,
   };
 }
