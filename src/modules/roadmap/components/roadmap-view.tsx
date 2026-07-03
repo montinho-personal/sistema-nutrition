@@ -18,6 +18,7 @@ import {
   ageFromBirthDate,
   buildExecutiveSummary,
   computeScoreMap,
+  readTrainingContext,
 } from "@/modules/diagnosis/services";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
 import type { MacroContext } from "@/modules/strategy/types";
@@ -106,6 +107,7 @@ export function RoadmapView({ studentId }: { studentId: string }) {
           sex: student.sex,
           activity: (session.answers.activity as string | undefined) ?? null,
           trains: (session.answers.trains as string | undefined) ?? null,
+          ...readTrainingContext(session.answers),
         };
         const macros = computeMacros(
           student.mainGoal,

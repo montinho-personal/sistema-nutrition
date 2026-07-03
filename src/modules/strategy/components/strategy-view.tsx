@@ -11,7 +11,7 @@ import { LoadingScreen } from "@/shared/components/loading-screen";
 import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
-import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
+import { ageFromBirthDate, computeScoreMap, readTrainingContext } from "@/modules/diagnosis/services";
 import { buildStrategy, evaluateStrategyAlerts, resolveMacros } from "@/modules/strategy/services";
 import { useMacroControls } from "@/modules/strategy/hooks/use-macro-controls";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
@@ -66,6 +66,7 @@ export function StrategyView({ studentId }: { studentId: string }) {
       sex: student.sex,
       activity: (session?.answers.activity as string | undefined) ?? null,
       trains: (session?.answers.trains as string | undefined) ?? null,
+      ...readTrainingContext(session?.answers),
     };
     return resolveMacros(student.mainGoal, strategy, ctx, macroParams, input);
   }, [student, strategy, input, session, macroParams]);

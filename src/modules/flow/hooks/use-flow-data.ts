@@ -5,7 +5,7 @@ import * as React from "react";
 import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
-import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
+import { ageFromBirthDate, computeScoreMap, readTrainingContext } from "@/modules/diagnosis/services";
 import { buildStrategy, evaluateStrategyAlerts, resolveMacros } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
@@ -79,6 +79,7 @@ export function useFlowData(studentId: string): FlowData {
       sex: student.sex,
       activity: (session?.answers.activity as string | undefined) ?? null,
       trains: (session?.answers.trains as string | undefined) ?? null,
+      ...readTrainingContext(session?.answers),
     };
     return resolveMacros(student.mainGoal, strategy, ctx, macroParams, input);
   }, [student, strategy, input, session, macroParams]);

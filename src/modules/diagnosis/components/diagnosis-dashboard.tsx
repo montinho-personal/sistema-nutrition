@@ -17,6 +17,7 @@ import {
   ageFromBirthDate,
   buildDiagnosisDashboard,
   computeScoreMap,
+  readTrainingContext,
 } from "@/modules/diagnosis/services";
 import { computeEnergyBreakdown } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
@@ -98,6 +99,7 @@ export function DiagnosisDashboard({ student, answers }: { student: Student; ans
       sex: student.sex,
       activity: (answers.activity as string | undefined) ?? null,
       trains: (answers.trains as string | undefined) ?? null,
+      ...readTrainingContext(answers),
     };
     return computeEnergyBreakdown(ctx).tdee;
   }, [weightKg, input, student, answers]);

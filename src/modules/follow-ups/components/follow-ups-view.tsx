@@ -12,7 +12,7 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
-import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
+import { ageFromBirthDate, computeScoreMap, readTrainingContext } from "@/modules/diagnosis/services";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import type { MacroContext } from "@/modules/strategy/types";
@@ -77,6 +77,7 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
       sex: student.sex,
       activity: (session.answers.activity as string | undefined) ?? null,
       trains: (session.answers.trains as string | undefined) ?? null,
+      ...readTrainingContext(session.answers),
     };
     const macros = computeMacros(
       student.mainGoal,

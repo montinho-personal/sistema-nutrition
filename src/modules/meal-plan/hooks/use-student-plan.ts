@@ -5,7 +5,7 @@ import * as React from "react";
 import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession, ScoreKey } from "@/modules/diagnosis/types";
-import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
+import { ageFromBirthDate, computeScoreMap, readTrainingContext } from "@/modules/diagnosis/services";
 import { buildStrategy, resolveDietApproach, resolveMacros } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
@@ -83,6 +83,7 @@ export function useStudentPlan(studentId: string): StudentPlan {
       sex: student.sex,
       activity: (session.answers.activity as string | undefined) ?? null,
       trains: (session.answers.trains as string | undefined) ?? null,
+      ...readTrainingContext(session.answers),
     };
     const macros = resolveMacros(student.mainGoal, strategy, macroCtx, macroParams, input);
     const approach = resolveDietApproach(input.dietApproach ?? null, student.mainGoal);

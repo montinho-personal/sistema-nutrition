@@ -1,6 +1,7 @@
 /** Serviços do Módulo 1 — Diagnóstico Estratégico. */
 
 export { computeScores, computeScoreMap, computeOverallConfidence } from "./scoringEngine";
+export { readTrainingContext } from "./answerContext";
 export { computeHypotheses } from "./hypothesisEngine";
 export {
   buildDiagnosisDashboard,
