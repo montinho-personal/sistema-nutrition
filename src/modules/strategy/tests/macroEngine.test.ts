@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  computeEnergyBreakdown,
   computeMacros,
   dailyEnergyDeltaForGoal,
   goalCalorieTarget,
@@ -116,6 +117,39 @@ describe("computeMacros — ajuste manual do treinador", () => {
     expect(manual.tdee).toBe(auto.tdee);
     expect(manual.bmr).toBe(auto.bmr);
     expect(manual.justifications.some((j) => j.includes("Ajuste manual"))).toBe(true);
+  });
+});
+
+describe("computeEnergyBreakdown — gasto energético decomposto", () => {
+  it("as partes somam exatamente o total (TDEE)", () => {
+    const e = computeEnergyBreakdown(MALE);
+    expect(e.bmr + e.dailyActivityKcal + e.trainingKcal).toBe(e.tdee);
+  });
+
+  it("quem não treina tem gasto de treino zero", () => {
+    const e = computeEnergyBreakdown({ ...MALE, trains: "nao" });
+    expect(e.trainingKcal).toBe(0);
+    expect(e.bmr + e.dailyActivityKcal).toBe(e.tdee);
+  });
+
+  it("treinar regularmente adiciona gasto de treino", () => {
+    const noTrain = computeEnergyBreakdown({ ...MALE, trains: "nao" });
+    const regular = computeEnergyBreakdown({ ...MALE, trains: "regular" });
+    expect(regular.trainingKcal).toBeGreaterThan(0);
+    expect(regular.tdee).toBeGreaterThan(noTrain.tdee);
+  });
+
+  it("dia a dia mais ativo eleva o gasto de atividades", () => {
+    const sed = computeEnergyBreakdown({ ...MALE, activity: "sedentario" });
+    const act = computeEnergyBreakdown({ ...MALE, activity: "ativo" });
+    expect(act.dailyActivityKcal).toBeGreaterThan(sed.dailyActivityKcal);
+  });
+
+  it("o TDEE bate com o do cálculo de macros", () => {
+    const e = computeEnergyBreakdown(MALE);
+    const m = computeMacros("weight_loss", "deficit", "moderada", MALE);
+    expect(e.tdee).toBe(m.tdee);
+    expect(e.bmr).toBe(m.bmr);
   });
 });
 

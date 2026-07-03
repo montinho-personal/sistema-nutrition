@@ -9,6 +9,7 @@ import { InsightCard, type InsightKind } from "@/shared/components/insight-card"
 import { SectionHeader } from "@/shared/components/section-header";
 import { INVERTED_SCORES, SCORE_LABELS } from "@/modules/diagnosis/constants";
 import { RecordatorioAnalysis } from "@/modules/diagnosis/components/recordatorio-analysis";
+import { EnergyExpenditure } from "@/modules/diagnosis/components/energy-expenditure";
 import {
   ageFromBirthDate,
   buildAnamnesePortrait,
@@ -83,6 +84,9 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
           </div>
         </CardContent>
       </Card>
+
+      {/* Gasto energético — TMB, treino, atividades e total */}
+      <EnergyExpenditure student={student} answers={answers} />
 
       {/* Scores */}
       <section className="flex flex-col gap-3">
