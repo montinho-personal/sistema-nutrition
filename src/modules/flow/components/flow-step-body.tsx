@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   ArrowRightIcon,
   ClipboardListIcon,
-  FileTextIcon,
   LockIcon,
   StethoscopeIcon,
 } from "lucide-react";
@@ -16,6 +15,7 @@ import { EmptyState } from "@/shared/components/empty-state";
 import { DiagnosisSummary } from "@/modules/diagnosis/components/diagnosis-summary";
 import { MealPlanBoard } from "@/modules/meal-plan/components/meal-plan-board";
 import { ValidationBoard } from "@/modules/validation/components/validation-board";
+import { PremiumDocument } from "@/modules/reports/components/premium-document";
 import { FlowStrategyStep } from "@/modules/flow/components/flow-strategy-step";
 import { FlowDietStep } from "@/modules/flow/components/flow-diet-step";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
@@ -135,15 +135,7 @@ export function FlowStepBody({
       if (!macros) {
         return <LockedStep description="Conclua as etapas anteriores para gerar o documento." />;
       }
-      return (
-        <OpenToolCard
-          icon={<FileTextIcon />}
-          title="Documento do aluno"
-          description="Gere o relatório com o diagnóstico, a estratégia e o plano. A versão premium chega na sprint desta etapa."
-          href={`/reports/${studentId}`}
-          cta="Abrir relatório"
-        />
-      );
+      return <PremiumDocument studentId={studentId} />;
 
     default:
       return (
