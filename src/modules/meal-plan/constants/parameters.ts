@@ -134,6 +134,19 @@ export const RANK_WEIGHTS = {
   habitualBonus: 1000,
 } as const;
 
+/** Refeições da noite — alvo do "zero carboidrato à noite" (Personal Nutrition AI). */
+export const EVENING_TIMINGS: MealTiming[] = ["dinner", "supper"];
+
+/** Limites sensatos ao interpretar uma instrução em linguagem natural. */
+export const DIRECTIVE_LIMITS = {
+  /** Faixa aceita de calorias (evita erros de digitação virarem alvos absurdos). */
+  minCalories: 800,
+  maxCalories: 6000,
+  /** Faixa de refeições por dia suportada pelos modelos. */
+  minMeals: 3,
+  maxMeals: 6,
+} as const;
+
 /** Rótulos pt-BR dos papéis. */
 export const ROLE_LABELS: Record<FoodRole, string> = {
   protein: "Proteína",

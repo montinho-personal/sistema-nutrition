@@ -10,4 +10,16 @@ export {
   type MealPlanContext,
 } from "./mealPlanEngine";
 export { buildDietaryFilter, RESTRICTION_LABELS } from "./dietaryFilters";
-export { getMealPlanVariant, setMealPlanVariant } from "./mealPlanRepository";
+export {
+  getMealPlanVariant,
+  setMealPlanVariant,
+  getMealPlanInstruction,
+  setMealPlanInstruction,
+} from "./mealPlanRepository";
+export {
+  parseDirective,
+  applyDirective,
+  overrideCalories,
+  emptyDirective,
+  hasDirective,
+} from "./mealPlanDirective";
