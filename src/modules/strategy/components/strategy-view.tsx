@@ -23,7 +23,7 @@ import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
-import { buildStrategy, computeMacros } from "@/modules/strategy/services";
+import { buildStrategy, resolveMacros } from "@/modules/strategy/services";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { AnthropometricsForm } from "@/modules/strategy/components/anthropometrics-form";
@@ -100,14 +100,7 @@ export function StrategyView({ studentId }: { studentId: string }) {
       activity: (session?.answers.activity as string | undefined) ?? null,
       trains: (session?.answers.trains as string | undefined) ?? null,
     };
-    return computeMacros(
-      student.mainGoal,
-      strategy.direction,
-      strategy.velocity,
-      ctx,
-      macroParams,
-      input.macroOverride ?? null,
-    );
+    return resolveMacros(student.mainGoal, strategy, ctx, macroParams, input);
   }, [student, strategy, input, session, macroParams]);
 
   // A store é lida no cliente; antes disso, evitar flash de "não encontrado".
@@ -223,6 +216,14 @@ export function StrategyView({ studentId }: { studentId: string }) {
                     <SlidersHorizontalIcon className="size-3" />
                     Ajuste manual
                   </Badge>
+                ) : input.targetChangeKg &&
+                  input.targetWeeks &&
+                  strategy &&
+                  strategy.direction !== "manutencao" ? (
+                  <Badge variant="secondary">
+                    <TargetIcon className="size-3" />
+                    Calorias pela meta
+                  </Badge>
                 ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -280,6 +281,7 @@ export function StrategyView({ studentId }: { studentId: string }) {
                 proteinAdequate={macroParams.proteinGPerKg[student.mainGoal] >= 1.6}
                 initialTargetKg={input.targetChangeKg ?? null}
                 initialWeeks={input.targetWeeks ?? null}
+                drivesPlan={!macros.manual}
                 onPersist={persistGoal}
               />
             ) : null}

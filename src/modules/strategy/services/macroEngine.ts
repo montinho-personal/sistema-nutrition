@@ -79,6 +79,7 @@ export function computeMacros(
   ctx: MacroContext,
   params: MacroParams = DEFAULT_MACRO_PARAMS,
   override?: MacroOverride | null,
+  caloriesTarget?: number | null,
 ): MacroTargets {
   const { bmr, method } = computeBmr(ctx);
   const activityFactor = computeActivityFactor(ctx);
@@ -100,9 +101,12 @@ export function computeMacros(
   const surplusPct = params.velocitySurplusPct[velocity];
   const proteinPerKg = params.proteinGPerKg[goal];
 
-  // Direção do objetivo × velocidade → calorias-alvo.
+  // Calorias-alvo: a meta (Definição Estratégica) manda quando informada; senão,
+  // direção do objetivo × velocidade prescrita.
+  const fromGoal = caloriesTarget !== undefined && caloriesTarget !== null;
   let calories = tdee;
-  if (direction === "deficit") calories = tdee * (1 - deficitPct);
+  if (fromGoal) calories = caloriesTarget;
+  else if (direction === "deficit") calories = tdee * (1 - deficitPct);
   else if (direction === "superavit") calories = tdee * (1 + surplusPct);
   calories = roundTo(calories, CALORIE_ROUNDING);
 
@@ -114,14 +118,18 @@ export function computeMacros(
   const carbKcal = Math.max(0, calories - proteinKcal - fatKcal);
   const carbG = Math.round(carbKcal / KCAL_PER_GRAM.carb);
 
-  const justifications = [
-    `BMR ${Math.round(bmr)} kcal por ${METHOD_LABEL[method]}.`,
-    `TDEE ${Math.round(tdee)} kcal = BMR × fator de atividade ${activityFactor.toFixed(3)}.`,
-    direction === "deficit"
+  const calorieLine = fromGoal
+    ? `Calorias-alvo ${calories} kcal — definidas pela meta (Definição Estratégica).`
+    : direction === "deficit"
       ? `Déficit de ${Math.round(deficitPct * 100)}% (velocidade) → ${calories} kcal.`
       : direction === "superavit"
         ? `Superávit de ${Math.round(surplusPct * 100)}% (velocidade) → ${calories} kcal.`
-        : `Manutenção → ${calories} kcal.`,
+        : `Manutenção → ${calories} kcal.`;
+
+  const justifications = [
+    `BMR ${Math.round(bmr)} kcal por ${METHOD_LABEL[method]}.`,
+    `TDEE ${Math.round(tdee)} kcal = BMR × fator de atividade ${activityFactor.toFixed(3)}.`,
+    calorieLine,
     `Proteína ${proteinG} g (${proteinPerKg} g/kg) — preserva massa magra e saciedade.`,
     `Gordura ${fatG} g (piso de ${params.fatGPerKg} g/kg) — suporte hormonal e sabor.`,
     `Carboidrato ${carbG} g — completa as calorias restantes, combustível do treino.`,

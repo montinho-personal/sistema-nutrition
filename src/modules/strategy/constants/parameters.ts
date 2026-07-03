@@ -115,6 +115,13 @@ export const MACRO_OVERRIDE_LIMITS = {
   maxCalories: 6000,
 } as const;
 
+/**
+ * Piso de segurança para as calorias derivadas da meta (Definição Estratégica).
+ * Metas muito agressivas exigiriam calorias baixas/negativas; o cardápio nunca
+ * mira abaixo deste piso, ainda que a meta peça mais.
+ */
+export const GOAL_CALORIES_FLOOR = 1200;
+
 // ── Definição Estratégica: projeção de meta (Documento 04 — realismo) ─────────
 
 /**

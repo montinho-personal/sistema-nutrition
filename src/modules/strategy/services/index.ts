@@ -2,5 +2,6 @@
 
 export { buildStrategy } from "./strategyEngine";
 export { computeMacros } from "./macroEngine";
-export { projectGoal } from "./goalProjection";
+export { resolveMacros } from "./resolveMacros";
+export { projectGoal, goalCalorieTarget, dailyEnergyDeltaForGoal } from "./goalProjection";
 export { getStrategyRecord, saveStrategyInput } from "./strategyRepository";

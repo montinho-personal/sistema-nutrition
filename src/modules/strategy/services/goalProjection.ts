@@ -8,15 +8,19 @@
  */
 
 import {
+  CALORIE_ROUNDING,
   CAPACITY_RANGE,
   ENERGY_KCAL_PER_KG,
+  GOAL_CALORIES_FLOOR,
   LEAN_LOSS,
+  MACRO_OVERRIDE_LIMITS,
   MAX_DEFICIT_PCT_TDEE,
   WEEKLY_GAIN_KG,
   WEEKLY_LOSS_PCT_BW,
 } from "@/modules/strategy/constants/parameters";
 import type {
   AdherenceLevel,
+  EnergyDirection,
   GoalProjection,
   GoalProjectionInput,
   RealismLevel,
@@ -25,6 +29,37 @@ import type {
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const round1 = (v: number) => Math.round(v * 10) / 10;
 const pct = (v: number) => Math.round(v * 100);
+
+/**
+ * Déficit/superávit diário (kcal) necessário para uma meta de mudança de peso.
+ * Base determinística: ~7700 kcal por kg de tecido, distribuídos na semana.
+ */
+export function dailyEnergyDeltaForGoal(targetChangeKg: number, weeks: number): number {
+  if (weeks <= 0) return 0;
+  const weeklyRateKg = targetChangeKg / weeks;
+  return Math.round((weeklyRateKg * ENERGY_KCAL_PER_KG) / 7);
+}
+
+/**
+ * Calorias-alvo para o cardápio seguir uma meta (kg em X semanas): parte do TDEE
+ * e aplica o déficit/superávit exigido, respeitando um piso de segurança e um
+ * teto de sanidade. Retorna null quando não há meta ou não há movimento de peso.
+ */
+export function goalCalorieTarget(params: {
+  direction: EnergyDirection;
+  tdee: number;
+  targetChangeKg: number | null;
+  weeks: number | null;
+}): number | null {
+  const { direction, tdee, targetChangeKg, weeks } = params;
+  if (!targetChangeKg || targetChangeKg <= 0 || !weeks || weeks <= 0) return null;
+  if (direction === "manutencao") return null;
+
+  const delta = dailyEnergyDeltaForGoal(targetChangeKg, weeks);
+  const raw = direction === "deficit" ? tdee - delta : tdee + delta;
+  const bounded = clamp(raw, GOAL_CALORIES_FLOOR, MACRO_OVERRIDE_LIMITS.maxCalories);
+  return Math.round(bounded / CALORIE_ROUNDING) * CALORIE_ROUNDING;
+}
 
 /** Realismo do emagrecimento: comparado ao ritmo seguro (% do peso/semana). */
 function lossRealism(
@@ -186,7 +221,7 @@ function buildSuggestion(
 export function projectGoal(input: GoalProjectionInput): GoalProjection {
   const weeklyRateKg = input.targetChangeKg / input.weeks;
   const weeklyRatePctBW = weeklyRateKg / input.currentWeightKg;
-  const dailyEnergyDeltaKcal = Math.round((weeklyRateKg * ENERGY_KCAL_PER_KG) / 7);
+  const dailyEnergyDeltaKcal = dailyEnergyDeltaForGoal(input.targetChangeKg, input.weeks);
   const requiredDeltaPctTdee = input.tdee > 0 ? dailyEnergyDeltaKcal / input.tdee : 0;
 
   const realism =
