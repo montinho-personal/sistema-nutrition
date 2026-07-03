@@ -72,6 +72,11 @@ export interface MealPlanPref {
   variant: number;
   /** Instrução em linguagem natural do treinador ("1700 kcal, sem carbo à noite"). */
   instruction?: string | null;
+  /**
+   * Interpretação já aplicada da instrução (determinística ou enriquecida pela
+   * IA). Persistir evita reinterpretar — e chamar a IA — a cada carregamento.
+   */
+  directive?: MealPlanDirective | null;
   updatedAt: string;
 }
 
@@ -97,4 +102,10 @@ export interface MealPlanDirective {
   addRestrictions: string[];
   /** Frases reconhecidas, para transparência na interface. */
   recognized: string[];
+  /**
+   * Intenções que a IA entendeu mas o sistema ainda não sabe honrar (ex.: "sem
+   * amendoim", "mais proteína no café"). Nunca ignoradas em silêncio — a
+   * interface mostra o que não foi aplicado (honestidade — Documento 02).
+   */
+  unsupported: string[];
 }
