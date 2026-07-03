@@ -3,11 +3,10 @@
  *
  * A leitura determinística vive em
  * `src/modules/diagnosis/services/recordatorioAnalysis.ts` e resolve a maior
- * parte dos casos (Documento 08 — regra antes de IA). Este prompt é o **seam**
- * para o enriquecimento por IA: só entra quando houver chave configurada, para
- * estimar composição e nuances que o texto livre esconde (ex.: quantidades,
- * preparos, padrões emocionais). Ainda não é chamado em runtime — documenta o
- * contrato para quando a IA for ativada.
+ * parte dos casos (Documento 08 — regra antes de IA). Este prompt alimenta o
+ * enriquecimento por IA (`aiRecordatorio.ts` + a server action), que só roda
+ * quando há chave configurada, para estimar composição e nuances que o texto
+ * livre esconde (ex.: quantidades, preparos, padrões emocionais).
  */
 
 export const recordatorioInterpretationPrompt = {
@@ -23,8 +22,11 @@ export const recordatorioInterpretationPrompt = {
     "perMeal: [{ meal, estimatedKcal, estimatedProteinG, notes }]",
     "observations: [{ kind: 'risk'|'opportunity'|'recommendation', title, detail }]",
   ],
-  version: 1,
-  history: ["v1: contrato inicial (não invocado — aguardando ativação da IA)"],
+  version: 2,
+  history: [
+    "v1: contrato inicial (não invocado — aguardando ativação da IA)",
+    "v2: ligado à server action; usado quando ANTHROPIC_API_KEY está configurada",
+  ],
   template: `Você é um nutricionista clínico analisando o "dia alimentar" relatado por um aluno.
 NÃO invente alimentos que não foram citados. Quando faltar quantidade, estime de forma conservadora
 e sinalize a incerteza. Nunca demonize alimentos; toda observação vem com orientação prática.
