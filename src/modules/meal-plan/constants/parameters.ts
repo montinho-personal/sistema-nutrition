@@ -27,28 +27,28 @@ export interface MealTemplate {
 export const MEAL_TEMPLATES: Record<number, MealTemplate[]> = {
   3: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.3, roles: ["protein", "carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.4, roles: ["protein", "carb", "veg"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.3, roles: ["protein", "carb", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.4, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.3, roles: ["protein", "carb", "legume", "veg"] },
   ],
   4: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.25, roles: ["protein", "carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.35, roles: ["protein", "carb", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.35, roles: ["protein", "carb", "legume", "veg"] },
     { slot: "afternoon_snack", title: "Lanche da tarde", timing: "snack", kcalFraction: 0.15, roles: ["protein", "carb"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "legume", "veg"] },
   ],
   5: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.22, roles: ["protein", "carb", "fat"] },
     { slot: "morning_snack", title: "Lanche da manhã", timing: "snack", kcalFraction: 0.1, roles: ["carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.3, roles: ["protein", "carb", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.3, roles: ["protein", "carb", "legume", "veg"] },
     { slot: "afternoon_snack", title: "Lanche da tarde", timing: "snack", kcalFraction: 0.13, roles: ["protein", "carb"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "legume", "veg"] },
   ],
   6: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.2, roles: ["protein", "carb", "fat"] },
     { slot: "morning_snack", title: "Lanche da manhã", timing: "snack", kcalFraction: 0.1, roles: ["carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.28, roles: ["protein", "carb", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.28, roles: ["protein", "carb", "legume", "veg"] },
     { slot: "afternoon_snack", title: "Lanche da tarde", timing: "snack", kcalFraction: 0.12, roles: ["protein", "carb"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.22, roles: ["protein", "carb", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.22, roles: ["protein", "carb", "legume", "veg"] },
     { slot: "supper", title: "Ceia", timing: "supper", kcalFraction: 0.08, roles: ["protein"] },
   ],
 };
@@ -87,12 +87,20 @@ export const ROLE_THRESHOLDS = {
 export const PORTION_LIMITS: Record<FoodRole, { min: number; max: number }> = {
   protein: { min: 30, max: 300 },
   carb: { min: 15, max: 380 },
+  legume: { min: 40, max: 200 },
   fat: { min: 5, max: 60 },
   veg: { min: 50, max: 200 },
 };
 
 /** Porção fixa dos vegetais (volume alimentar para saciedade). */
 export const VEG_FIXED_GRAMS = 120;
+
+/**
+ * Porção fixa da leguminosa (feijão e afins) — ≈ 1 concha média. Como o vegetal,
+ * é um acompanhamento de porção cultural estável; o arroz (carbo) é quem escala
+ * para fechar a energia da refeição.
+ */
+export const LEGUME_FIXED_GRAMS = 120;
 
 /** Arredondamento das porções (múltiplo de gramas). */
 export const GRAMS_ROUNDING = 5;
@@ -122,6 +130,7 @@ export const RANK_WEIGHTS = {
 export const ROLE_LABELS: Record<FoodRole, string> = {
   protein: "Proteína",
   carb: "Carboidrato",
+  legume: "Leguminosa",
   fat: "Gordura boa",
   veg: "Vegetal",
 };

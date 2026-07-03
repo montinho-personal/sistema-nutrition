@@ -6,8 +6,12 @@
 
 import type { MealTiming } from "@/modules/foods/types";
 
-/** Papel de um alimento na montagem da refeição (por dominância de macro). */
-export type FoodRole = "protein" | "carb" | "fat" | "veg";
+/**
+ * Papel de um alimento na montagem da refeição (por dominância de macro).
+ * `legume` é o feijão/leguminosa-acompanhamento (carbo-dominante) — o par do
+ * arroz no prato brasileiro; tofu e PTS, apesar de leguminosas, são `protein`.
+ */
+export type FoodRole = "protein" | "carb" | "legume" | "fat" | "veg";
 
 /** Slots de refeição ao longo do dia. */
 export type MealSlot =

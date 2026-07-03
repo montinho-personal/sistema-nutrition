@@ -16,6 +16,7 @@ import type { Food, FoodGoal, MealTiming } from "@/modules/foods/types";
 import type { StudentGoal } from "@/modules/students/types";
 import {
   GRAMS_ROUNDING,
+  LEGUME_FIXED_GRAMS,
   MEAL_TEMPLATES,
   MEAL_TIMING_COMPATIBILITY,
   PORTION_LIMITS,
@@ -69,6 +70,9 @@ function round(value: number, step = 1): number {
   return Math.round(value / step) * step;
 }
 
+/** Grupo do Banco de Alimentos que reúne feijões e leguminosas. */
+const LEGUME_FOOD_GROUP = "Leguminosas";
+
 /** Papel do alimento por dominância de macro (Documento 08 — regra). */
 export function classifyRole(food: Food): FoodRole {
   const kcal = food.nutrition.energyKcal ?? 0;
@@ -79,6 +83,10 @@ export function classifyRole(food: Food): FoodRole {
   const fatShare = ((food.nutrition.fatG ?? 0) * 9) / kcal;
   if (proteinShare >= ROLE_THRESHOLDS.proteinShare) return "protein";
   if (fatShare >= ROLE_THRESHOLDS.fatShare) return "fat";
+  // Leguminosa carbo-dominante (feijão, lentilha, grão-de-bico) é o
+  // acompanhamento do arroz — papel próprio. Tofu/PTS, proteína-dominantes, já
+  // saíram como "protein" acima e seguem como fonte proteica (inclusive vegana).
+  if (food.foodGroup === LEGUME_FOOD_GROUP) return "legume";
   return "carb";
 }
 
@@ -239,6 +247,9 @@ function buildMeal(
   // proteica — o que elimina o overshoot do fechamento sequencial ingênuo.
   const grams = new Map<FoodRole, number>();
   if (selected.has("veg")) grams.set("veg", VEG_FIXED_GRAMS); // vegetal: volume fixo
+  // Feijão/leguminosa: porção cultural fixa (≈ 1 concha); o arroz é quem escala.
+  // Fica setado antes do solver para ser descontado da proteína e das calorias.
+  if (selected.has("legume")) grams.set("legume", LEGUME_FIXED_GRAMS);
 
   // Proteína e gordura são alvos "duros" (massa magra / suporte hormonal);
   // o carboidrato é o macro flexível que fecha as CALORIAS restantes — o mesmo
@@ -270,7 +281,7 @@ function buildMeal(
   }
 
   const items: MealItem[] = [];
-  for (const role of ["veg", "protein", "fat", "carb"] as FoodRole[]) {
+  for (const role of ["veg", "legume", "protein", "fat", "carb"] as FoodRole[]) {
     const food = selected.get(role);
     if (!food) continue;
     items.push(toItem(food, role, grams.get(role) ?? PORTION_LIMITS[role].min));
@@ -407,7 +418,9 @@ export function buildSwapItem(food: Food, role: FoodRole, ref: MealItem): MealIt
   else if (role === "fat") grams = solveGrams(food, "fat", ref.fat);
   else if (role === "carb") grams = solveGramsForKcal(food, ref.kcal);
   else {
-    const limits = PORTION_LIMITS.veg;
+    // Vegetal e leguminosa: porção de volume — mantém as gramas de referência
+    // dentro da faixa do próprio papel (feijão troca por feijão/lentilha).
+    const limits = PORTION_LIMITS[role];
     grams = Math.min(limits.max, Math.max(limits.min, ref.grams));
   }
   return toItem(food, role, grams);

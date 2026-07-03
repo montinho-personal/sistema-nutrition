@@ -22,6 +22,7 @@ import type { FoodRole, MealItem, MealSlot, PlannedMeal } from "@/modules/meal-p
 const ROLE_DOT: Record<FoodRole, string> = {
   protein: "bg-gold",
   carb: "bg-foreground/70",
+  legume: "bg-amber-700",
   fat: "bg-muted-foreground/50",
   veg: "bg-success",
 };
