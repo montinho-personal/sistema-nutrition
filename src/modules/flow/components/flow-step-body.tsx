@@ -7,7 +7,6 @@ import {
   ClipboardListIcon,
   FileTextIcon,
   LockIcon,
-  ShieldCheckIcon,
   StethoscopeIcon,
 } from "lucide-react";
 
@@ -16,6 +15,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { EmptyState } from "@/shared/components/empty-state";
 import { DiagnosisSummary } from "@/modules/diagnosis/components/diagnosis-summary";
 import { MealPlanBoard } from "@/modules/meal-plan/components/meal-plan-board";
+import { ValidationBoard } from "@/modules/validation/components/validation-board";
 import { FlowStrategyStep } from "@/modules/flow/components/flow-strategy-step";
 import { FlowDietStep } from "@/modules/flow/components/flow-diet-step";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
@@ -129,13 +129,7 @@ export function FlowStepBody({
       if (!macros) {
         return <LockedStep description="Monte a estratégia e o cardápio para rodar a validação." />;
       }
-      return (
-        <EmptyState
-          icon={<ShieldCheckIcon />}
-          title="Auditoria automática"
-          description="A validação da estratégia (proteína, fibras, aderência, planos para viagem e fim de semana, plano B…) chega na sprint desta etapa. Por ora, os alertas ativos aparecem na barra lateral."
-        />
-      );
+      return <ValidationBoard studentId={studentId} />;
 
     case "documento":
       if (!macros) {
