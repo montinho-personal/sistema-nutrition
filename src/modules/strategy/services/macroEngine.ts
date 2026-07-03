@@ -24,6 +24,7 @@ import type {
   BmrMethod,
   EnergyDirection,
   MacroContext,
+  MacroOverride,
   MacroParams,
   MacroTargets,
   StrategyVelocity,
@@ -77,10 +78,23 @@ export function computeMacros(
   velocity: StrategyVelocity,
   ctx: MacroContext,
   params: MacroParams = DEFAULT_MACRO_PARAMS,
+  override?: MacroOverride | null,
 ): MacroTargets {
   const { bmr, method } = computeBmr(ctx);
   const activityFactor = computeActivityFactor(ctx);
   const tdee = bmr * activityFactor;
+  const reference = {
+    bmr: Math.round(bmr),
+    bmrMethod: method,
+    activityFactor,
+    tdee: Math.round(tdee),
+  };
+
+  // Ajuste manual do treinador: calorias e divisão de macros vêm dele; o cálculo
+  // automático fica como referência (BMR/TDEE preservados na justificativa).
+  if (override) {
+    return applyOverride(override, ctx.weightKg, reference);
+  }
 
   const deficitPct = params.velocityDeficitPct[velocity];
   const surplusPct = params.velocitySurplusPct[velocity];
@@ -114,10 +128,7 @@ export function computeMacros(
   ];
 
   return {
-    bmr: Math.round(bmr),
-    bmrMethod: method,
-    activityFactor,
-    tdee: Math.round(tdee),
+    ...reference,
     calories,
     proteinG,
     fatG,
@@ -126,5 +137,43 @@ export function computeMacros(
     fatKcal,
     carbKcal: carbG * KCAL_PER_GRAM.carb,
     justifications,
+    manual: false,
+  };
+}
+
+/** Converte um ajuste manual (kcal + % de cada macro) em gramas e kcal por macro. */
+function applyOverride(
+  override: MacroOverride,
+  weightKg: number,
+  reference: Pick<MacroTargets, "bmr" | "bmrMethod" | "activityFactor" | "tdee">,
+): MacroTargets {
+  const calories = Math.round(override.calories);
+  const proteinG = Math.round((calories * override.proteinPct) / 100 / KCAL_PER_GRAM.protein);
+  const carbG = Math.round((calories * override.carbPct) / 100 / KCAL_PER_GRAM.carb);
+  const fatG = Math.round((calories * override.fatPct) / 100 / KCAL_PER_GRAM.fat);
+  const proteinKcal = proteinG * KCAL_PER_GRAM.protein;
+  const carbKcal = carbG * KCAL_PER_GRAM.carb;
+  const fatKcal = fatG * KCAL_PER_GRAM.fat;
+  const perKg = (g: number) => (weightKg > 0 ? (g / weightKg).toFixed(1) : "—");
+
+  const justifications = [
+    `Ajuste manual do treinador: ${calories} kcal (cálculo automático sobrescrito).`,
+    `Proteína ${proteinG} g — ${override.proteinPct}% das calorias (${perKg(proteinG)} g/kg).`,
+    `Carboidrato ${carbG} g — ${override.carbPct}% das calorias.`,
+    `Gordura ${fatG} g — ${override.fatPct}% das calorias (${perKg(fatG)} g/kg).`,
+    `Referência automática: TDEE ${reference.tdee} kcal (BMR ${reference.bmr} × fator ${reference.activityFactor.toFixed(3)}).`,
+  ];
+
+  return {
+    ...reference,
+    calories,
+    proteinG,
+    fatG,
+    carbG,
+    proteinKcal,
+    fatKcal,
+    carbKcal,
+    justifications,
+    manual: true,
   };
 }

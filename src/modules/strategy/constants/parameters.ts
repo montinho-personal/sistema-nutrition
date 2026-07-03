@@ -109,6 +109,12 @@ export const DEFAULT_MACRO_PARAMS: MacroParams = {
 /** Arredondamentos (múltiplos) para números "redondos" e realistas. */
 export const CALORIE_ROUNDING = 10;
 
+/** Limites de sanidade do ajuste manual de macros (Documento 08 — sem número mágico). */
+export const MACRO_OVERRIDE_LIMITS = {
+  minCalories: 800,
+  maxCalories: 6000,
+} as const;
+
 // ── Definição Estratégica: projeção de meta (Documento 04 — realismo) ─────────
 
 /**

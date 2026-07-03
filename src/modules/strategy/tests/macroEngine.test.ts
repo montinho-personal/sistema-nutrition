@@ -75,4 +75,39 @@ describe("computeMacros — calorias e macros", () => {
     const m = computeMacros("weight_loss", "deficit", "agressiva", { ...MALE, weightKg: 150 });
     expect(m.carbG).toBeGreaterThanOrEqual(0);
   });
+
+  it("marca manual=false quando não há ajuste do treinador", () => {
+    const m = computeMacros("weight_loss", "deficit", "moderada", MALE);
+    expect(m.manual).toBe(false);
+  });
+});
+
+describe("computeMacros — ajuste manual do treinador", () => {
+  const override = { calories: 2200, proteinPct: 30, carbPct: 45, fatPct: 25 };
+
+  it("usa as calorias e a divisão percentual informadas", () => {
+    const m = computeMacros("weight_loss", "deficit", "moderada", MALE, undefined, override);
+    expect(m.manual).toBe(true);
+    expect(m.calories).toBe(2200);
+    // 30% de 2200 = 660 kcal / 4 = 165 g de proteína
+    expect(m.proteinG).toBe(Math.round((2200 * 0.3) / KCAL_PER_GRAM.protein));
+    // 45% / 4 = carboidrato; 25% / 9 = gordura
+    expect(m.carbG).toBe(Math.round((2200 * 0.45) / KCAL_PER_GRAM.carb));
+    expect(m.fatG).toBe(Math.round((2200 * 0.25) / KCAL_PER_GRAM.fat));
+  });
+
+  it("os kcal por macro batem com as gramas arredondadas", () => {
+    const m = computeMacros("weight_loss", "deficit", "moderada", MALE, undefined, override);
+    expect(m.proteinKcal).toBe(m.proteinG * KCAL_PER_GRAM.protein);
+    expect(m.carbKcal).toBe(m.carbG * KCAL_PER_GRAM.carb);
+    expect(m.fatKcal).toBe(m.fatG * KCAL_PER_GRAM.fat);
+  });
+
+  it("preserva BMR/TDEE como referência mesmo no ajuste manual", () => {
+    const auto = computeMacros("weight_loss", "deficit", "moderada", MALE);
+    const manual = computeMacros("weight_loss", "deficit", "moderada", MALE, undefined, override);
+    expect(manual.tdee).toBe(auto.tdee);
+    expect(manual.bmr).toBe(auto.bmr);
+    expect(manual.justifications.some((j) => j.includes("Ajuste manual"))).toBe(true);
+  });
 });

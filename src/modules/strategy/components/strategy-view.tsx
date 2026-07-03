@@ -6,6 +6,8 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   PencilIcon,
+  RotateCcwIcon,
+  SlidersHorizontalIcon,
   StethoscopeIcon,
   TargetIcon,
   UtensilsIcon,
@@ -27,8 +29,27 @@ import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { AnthropometricsForm } from "@/modules/strategy/components/anthropometrics-form";
 import { StrategyResult } from "@/modules/strategy/components/strategy-result";
 import { MacroSummary } from "@/modules/strategy/components/macro-summary";
+import { MacroOverrideForm } from "@/modules/strategy/components/macro-override-form";
 import { GoalDefinition } from "@/modules/strategy/components/goal-definition";
-import type { MacroContext, StrategyInput } from "@/modules/strategy/types";
+import type {
+  MacroContext,
+  MacroOverride,
+  MacroTargets,
+  StrategyInput,
+} from "@/modules/strategy/types";
+
+/** Divisão percentual dos macros a partir dos alvos atuais (soma exata = 100). */
+function overrideFromMacros(macros: MacroTargets): MacroOverride {
+  const total = macros.proteinKcal + macros.carbKcal + macros.fatKcal || 1;
+  const proteinPct = Math.round((macros.proteinKcal / total) * 100);
+  const fatPct = Math.round((macros.fatKcal / total) * 100);
+  return {
+    calories: macros.calories,
+    proteinPct,
+    fatPct,
+    carbPct: Math.max(0, 100 - proteinPct - fatPct),
+  };
+}
 
 const EMPTY_STUDENTS: Student[] = [];
 const EMPTY_SESSIONS: DiagnosisSession[] = [];
@@ -43,6 +64,7 @@ export function StrategyView({ studentId }: { studentId: string }) {
   const { input, save } = useStrategyInput(studentId);
   const macroParams = useMacroParams();
   const [editing, setEditing] = React.useState(false);
+  const [editingMacros, setEditingMacros] = React.useState(false);
 
   const student = React.useMemo(
     () => students.find((s) => s.id === studentId) ?? null,
@@ -78,7 +100,14 @@ export function StrategyView({ studentId }: { studentId: string }) {
       activity: (session?.answers.activity as string | undefined) ?? null,
       trains: (session?.answers.trains as string | undefined) ?? null,
     };
-    return computeMacros(student.mainGoal, strategy.direction, strategy.velocity, ctx, macroParams);
+    return computeMacros(
+      student.mainGoal,
+      strategy.direction,
+      strategy.velocity,
+      ctx,
+      macroParams,
+      input.macroOverride ?? null,
+    );
   }, [student, strategy, input, session, macroParams]);
 
   // A store é lida no cliente; antes disso, evitar flash de "não encontrado".
@@ -156,6 +185,18 @@ export function StrategyView({ studentId }: { studentId: string }) {
     save({ ...input, targetChangeKg, targetWeeks });
   };
 
+  const applyOverride = (macroOverride: MacroOverride) => {
+    if (!input) return;
+    save({ ...input, macroOverride });
+    setEditingMacros(false);
+  };
+
+  const clearOverride = () => {
+    if (!input) return;
+    save({ ...input, macroOverride: null });
+    setEditingMacros(false);
+  };
+
   return (
     <>
       {header}
@@ -170,17 +211,39 @@ export function StrategyView({ studentId }: { studentId: string }) {
           />
         ) : macros ? (
           <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <Badge variant="secondary">
-                {input.currentWeightKg} kg
-                {input.bodyFatPct ? ` · ${input.bodyFatPct}% gordura` : ""}
-                {` · objetivo: ${STUDENT_GOAL_LABELS[student.mainGoal]}`}
-              </Badge>
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">
+                  {input.currentWeightKg} kg
+                  {input.bodyFatPct ? ` · ${input.bodyFatPct}% gordura` : ""}
+                  {` · objetivo: ${STUDENT_GOAL_LABELS[student.mainGoal]}`}
+                </Badge>
+                {macros.manual ? (
+                  <Badge className="bg-gold text-gold-foreground hover:bg-gold">
+                    <SlidersHorizontalIcon className="size-3" />
+                    Ajuste manual
+                  </Badge>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
                   <PencilIcon className="size-4" />
                   Ajustar peso
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingMacros((v) => !v)}
+                >
+                  <SlidersHorizontalIcon className="size-4" />
+                  Ajustar macros
+                </Button>
+                {macros.manual ? (
+                  <Button variant="ghost" size="sm" onClick={clearOverride}>
+                    <RotateCcwIcon className="size-4" />
+                    Voltar ao automático
+                  </Button>
+                ) : null}
                 <Button asChild size="sm">
                   <Link href={`/meal-plan/${student.id}`}>
                     <UtensilsIcon className="size-4" />
@@ -190,6 +253,15 @@ export function StrategyView({ studentId }: { studentId: string }) {
                 </Button>
               </div>
             </div>
+
+            {editingMacros ? (
+              <MacroOverrideForm
+                initial={overrideFromMacros(macros)}
+                onSubmit={applyOverride}
+                onCancel={() => setEditingMacros(false)}
+              />
+            ) : null}
+
             <MacroSummary macros={macros} />
 
             {strategy && scores && strategy.direction !== "manutencao" ? (

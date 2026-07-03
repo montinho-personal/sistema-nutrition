@@ -71,6 +71,7 @@ export function MealPlanView({ studentId }: { studentId: string }) {
       strategy.velocity,
       macroCtx,
       macroParams,
+      input.macroOverride ?? null,
     );
     const restrictions = Array.isArray(session.answers.restrictions)
       ? (session.answers.restrictions as string[])

@@ -53,6 +53,20 @@ export interface NutritionStrategy {
   decisions: StrategyDecision[];
 }
 
+/**
+ * Ajuste manual do treinador: sobrescreve as calorias-alvo e a divisão de
+ * macros calculadas. Dá flexibilidade quando o treinador quer prescrever números
+ * próprios — mas o cálculo automático segue disponível como referência.
+ */
+export interface MacroOverride {
+  /** Calorias-alvo definidas manualmente. */
+  calories: number;
+  /** Percentual de cada macro sobre as calorias (somam 100). */
+  proteinPct: number;
+  carbPct: number;
+  fatPct: number;
+}
+
 /** Dados antropométricos que a anamnese não captura (necessários p/ macros). */
 export interface StrategyInput {
   currentWeightKg: number;
@@ -61,6 +75,8 @@ export interface StrategyInput {
   targetChangeKg?: number | null;
   /** Prazo desejado para a meta (semanas). Opcional. */
   targetWeeks?: number | null;
+  /** Ajuste manual de calorias/macros pelo treinador. Ausente = cálculo automático. */
+  macroOverride?: MacroOverride | null;
 }
 
 /** Nível qualitativo do realismo de uma meta. */
@@ -132,6 +148,8 @@ export interface MacroTargets {
   fatKcal: number;
   carbKcal: number;
   justifications: string[];
+  /** true quando os números vêm de um ajuste manual do treinador. */
+  manual: boolean;
 }
 
 /** Contexto antropométrico + de rotina consumido pelo motor de macros. */
