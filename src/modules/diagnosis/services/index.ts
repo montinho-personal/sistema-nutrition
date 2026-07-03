@@ -3,6 +3,12 @@
 export { computeScores, computeScoreMap, computeOverallConfidence } from "./scoringEngine";
 export { computeHypotheses } from "./hypothesisEngine";
 export {
+  buildDiagnosisDashboard,
+  type DiagnosisDashboard,
+  type DiagnosisDashboardInput,
+  type DifficultyLevel,
+} from "./diagnosisDashboard";
+export {
   buildAnamnesePortrait,
   type PortraitGroup,
   type PortraitItem,
