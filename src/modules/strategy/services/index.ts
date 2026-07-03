@@ -4,6 +4,11 @@ export { buildStrategy } from "./strategyEngine";
 export { computeMacros, computeEnergyBreakdown } from "./macroEngine";
 export { resolveMacros } from "./resolveMacros";
 export {
+  suggestDietApproach,
+  resolveDietApproach,
+  applyDietApproach,
+} from "./dietApproach";
+export {
   evaluateStrategyAlerts,
   type StrategyAlert,
   type StrategyAlertInput,

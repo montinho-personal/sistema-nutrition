@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
-import type { MacroOverride, StrategyInput } from "@/modules/strategy/types";
+import type { DietApproachId, MacroOverride, StrategyInput } from "@/modules/strategy/types";
 
 /**
  * Operações de edição da estratégia de um aluno (peso, meta e ajuste manual de
@@ -35,6 +35,13 @@ export function useMacroControls(studentId: string) {
     if (!input) return;
     save({ ...input, macroOverride: null });
   }, [input, save]);
+  const setDietApproach = React.useCallback(
+    (dietApproach: DietApproachId) => {
+      if (!input) return;
+      save({ ...input, dietApproach });
+    },
+    [input, save],
+  );
 
-  return { input, saveAnthropometrics, persistGoal, applyOverride, clearOverride };
+  return { input, saveAnthropometrics, persistGoal, applyOverride, clearOverride, setDietApproach };
 }
