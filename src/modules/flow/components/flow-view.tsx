@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -100,18 +101,28 @@ export function FlowView({ studentId }: { studentId: string }) {
         <FlowStepper currentId={currentId} stepState={data.stepState} onSelect={selectStep} />
       </div>
 
-      {/* Corpo + Strategy Rail */}
+      {/* Corpo + Strategy Rail. No mobile a rail sobe para o topo (contexto
+          antes do corpo longo); no desktop volta para a coluna lateral fixa. */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_18rem]">
         <div className="flex min-w-0 flex-col gap-6">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-semibold tracking-[0.14em] text-gold uppercase">
-              Etapa {step.order} de {FLOW_STEPS.length}
-            </span>
-            <h2 className="text-xl font-semibold tracking-tight">{step.title}</h2>
-            <p className="text-sm text-muted-foreground">{step.short}</p>
-          </div>
+          {/* Transição suave a cada troca de etapa — a key remonta e reanima. */}
+          <motion.div
+            key={currentId}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="flex flex-col gap-6"
+          >
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-semibold tracking-[0.14em] text-gold uppercase">
+                Etapa {step.order} de {FLOW_STEPS.length}
+              </span>
+              <h2 className="text-xl font-semibold tracking-tight">{step.title}</h2>
+              <p className="text-sm text-muted-foreground">{step.short}</p>
+            </div>
 
-          <FlowStepBody step={currentId} data={data} studentId={studentId} />
+            <FlowStepBody step={currentId} data={data} studentId={studentId} />
+          </motion.div>
 
           <div className="flex items-center justify-between border-t pt-4">
             <Button
@@ -136,7 +147,7 @@ export function FlowView({ studentId }: { studentId: string }) {
           </div>
         </div>
 
-        <div className="xl:sticky xl:top-4 xl:self-start">
+        <div className="order-first xl:order-last xl:sticky xl:top-4 xl:self-start">
           <StrategyRail data={data} studentId={studentId} />
         </div>
       </div>

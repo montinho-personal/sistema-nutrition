@@ -21,13 +21,18 @@ Anamnese → Diagnóstico → Estratégia → Estratégia alimentar → Cardápi
 - `hooks/use-flow-step.ts` — etapa atual reativa (grava na store; sem `setState` em efeito).
 - `components/` — `FlowView` (shell), `FlowStepper`, `StrategyRail`, `FlowStepBody`, `FlowPicker`.
 
-## Sprint 0 (atual)
+## Estado (Workflow V1 completo)
 
-O **esqueleto**: rota `/flow/[aluno]`, stepper com progresso, navegação (voltar/continuar +
-clique nas etapas alcançáveis), auto-save, retomada e a **Strategy Rail** sempre à vista
-(aluno · estratégia · calorias · macros · alertas). Cada etapa embute a view existente
-(Diagnóstico, Estratégia) ou dá o atalho para a ferramenta completa. As próximas sprints
-substituem cada corpo pela versão redesenhada (Etapas 2→7) e, por fim, a IA da anamnese.
+As 7 etapas estão redesenhadas e costuradas ponta a ponta: rota `/flow/[aluno]`, stepper com
+progresso, navegação (voltar/continuar + clique nas etapas alcançáveis), auto-save, retomada e a
+**Strategy Rail** sempre à vista (aluno · estratégia · abordagem · calorias · macros · alertas).
+Cada etapa reaproveita os motores existentes (Diagnóstico, Estratégia, Cardápio, Validação,
+Documento) sem duplicar regra. A anamnese é **híbrida**: entrevista determinística como base, com
+aprofundamento por IA (só quando habilitada, degradando com elegância).
 
 No `/flow` o shell oculta os painéis genéricos de inteligência (áreas 4/5) — a Rail do fluxo
 é o resumo lateral daquela tela.
+
+**Coesão & polimento (Sprint 8):** transição suave entre etapas (`motion.div` reanimado a cada
+troca de etapa) e, no mobile, a Rail sobe para o topo (contexto antes do corpo longo) e volta
+para a coluna lateral fixa no desktop. QA ponta a ponta em claro, escuro e mobile.
