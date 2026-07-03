@@ -10,24 +10,13 @@ import { EmptyState } from "@/shared/components/empty-state";
 import { LoadingScreen } from "@/shared/components/loading-screen";
 import { SectionHeader } from "@/shared/components/section-header";
 import { MetricCard } from "@/shared/components/metric-card";
-import { useLocalCollection } from "@/shared/hooks/use-local-collection";
-import type { Student } from "@/modules/students/types";
-import type { DiagnosisSession } from "@/modules/diagnosis/types";
-import { ageFromBirthDate, computeScoreMap } from "@/modules/diagnosis/services";
-import { buildStrategy, resolveDietApproach, resolveMacros } from "@/modules/strategy/services";
-import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
-import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
-import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
-import type { MacroContext } from "@/modules/strategy/types";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
-import { buildMealPlan, buildSwapItem, sumItems, type MealPlanContext } from "@/modules/meal-plan/services";
+import { buildSwapItem, sumItems } from "@/modules/meal-plan/services";
 import { MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
-import { useMealPlanVariant } from "@/modules/meal-plan/hooks/use-meal-plan-variant";
+import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
 import type { FoodRole, MealPlan, MealSlot } from "@/modules/meal-plan/types";
 
-const EMPTY_STUDENTS: Student[] = [];
-const EMPTY_SESSIONS: DiagnosisSession[] = [];
 const foodById = new Map(curatedFoods.map((f) => [f.id, f]));
 const pct = (value: number, target: number) => (target > 0 ? Math.round((value / target) * 100) : 0);
 
@@ -37,60 +26,8 @@ const pct = (value: number, target: number) => (target > 0 ? Math.round((value /
  * automático a cada troca. Reaproveitado pela tela do Plano e pela Etapa 5.
  */
 export function MealPlanBoard({ studentId }: { studentId: string }) {
-  const students = useLocalCollection<Student[]>("students", EMPTY_STUDENTS);
-  const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
-  const { input } = useStrategyInput(studentId);
-  const macroParams = useMacroParams();
-  const { variant, next } = useMealPlanVariant(studentId);
+  const { plan: basePlan, restrictions, input, nextVariant } = useStudentPlan(studentId);
   const [swaps, setSwaps] = React.useState<Record<string, string>>({});
-
-  const student = React.useMemo(
-    () => students.find((s) => s.id === studentId) ?? null,
-    [students, studentId],
-  );
-  const session = React.useMemo(
-    () =>
-      sessions
-        .filter((s) => s.studentId === studentId)
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] ?? null,
-    [sessions, studentId],
-  );
-
-  const restrictions = React.useMemo(
-    () =>
-      Array.isArray(session?.answers.restrictions)
-        ? (session?.answers.restrictions as string[])
-        : [],
-    [session],
-  );
-
-  const basePlan = React.useMemo<MealPlan | null>(() => {
-    if (!student?.mainGoal || !session || session.status !== "completed" || !input) return null;
-    const scores = computeScoreMap(session.answers);
-    const strategy = buildStrategy(student.mainGoal, scores, session.answers);
-    const macroCtx: MacroContext = {
-      weightKg: input.currentWeightKg,
-      bodyFatPct: input.bodyFatPct,
-      heightCm: student.heightCm,
-      ageYears: ageFromBirthDate(student.birthDate),
-      sex: student.sex,
-      activity: (session.answers.activity as string | undefined) ?? null,
-      trains: (session.answers.trains as string | undefined) ?? null,
-    };
-    const macros = resolveMacros(student.mainGoal, strategy, macroCtx, macroParams, input);
-    const approach = resolveDietApproach(input.dietApproach ?? null, student.mainGoal);
-    const ctx: MealPlanContext = {
-      goal: student.mainGoal,
-      mealsPerDay: approach.meals ?? strategy.mealsPerDay,
-      macros: { kcal: macros.calories, protein: macros.proteinG, carbs: macros.carbG, fat: macros.fatG },
-      emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low,
-      emphasizePracticality: scores.practicality <= SCORE_THRESHOLDS.low,
-      budgetTight: session.answers.budget === "apertado",
-      restrictions,
-      variant,
-    };
-    return buildMealPlan(curatedFoods, ctx);
-  }, [student, session, input, restrictions, variant, macroParams]);
 
   // Aplica as trocas do profissional e recalcula totais/aderência.
   const plan = React.useMemo<MealPlan | null>(() => {
@@ -137,7 +74,7 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
     });
   const regenerate = () => {
     setSwaps({});
-    next();
+    nextVariant();
   };
 
   if (typeof window === "undefined") {
