@@ -152,6 +152,23 @@ export interface MacroTargets {
   manual: boolean;
 }
 
+/**
+ * Decomposição do gasto energético diário (Documento 04): quanto vem do
+ * metabolismo basal, do treino e das demais atividades — e o total (TDEE).
+ */
+export interface EnergyBreakdown {
+  /** Taxa de metabolismo basal (kcal/dia em repouso). */
+  bmr: number;
+  bmrMethod: BmrMethod;
+  /** Gasto estimado com o treino. */
+  trainingKcal: number;
+  /** Gasto com as demais atividades do dia a dia (fora o treino). */
+  dailyActivityKcal: number;
+  /** Gasto energético total (TDEE) = soma das partes. */
+  tdee: number;
+  activityFactor: number;
+}
+
 /** Contexto antropométrico + de rotina consumido pelo motor de macros. */
 export interface MacroContext {
   weightKg: number;

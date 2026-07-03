@@ -22,6 +22,7 @@ import {
 import type { StudentGoal } from "@/modules/students/types";
 import type {
   BmrMethod,
+  EnergyBreakdown,
   EnergyDirection,
   MacroContext,
   MacroOverride,
@@ -67,6 +68,42 @@ const METHOD_LABEL: Record<BmrMethod, string> = {
   mifflin: "Mifflin-St Jeor",
   fallback: "estimativa por peso (faltavam altura/idade/sexo)",
 };
+
+/**
+ * Decompõe o gasto energético diário: metabolismo basal + gasto do treino +
+ * gasto das demais atividades = TDEE. O fator de atividade (fora o treino) é a
+ * parcela do dia a dia; o bônus de treino é a parcela do treino. As partes são
+ * ajustadas para somarem exatamente o total (Documento 04 — auditável).
+ */
+export function computeEnergyBreakdown(ctx: MacroContext): EnergyBreakdown {
+  const { bmr, method } = computeBmr(ctx);
+  const base = (ctx.activity && ACTIVITY_FACTORS[ctx.activity]) || DEFAULT_ACTIVITY_FACTOR;
+  const bonus = (ctx.trains && TRAINING_BONUS[ctx.trains]) || 0;
+  const factor = Math.min(MAX_ACTIVITY_FACTOR, base + bonus);
+
+  const bmrKcal = Math.round(bmr);
+  const tdee = Math.round(bmr * factor);
+
+  let dailyActivityKcal: number;
+  let trainingKcal: number;
+  if (bonus <= 0) {
+    trainingKcal = 0;
+    dailyActivityKcal = tdee - bmrKcal;
+  } else {
+    dailyActivityKcal = Math.round(bmr * (base - 1));
+    // Resto garante soma exata (o teto do fator pode limitar o treino).
+    trainingKcal = Math.max(0, tdee - bmrKcal - dailyActivityKcal);
+  }
+
+  return {
+    bmr: bmrKcal,
+    bmrMethod: method,
+    trainingKcal,
+    dailyActivityKcal,
+    tdee,
+    activityFactor: factor,
+  };
+}
 
 /**
  * Calcula os alvos de macro a partir da estratégia (direção + velocidade) e do
