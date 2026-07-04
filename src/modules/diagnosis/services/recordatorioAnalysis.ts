@@ -74,8 +74,10 @@ const FOOD_KEYWORDS: { food: Food; keywords: string[] }[] = curatedFoods.map((fo
 
 function keywordInText(text: string, keyword: string): boolean {
   if (keyword.includes(" ")) return text.includes(keyword);
-  // Palavra isolada: casa por limite de palavra (evita "uva" em "chuva").
-  return new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(text);
+  // Palavra isolada: casa por limite de palavra (evita "uva" em "chuva") e
+  // aceita plural comum (ovo→ovos, banana→bananas, arroz→arrozes).
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}(?:s|es)?\\b`).test(text);
 }
 
 /** Alimentos do Banco reconhecidos num trecho de texto livre. */
