@@ -27,28 +27,28 @@ export interface MealTemplate {
 export const MEAL_TEMPLATES: Record<number, MealTemplate[]> = {
   3: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.3, roles: ["protein", "carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.4, roles: ["protein", "carb", "legume", "veg"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.3, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.4, roles: ["protein", "carb", "legume", "veg", "fat"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.3, roles: ["protein", "carb", "legume", "veg", "fat"] },
   ],
   4: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.25, roles: ["protein", "carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.35, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.35, roles: ["protein", "carb", "legume", "veg", "fat"] },
     { slot: "afternoon_snack", title: "Lanche da tarde", timing: "snack", kcalFraction: 0.15, roles: ["protein", "carb"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "legume", "veg", "fat"] },
   ],
   5: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.22, roles: ["protein", "carb", "fat"] },
     { slot: "morning_snack", title: "Lanche da manhã", timing: "snack", kcalFraction: 0.1, roles: ["carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.3, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.3, roles: ["protein", "carb", "legume", "veg", "fat"] },
     { slot: "afternoon_snack", title: "Lanche da tarde", timing: "snack", kcalFraction: 0.13, roles: ["protein", "carb"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.25, roles: ["protein", "carb", "legume", "veg", "fat"] },
   ],
   6: [
     { slot: "breakfast", title: "Café da manhã", timing: "breakfast", kcalFraction: 0.2, roles: ["protein", "carb", "fat"] },
     { slot: "morning_snack", title: "Lanche da manhã", timing: "snack", kcalFraction: 0.1, roles: ["carb", "fat"] },
-    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.28, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "lunch", title: "Almoço", timing: "lunch", kcalFraction: 0.28, roles: ["protein", "carb", "legume", "veg", "fat"] },
     { slot: "afternoon_snack", title: "Lanche da tarde", timing: "snack", kcalFraction: 0.12, roles: ["protein", "carb"] },
-    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.22, roles: ["protein", "carb", "legume", "veg"] },
+    { slot: "dinner", title: "Jantar", timing: "dinner", kcalFraction: 0.22, roles: ["protein", "carb", "legume", "veg", "fat"] },
     { slot: "supper", title: "Ceia", timing: "supper", kcalFraction: 0.08, roles: ["protein"] },
   ],
 };
@@ -83,12 +83,16 @@ export const ROLE_THRESHOLDS = {
   fatShare: 0.45,
 } as const;
 
-/** Faixas de porção (g) por papel — evita porções absurdas. */
+/**
+ * Faixas de porção (g) por papel — porções que um nutricionista serviria de
+ * fato (nada de 380 g de fruta ou 300 g de tofu). O teto é o limite de bom senso;
+ * a escolha de alimentos densos (abaixo) evita chegar perto dele.
+ */
 export const PORTION_LIMITS: Record<FoodRole, { min: number; max: number }> = {
-  protein: { min: 30, max: 300 },
-  carb: { min: 15, max: 380 },
-  legume: { min: 40, max: 200 },
-  fat: { min: 5, max: 60 },
+  protein: { min: 30, max: 240 },
+  carb: { min: 20, max: 320 },
+  legume: { min: 40, max: 160 },
+  fat: { min: 5, max: 55 },
   veg: { min: 50, max: 200 },
 };
 
@@ -120,9 +124,29 @@ export const GRAMS_ROUNDING = 5;
  */
 export const SOLVER_PASSES = 4;
 
+/**
+ * Densidade proteica (g de proteína / 100 g) a partir da qual um alimento já é
+ * uma boa fonte proteica — o "teto" do bônus. Frango, atum e whey saturam aqui;
+ * ricota e tofu ficam abaixo. Assim a proteína densa (porção realista) é
+ * preferida, sem que o pó de whey domine todas as refeições.
+ */
+export const PROTEIN_DENSITY_CAP = 20;
+
 /** Pesos do ranqueamento de alimentos (base + ênfases da estratégia). */
 export const RANK_WEIGHTS = {
   timingMatch: 20,
+  /**
+   * Peso da densidade proteica no papel de proteína (até PROTEIN_DENSITY_CAP).
+   * Forte o bastante para elevar frango/ovo/iogurte proteico acima de ricota/tofu
+   * — porções realistas —, sem superar o bônus de hábito.
+   */
+  proteinDensity: 2.5,
+  /**
+   * Penalidade para ultraprocessados (ex.: whey em pó): o nutricionista prefere
+   * comida de verdade. Não bane — o hábito ainda vence —, mas evita que o pó
+   * seja a escolha padrão quando há uma fonte integral igualmente boa.
+   */
+  ultraProcessedPenalty: 30,
   satietyEmphasis: 0.4,
   practicalityEmphasis: 0.4,
   budgetPenaltyPerLevel: 8,
