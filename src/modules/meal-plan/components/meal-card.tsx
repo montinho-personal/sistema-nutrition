@@ -14,8 +14,15 @@ import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
 import { ROLE_LABELS } from "@/modules/meal-plan/constants/parameters";
-import { findFoodSwaps } from "@/modules/meal-plan/services";
+import {
+  buildDietaryFilter,
+  buildSwapItem,
+  classifyRole,
+  findFoodSwaps,
+} from "@/modules/meal-plan/services";
+import { matchesQuery } from "@/modules/foods/services";
 import type { CostRange, Food, MealTiming } from "@/modules/foods/types";
 import type { FoodRole, MealItem, MealSlot, PlannedMeal } from "@/modules/meal-plan/types";
 
@@ -72,39 +79,91 @@ interface SwapPanelProps {
   /** Horário da refeição — mantém os equivalentes coerentes com o momento do dia. */
   timing: MealTiming;
   onPick: (foodId: string) => void;
+  onSetGrams: (grams: number) => void;
 }
 
-/** Food Intelligence Engine: equivalentes com porção recalculada e atributos. */
-function SwapPanel({ item, foods, restrictions, timing, onPick }: SwapPanelProps) {
-  const swaps = React.useMemo(
+/**
+ * Painel de troca: equivalentes inteligentes, busca livre por nome de qualquer
+ * alimento e quantidade digitável — o treinador escolhe o alimento e a porção
+ * exata que quiser (Food Intelligence Engine).
+ */
+function SwapPanel({ item, foods, restrictions, timing, onPick, onSetGrams }: SwapPanelProps) {
+  const [query, setQuery] = React.useState("");
+
+  const equivalents = React.useMemo(
     () => findFoodSwaps(item, foods, restrictions, timing),
     [item, foods, restrictions, timing],
   );
-  if (swaps.length === 0) {
-    return (
-      <p className="px-2 py-2 text-xs text-muted-foreground">
-        Sem equivalente compatível para esta troca.
-      </p>
-    );
-  }
+
+  // Busca livre: qualquer alimento do mesmo papel, com a porção sugerida.
+  const searchResults = React.useMemo(() => {
+    const q = query.trim();
+    if (!q) return null;
+    const allowed = buildDietaryFilter(restrictions);
+    return foods
+      .filter(allowed)
+      .filter(
+        (f) => f.id !== item.foodId && classifyRole(f) === item.role && matchesQuery(f, q),
+      )
+      .slice(0, 8)
+      .map((f) => ({ food: f, item: buildSwapItem(f, item.role, item) }));
+  }, [query, foods, restrictions, item]);
+
+  const list = searchResults ?? equivalents;
+
   return (
-    <div className="flex flex-col gap-1 rounded-lg bg-muted/40 p-1.5">
-      {swaps.map(({ food, item: repl }) => (
-        <button
-          key={food.id}
-          type="button"
-          onClick={() => onPick(food.id)}
-          className="flex flex-col gap-1 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-background"
-        >
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-sm font-medium">{food.name}</span>
-            <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-              {repl.grams} g · {repl.kcal} kcal
-            </span>
-          </div>
-          <FoodAttrs food={food} />
-        </button>
-      ))}
+    <div className="flex flex-col gap-2">
+      <Input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Buscar qualquer alimento pelo nome..."
+        className="h-8"
+      />
+
+      {list.length === 0 ? (
+        <p className="px-2 py-1.5 text-xs text-muted-foreground">
+          {query.trim() ? "Nenhum alimento encontrado." : "Sem equivalente compatível."}
+        </p>
+      ) : (
+        <div className="flex max-h-64 flex-col gap-1 overflow-y-auto rounded-lg bg-muted/40 p-1.5">
+          {list.map(({ food, item: repl }) => (
+            <button
+              key={food.id}
+              type="button"
+              onClick={() => onPick(food.id)}
+              className="flex flex-col gap-1 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-background"
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-sm font-medium">{food.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                  {repl.grams} g · {repl.kcal} kcal
+                </span>
+              </div>
+              <FoodAttrs food={food} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Quantidade manual — o treinador digita as gramas exatas deste alimento. */}
+      <div className="flex items-center gap-2 px-1">
+        <label className="text-xs text-muted-foreground">Quantidade</label>
+        <Input
+          key={item.foodId}
+          type="number"
+          inputMode="numeric"
+          min={1}
+          defaultValue={item.grams}
+          onChange={(e) => {
+            const g = Number(e.target.value);
+            if (Number.isFinite(g) && g > 0) onSetGrams(Math.round(g));
+          }}
+          className="h-8 w-24"
+        />
+        <span className="text-xs text-muted-foreground">
+          g{item.portionLabel ? ` · ${item.portionLabel}` : ""}
+        </span>
+      </div>
     </div>
   );
 }
@@ -118,6 +177,7 @@ interface MealCardProps {
   /** Chaves `${slot}:${role}` atualmente trocadas (para "voltar ao original"). */
   swappedKeys?: Set<string>;
   onSwap?: (slot: MealSlot, role: FoodRole, foodId: string) => void;
+  onSetGrams?: (slot: MealSlot, role: FoodRole, grams: number) => void;
   onReset?: (slot: MealSlot, role: FoodRole) => void;
 }
 
@@ -129,6 +189,7 @@ export function MealCard({
   restrictions = [],
   swappedKeys,
   onSwap,
+  onSetGrams,
   onReset,
 }: MealCardProps) {
   const [openRole, setOpenRole] = React.useState<FoodRole | null>(null);
@@ -221,10 +282,8 @@ export function MealCard({
                       foods={foods!}
                       restrictions={restrictions}
                       timing={meal.timing}
-                      onPick={(foodId) => {
-                        onSwap?.(meal.slot, item.role, foodId);
-                        setOpenRole(null);
-                      }}
+                      onPick={(foodId) => onSwap?.(meal.slot, item.role, foodId)}
+                      onSetGrams={(grams) => onSetGrams?.(meal.slot, item.role, grams)}
                     />
                   </div>
                 ) : null}

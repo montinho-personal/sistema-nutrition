@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { buildMealPlan, findFoodSwaps, buildSwapItem } from "@/modules/meal-plan/services";
+import {
+  buildMealPlan,
+  findFoodSwaps,
+  buildSwapItem,
+  buildItemWithGrams,
+} from "@/modules/meal-plan/services";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import { classifyRole } from "@/modules/meal-plan/services";
 import type { MealPlanContext } from "@/modules/meal-plan/services";
@@ -38,6 +43,18 @@ describe("Food Intelligence — troca de alimentos", () => {
     for (const { item } of swaps.slice(0, 3)) {
       expect(Math.abs(item.protein - proteinItem!.protein)).toBeLessThanOrEqual(8);
     }
+  });
+
+  it("buildItemWithGrams respeita a quantidade manual do treinador", () => {
+    const food = curatedFoods.find((f) => classifyRole(f) === "protein")!;
+    const item = buildItemWithGrams(food, "protein", 137);
+    expect(item.foodId).toBe(food.id);
+    expect(item.grams).toBe(137); // exatamente o que foi digitado
+    // macros = escala direta da porção pedida
+    const expectedKcal = Math.round(((food.nutrition.energyKcal ?? 0) * 137) / 100);
+    expect(item.kcal).toBe(expectedKcal);
+    // nunca aceita zero/negativo
+    expect(buildItemWithGrams(food, "protein", 0).grams).toBeGreaterThanOrEqual(1);
   });
 
   it("buildSwapItem resolve a porção do novo alimento", () => {

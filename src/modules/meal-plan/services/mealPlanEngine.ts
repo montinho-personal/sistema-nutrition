@@ -497,6 +497,15 @@ export function buildSwapItem(food: Food, role: FoodRole, ref: MealItem): MealIt
   return toItem(food, role, grams);
 }
 
+/**
+ * Item com a porção definida MANUALMENTE pelo treinador (em gramas). O
+ * profissional escolhe o alimento e a quantidade exata; os macros seguem o que
+ * ele pediu (mínimo de 1 g). Usado pela busca/edição livre do cardápio.
+ */
+export function buildItemWithGrams(food: Food, role: FoodRole, grams: number): MealItem {
+  return toItem(food, role, Math.max(1, Math.round(grams)));
+}
+
 /** Distribuição de macros (fração das kcal) de um alimento, para similaridade. */
 function macroShare(food: Food): [number, number, number] {
   const kcal = food.nutrition.energyKcal ?? 0;
