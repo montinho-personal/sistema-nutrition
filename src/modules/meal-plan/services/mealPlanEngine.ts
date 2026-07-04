@@ -21,6 +21,7 @@ import {
   MEAL_TEMPLATES,
   MEAL_TIMING_COMPATIBILITY,
   PORTION_LIMITS,
+  PROTEIN_DENSITY_CAP,
   RANK_WEIGHTS,
   RICE_AND_BEANS_MIN_CARB_SHARE,
   ROLE_THRESHOLDS,
@@ -115,11 +116,17 @@ function addMacros(a: MacroTotals, b: MacroTotals): MacroTotals {
 }
 
 /** Ranqueamento determinístico de um alimento para um papel/timing. */
-function rankScore(food: Food, timing: MealTiming, ctx: MealPlanContext): number {
+function rankScore(food: Food, role: FoodRole, timing: MealTiming, ctx: MealPlanContext): number {
   let score = goalFitScore(food, GOAL_TO_FOOD_GOAL[ctx.goal]);
   // Alimentos que o aluno já come vêm primeiro — o cardápio segue os hábitos.
   if (ctx.habitualFoodIds?.includes(food.id)) score += RANK_WEIGHTS.habitualBonus;
   if (food.attributes.bestTimes.includes(timing)) score += RANK_WEIGHTS.timingMatch;
+  // No papel de proteína, prefere fontes densas (porção realista) — ricota/tofu,
+  // pouco densos, forçariam porções enormes. O teto evita o pó de whey dominar.
+  if (role === "protein") {
+    const density = Math.min(food.nutrition.proteinG ?? 0, PROTEIN_DENSITY_CAP);
+    score += density * RANK_WEIGHTS.proteinDensity;
+  }
   if (ctx.emphasizeSatiety) score += (food.attributes.satietyScore ?? 0) * RANK_WEIGHTS.satietyEmphasis;
   if (ctx.emphasizePracticality) {
     score += (food.attributes.practicalityScore ?? 0) * RANK_WEIGHTS.practicalityEmphasis;
@@ -127,6 +134,8 @@ function rankScore(food: Food, timing: MealTiming, ctx: MealPlanContext): number
   if (ctx.budgetTight && food.attributes.costRange) {
     score -= COST_ORDER[food.attributes.costRange] * RANK_WEIGHTS.budgetPenaltyPerLevel;
   }
+  // Comida de verdade antes do industrializado (whey em pó etc.) — sem banir.
+  if (food.processingLevel === "ultra_processed") score -= RANK_WEIGHTS.ultraProcessedPenalty;
   return score;
 }
 
@@ -155,7 +164,7 @@ function candidatesForRole(
   const timely = ofRole.filter((f) => isTimingAppropriate(f, timing));
   const pool = timely.length > 0 ? timely : ofRole;
   return pool
-    .map((f) => ({ f, s: rankScore(f, timing, ctx) }))
+    .map((f) => ({ f, s: rankScore(f, role, timing, ctx) }))
     .sort((a, b) => b.s - a.s || a.f.id.localeCompare(b.f.id))
     .map((e) => e.f);
 }
@@ -499,12 +508,21 @@ function macroShare(food: Food): [number, number, number] {
   ];
 }
 
+/** Diferença da contribuição-chave do papel entre o substituto e o original. */
+function contributionGap(role: FoodRole, swap: MealItem, ref: MealItem): number {
+  if (role === "protein") return Math.abs(swap.protein - ref.protein);
+  if (role === "fat") return Math.abs(swap.fat - ref.fat);
+  if (role === "carb") return Math.abs(swap.kcal - ref.kcal);
+  return Math.abs(swap.grams - ref.grams); // veg/legume: volume
+}
+
 /**
- * Equivalentes de um item: mesmos papel e restrições, ordenados por semelhança
- * nutricional (distribuição de macros próxima). Quando o horário da refeição é
- * conhecido, os equivalentes também respeitam esse momento do dia — trocar o
- * arroz do almoço oferece outros carbos de almoço, não aveia de café. Cada um já
- * traz a porção recalculada — o profissional nunca refaz a conta na mão.
+ * Equivalentes de um item: mesmos papel e restrições, ordenados por PRESERVAR a
+ * contribuição do papel (a proteína de um item proteico, as calorias de um
+ * carbo) em uma porção realista — e, como desempate, pela semelhança de macros.
+ * Assim uma troca não vira, ex.: 240 g de tofu que não alcançam a proteína do
+ * ovo. Quando o horário é conhecido, respeita o momento do dia. Cada equivalente
+ * já traz a porção recalculada — o profissional nunca refaz a conta na mão.
  */
 export function findFoodSwaps(
   item: MealItem,
@@ -529,8 +547,11 @@ export function findFoodSwaps(
   };
 
   return pool
-    .map((f) => ({ f, d: distance(f) }))
-    .sort((a, b) => a.d - b.d || a.f.id.localeCompare(b.f.id))
+    .map((f) => {
+      const swap = buildSwapItem(f, item.role, item);
+      return { f, swap, gap: contributionGap(item.role, swap, item), d: distance(f) };
+    })
+    .sort((a, b) => a.gap - b.gap || a.d - b.d || a.f.id.localeCompare(b.f.id))
     .slice(0, limit)
-    .map(({ f }) => ({ food: f, item: buildSwapItem(f, item.role, item) }));
+    .map(({ f, swap }) => ({ food: f, item: swap }));
 }

@@ -69,6 +69,43 @@ describe("buildMealPlan — estrutura", () => {
   });
 });
 
+describe("buildMealPlan — porções realistas (bom senso)", () => {
+  const foodById = (id: string) => curatedFoods.find((f) => f.id === id)!;
+
+  it("prefere proteínas densas — nada de ricota/tofu em porção gigante", () => {
+    const plan = buildMealPlan(curatedFoods, BASE_CTX);
+    for (const meal of plan.meals) {
+      for (const item of meal.items) {
+        if (item.role !== "protein") continue;
+        const food = foodById(item.foodId);
+        // Proteína densa o bastante para caber numa porção sensata.
+        expect(food.nutrition.proteinG ?? 0).toBeGreaterThanOrEqual(12);
+        // Sem porções absurdas (o teto de bom senso).
+        expect(item.grams).toBeLessThanOrEqual(240);
+      }
+    }
+  });
+
+  it("não usa ultraprocessado (whey em pó) como proteína padrão", () => {
+    const plan = buildMealPlan(curatedFoods, BASE_CTX);
+    for (const meal of plan.meals) {
+      for (const item of meal.items) {
+        expect(foodById(item.foodId).processingLevel).not.toBe("ultra_processed");
+      }
+    }
+  });
+
+  it("respeita os tetos de porção de todos os papéis", () => {
+    const plan = buildMealPlan(curatedFoods, { ...BASE_CTX, mealsPerDay: 5 });
+    const limits = { protein: 240, carb: 320, legume: 160, fat: 55, veg: 200 } as const;
+    for (const meal of plan.meals) {
+      for (const item of meal.items) {
+        expect(item.grams).toBeLessThanOrEqual(limits[item.role]);
+      }
+    }
+  });
+});
+
 describe("buildMealPlan — restrições", () => {
   it("vegano nunca inclui carne, peixe, ovo ou laticínio", () => {
     const plan = buildMealPlan(curatedFoods, { ...BASE_CTX, restrictions: ["vegano"] });
