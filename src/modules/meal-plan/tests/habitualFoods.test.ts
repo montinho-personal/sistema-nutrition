@@ -33,6 +33,13 @@ describe("cardápio baseado nos hábitos", () => {
     expect(names.some((n) => n.includes("arroz"))).toBe(true);
   });
 
+  it("reconhece o plural do que o aluno escreve (ovos, bananas)", () => {
+    const ids = extractHabitualFoodIds({ breakfast: "pão com ovos", snacks: "bananas" });
+    const names = curatedFoods.filter((f) => ids.includes(f.id)).map((f) => f.name.toLowerCase());
+    expect(names.some((n) => n.startsWith("ovo"))).toBe(true);
+    expect(names.some((n) => n.includes("banana"))).toBe(true);
+  });
+
   it("prioriza no cardápio os alimentos habituais (mesmo papel)", () => {
     const habitualFoodIds = extractHabitualFoodIds({
       lunch: "arroz, feijão e frango",

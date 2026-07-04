@@ -133,6 +133,10 @@ function assemble(directiveText = ""): NutritionistOpinionInput {
     directive,
     restrictions: [],
     habitualInPlan: [...habitualIds].filter((id) => planFoodIds.has(id)).length,
+    habitualUsed: [...habitualIds]
+      .filter((id) => planFoodIds.has(id))
+      .map((id) => curatedFoods.find((f) => f.id === id)!.name.split(",")[0]),
+    habitualMissing: [],
     trainsRegularly: true,
     emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low,
     emphasizePracticality: scores.practicality <= SCORE_THRESHOLDS.low,

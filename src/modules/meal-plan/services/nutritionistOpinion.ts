@@ -48,7 +48,11 @@ import type {
 import type { Student } from "@/modules/students/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
 import { type MemoryNarrative } from "@/modules/follow-ups/services";
+import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import type { MealPlan, MealPlanDirective } from "@/modules/meal-plan/types";
+
+/** Nome de cada alimento por id — para mostrar a aderência aos hábitos no parecer. */
+const HABITUAL_NAME_BY_ID = new Map(curatedFoods.map((f) => [f.id, f.name]));
 
 export type OpinionCheckStatus = "ok" | "attention";
 
@@ -96,6 +100,10 @@ export interface NutritionistOpinionInput {
   restrictions: string[];
   /** Quantos alimentos habituais do aluno entraram no cardápio. */
   habitualInPlan: number;
+  /** Nomes dos alimentos habituais que entraram no cardápio. */
+  habitualUsed: string[];
+  /** Nomes dos alimentos habituais reconhecidos que ficaram de fora. */
+  habitualMissing: string[];
   trainsRegularly: boolean;
   emphasizeSatiety: boolean;
   emphasizePracticality: boolean;
@@ -164,10 +172,14 @@ function buildStrategyRationale(i: NutritionistOpinionInput): string[] {
 function buildMenuRationale(i: NutritionistOpinionInput): string[] {
   const name = firstNameOf(i.student.fullName);
   const out: string[] = [];
-  if (i.habitualInPlan > 0) {
+  if (i.habitualUsed.length > 0) {
     out.push(
-      `O cardápio parte do que ${name} já come — ${i.habitualInPlan} ${i.habitualInPlan === 1 ? "alimento habitual" : "alimentos habituais"} no prato —, porque aderência vem antes de perfeição.`,
+      `Parte do que ${name} já come — entraram ${i.habitualUsed.join(", ")} —, porque aderência vem antes de perfeição.`,
     );
+    if (i.habitualMissing.length > 0)
+      out.push(
+        `Do que ele relatou, ficaram de fora: ${i.habitualMissing.join(", ")} — dá para trocar por eles quando quiser.`,
+      );
   } else {
     out.push(
       "Montamos com alimentos comuns e acessíveis do dia a dia brasileiro, para o plano caber na rotina.",
@@ -389,6 +401,23 @@ export function buildOpinionInput(s: OpinionSources): NutritionistOpinionInput {
     : [];
   const habitualIds = new Set(extractHabitualFoodIds(s.answers));
   const planFoodIds = new Set(s.plan.meals.flatMap((m) => m.items.map((it) => it.foodId)));
+  // Nomes curtos, sem repetir, para o parecer mostrar a aderência aos hábitos.
+  const shortName = (id: string) =>
+    (HABITUAL_NAME_BY_ID.get(id) ?? "").split(",")[0].trim();
+  const habitualNames = (predicate: (id: string) => boolean) =>
+    Array.from(
+      new Set(
+        [...habitualIds].filter(predicate).map(shortName).filter((n) => n.length > 0),
+      ),
+    );
+  const usedAll = habitualNames((id) => planFoodIds.has(id));
+  const usedSet = new Set(usedAll);
+  const habitualUsed = usedAll.slice(0, 6);
+  // "Faltaram" nunca repete o que já entrou (variações com o mesmo nome curto,
+  // ex.: Pão francês entrou, Pão integral não).
+  const habitualMissing = habitualNames((id) => !planFoodIds.has(id))
+    .filter((n) => !usedSet.has(n))
+    .slice(0, 6);
 
   return {
     student: s.student,
@@ -412,6 +441,8 @@ export function buildOpinionInput(s: OpinionSources): NutritionistOpinionInput {
     plan: s.plan,
     scores: s.scores,
     directive: s.directive,
+    habitualUsed,
+    habitualMissing,
     restrictions,
     habitualInPlan: [...habitualIds].filter((id) => planFoodIds.has(id)).length,
     trainsRegularly,
