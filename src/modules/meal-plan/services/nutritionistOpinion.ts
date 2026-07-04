@@ -10,19 +10,44 @@
  * reforça na Fatia B.2). Puxa números e alimentos reais do caso — nunca genérico.
  */
 
-import { VELOCITY_LABELS, DIRECTION_LABELS } from "@/modules/strategy/constants/parameters";
+import {
+  VELOCITY_LABELS,
+  DIRECTION_LABELS,
+  SCORE_THRESHOLDS,
+} from "@/modules/strategy/constants/parameters";
 import { RESTRICTION_LABELS } from "@/modules/meal-plan/services/dietaryFilters";
-import type { ScoreKey } from "@/modules/diagnosis/types";
-import type { ExecutiveSummary } from "@/modules/diagnosis/types";
+import {
+  ageFromBirthDate,
+  buildExecutiveSummary,
+  extractHabitualFoodIds,
+  readTrainingContext,
+} from "@/modules/diagnosis/services";
+import {
+  computeEnergyBreakdown,
+  evaluateStrategyAlerts,
+  projectGoal,
+  resolveDietApproach,
+  type StrategyAlert,
+} from "@/modules/strategy/services";
+import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
+import {
+  buildMemoryNarrative,
+  computeEvolution,
+  expectedWeeklyKgFromMacros,
+} from "@/modules/follow-ups/services";
+import type { AnswerMap, ScoreKey, ExecutiveSummary } from "@/modules/diagnosis/types";
 import type {
   EnergyBreakdown,
   GoalProjection,
+  MacroContext,
+  MacroParams,
   MacroTargets,
   NutritionStrategy,
+  StrategyInput,
 } from "@/modules/strategy/types";
-import type { StrategyAlert } from "@/modules/strategy/services";
 import type { Student } from "@/modules/students/types";
-import type { MemoryNarrative } from "@/modules/follow-ups/services";
+import type { FollowUp } from "@/modules/follow-ups/types";
+import { type MemoryNarrative } from "@/modules/follow-ups/services";
 import type { MealPlan, MealPlanDirective } from "@/modules/meal-plan/types";
 
 export type OpinionCheckStatus = "ok" | "attention";
@@ -288,5 +313,111 @@ export function buildNutritionistOpinion(input: NutritionistOpinionInput): Nutri
     risks: buildRisks(input),
     memory: input.memory,
     nextSteps: buildNextSteps(input),
+  };
+}
+
+/** Ingredientes crus do parecer — de onde derivamos energia, evolução, etc. */
+export interface OpinionSources {
+  student: Student;
+  answers: AnswerMap;
+  strategyInput: StrategyInput;
+  strategy: NutritionStrategy;
+  macros: MacroTargets;
+  scores: Record<ScoreKey, number>;
+  plan: MealPlan;
+  followUps: FollowUp[];
+  directive: MealPlanDirective;
+  macroParams: MacroParams;
+  /** Data de início da evolução (yyyy-mm-dd) — createdAt do registro de estratégia. */
+  startDate: string;
+}
+
+/**
+ * Deriva o input completo do parecer a partir dos ingredientes crus. Ponto único
+ * de montagem — reaproveitado pela tela do Plano e pelo Documento Premium, para
+ * o parecer ser idêntico nos dois (Documento 17 — reutilizar, nunca reconstruir).
+ */
+export function buildOpinionInput(s: OpinionSources): NutritionistOpinionInput {
+  const goal = s.strategy.goal;
+  const ageYears = ageFromBirthDate(s.student.birthDate);
+  const goalLabel = STUDENT_GOAL_LABELS[goal];
+  const trainsRegularly = s.answers.trains === "regular";
+
+  const macroCtx: MacroContext = {
+    weightKg: s.strategyInput.currentWeightKg,
+    bodyFatPct: s.strategyInput.bodyFatPct,
+    heightCm: s.student.heightCm,
+    ageYears,
+    sex: s.student.sex,
+    activity: (s.answers.activity as string | undefined) ?? null,
+    trains: (s.answers.trains as string | undefined) ?? null,
+    ...readTrainingContext(s.answers),
+  };
+  const energy = computeEnergyBreakdown(macroCtx);
+
+  const projection =
+    s.strategy.direction !== "manutencao" && s.strategyInput.targetChangeKg && s.strategyInput.targetWeeks
+      ? projectGoal({
+          currentWeightKg: s.strategyInput.currentWeightKg,
+          targetChangeKg: s.strategyInput.targetChangeKg,
+          weeks: s.strategyInput.targetWeeks,
+          direction: s.strategy.direction,
+          velocity: s.strategy.velocity,
+          tdee: s.macros.tdee,
+          prescribedDeltaPct:
+            s.strategy.direction === "deficit"
+              ? s.macroParams.velocityDeficitPct[s.strategy.velocity]
+              : s.macroParams.velocitySurplusPct[s.strategy.velocity],
+          trainsRegularly,
+          proteinAdequate: s.macroParams.proteinGPerKg[goal] >= 1.6,
+          capacity: s.scores.adherence + s.scores.consistency - s.scores.abandonmentRisk,
+        })
+      : null;
+
+  const evolution =
+    s.followUps.length > 0
+      ? computeEvolution(
+          s.strategyInput.currentWeightKg,
+          s.startDate,
+          s.followUps,
+          expectedWeeklyKgFromMacros(s.strategy.direction, s.macros.tdee, s.macros.calories),
+        )
+      : null;
+
+  const restrictions = Array.isArray(s.answers.restrictions)
+    ? (s.answers.restrictions as string[])
+    : [];
+  const habitualIds = new Set(extractHabitualFoodIds(s.answers));
+  const planFoodIds = new Set(s.plan.meals.flatMap((m) => m.items.map((it) => it.foodId)));
+
+  return {
+    student: s.student,
+    goalLabel,
+    weightKg: s.strategyInput.currentWeightKg,
+    strategy: s.strategy,
+    dietApproachLabel: resolveDietApproach(s.strategyInput.dietApproach ?? null, goal).label,
+    macros: s.macros,
+    energy,
+    projection,
+    summary: buildExecutiveSummary(s.answers, { goalLabel, ageYears }),
+    alerts: evaluateStrategyAlerts({
+      calories: s.macros.calories,
+      proteinG: s.macros.proteinG,
+      fatG: s.macros.fatG,
+      tdee: s.macros.tdee,
+      weightKg: s.strategyInput.currentWeightKg,
+      direction: s.strategy.direction,
+      trainsRegularly,
+    }),
+    plan: s.plan,
+    scores: s.scores,
+    directive: s.directive,
+    restrictions,
+    habitualInPlan: [...habitualIds].filter((id) => planFoodIds.has(id)).length,
+    trainsRegularly,
+    emphasizeSatiety: s.scores.hungerControl <= SCORE_THRESHOLDS.low,
+    emphasizePracticality: s.scores.practicality <= SCORE_THRESHOLDS.low,
+    budgetTight: s.answers.budget === "apertado",
+    memory: buildMemoryNarrative(s.followUps, evolution),
   };
 }

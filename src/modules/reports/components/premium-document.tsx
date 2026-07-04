@@ -15,7 +15,9 @@ import { resolveDietApproach } from "@/modules/strategy/services";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
+import { useNutritionistOpinion } from "@/modules/meal-plan/hooks/use-nutritionist-opinion";
 import { ROLE_LABELS, MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
+import type { NutritionistOpinion } from "@/modules/meal-plan/services/nutritionistOpinion";
 import { buildPremiumDocument, type PremiumDoc } from "@/modules/reports/services";
 
 function Section({
@@ -48,8 +50,86 @@ function TipList({ items }: { items: string[] }) {
   );
 }
 
-function DocBody({ doc, studentName, goalLabel, dateLabel }: {
+function OpinionSubList({ label, items }: { label: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-1">
+      {label ? (
+        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          {label}
+        </span>
+      ) : null}
+      <ul className="flex flex-col gap-1 text-sm">
+        {items.map((t) => (
+          <li key={t} className="flex items-start gap-2">
+            <span className="mt-1.5 inline-block size-1 shrink-0 rounded-full bg-gold" />
+            {t}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Parecer do nutricionista no documento premium — no estilo de impressão. */
+function ParecerSection({ opinion }: { opinion: NutritionistOpinion }) {
+  return (
+    <Section title="Parecer do nutricionista">
+      <div className="flex flex-col gap-3">
+        <p className="border-l-2 border-l-gold pl-3 text-sm font-medium">{opinion.headline}</p>
+        <OpinionSubList label="Leitura do caso" items={opinion.reading} />
+        <OpinionSubList label="Por que esta estratégia" items={opinion.strategyRationale} />
+        <OpinionSubList label="Por que este cardápio" items={opinion.menuRationale} />
+
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            O que este plano respeita
+          </span>
+          <ul className="flex flex-col gap-0.5 text-sm">
+            {opinion.respects.map((c) => (
+              <li key={c.label}>
+                <span className="font-medium">{c.label}</span>
+                <span className="text-muted-foreground"> — {c.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {opinion.risks.length > 0 ? (
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Riscos e atenção
+            </span>
+            <ul className="flex flex-col gap-1 text-sm">
+              {opinion.risks.map((r) => (
+                <li key={r.title}>
+                  <span className="font-medium">{r.title}</span>
+                  <span className="text-muted-foreground"> → {r.solution}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {opinion.memory.hasHistory ? (
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Memória e evolução
+            </span>
+            <p className="text-sm text-muted-foreground">{opinion.memory.headline}</p>
+            <OpinionSubList label="" items={opinion.memory.notes} />
+          </div>
+        ) : null}
+
+        <OpinionSubList label="Próximos passos" items={opinion.nextSteps} />
+      </div>
+    </Section>
+  );
+}
+
+function DocBody({ doc, opinion, studentName, goalLabel, dateLabel }: {
   doc: PremiumDoc;
+  opinion: NutritionistOpinion | null;
   studentName: string;
   goalLabel: string;
   dateLabel: string;
@@ -160,6 +240,8 @@ function DocBody({ doc, studentName, goalLabel, dateLabel }: {
         </div>
       </Section>
 
+      {opinion ? <ParecerSection opinion={opinion} /> : null}
+
       <Section title="Substituições">
         <p className="text-sm leading-relaxed text-muted-foreground">
           Cada alimento pode ser trocado por um equivalente do mesmo grupo, mantendo os valores
@@ -229,6 +311,7 @@ function DocBody({ doc, studentName, goalLabel, dateLabel }: {
 export function PremiumDocument({ studentId }: { studentId: string }) {
   const { student, input, strategy, macros, scores, plan, mealsPerDay } =
     useStudentPlan(studentId);
+  const opinion = useNutritionistOpinion(studentId);
 
   const dateLabel = React.useMemo(
     () => new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date()),
@@ -298,6 +381,7 @@ export function PremiumDocument({ studentId }: { studentId: string }) {
       <div id="premium-doc" className="rounded-xl border bg-card p-6 print:border-0 print:p-0">
         <DocBody
           doc={doc}
+          opinion={opinion}
           studentName={student.fullName}
           goalLabel={STUDENT_GOAL_LABELS[student.mainGoal!]}
           dateLabel={dateLabel}
