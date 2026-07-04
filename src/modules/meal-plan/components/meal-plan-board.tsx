@@ -17,8 +17,10 @@ import { buildSwapItem, parseDirective, sumItems } from "@/modules/meal-plan/ser
 import { interpretMealInstructionAction } from "@/modules/meal-plan/services/interpretMealInstruction.action";
 import { MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
+import { useNutritionistOpinion } from "@/modules/meal-plan/hooks/use-nutritionist-opinion";
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
 import { MealInstruction } from "@/modules/meal-plan/components/meal-instruction";
+import { NutritionistOpinion } from "@/modules/meal-plan/components/nutritionist-opinion";
 import type { FoodRole, MealPlan, MealSlot } from "@/modules/meal-plan/types";
 
 const foodById = new Map(curatedFoods.map((f) => [f.id, f]));
@@ -32,6 +34,7 @@ const pct = (value: number, target: number) => (target > 0 ? Math.round((value /
 export function MealPlanBoard({ studentId }: { studentId: string }) {
   const { plan: basePlan, restrictions, input, nextVariant, instruction, directive, setInstruction } =
     useStudentPlan(studentId);
+  const opinion = useNutritionistOpinion(studentId);
   const [swaps, setSwaps] = React.useState<Record<string, string>>({});
   const [applying, setApplying] = React.useState(false);
 
@@ -172,6 +175,8 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
           ))}
         </div>
       </section>
+
+      {opinion ? <NutritionistOpinion opinion={opinion} /> : null}
 
       <Card>
         <CardContent className="flex flex-col gap-1.5 pt-6 text-sm text-muted-foreground">
