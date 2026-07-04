@@ -22,6 +22,7 @@ import type {
 } from "@/modules/strategy/types";
 import type { StrategyAlert } from "@/modules/strategy/services";
 import type { Student } from "@/modules/students/types";
+import type { MemoryNarrative } from "@/modules/follow-ups/services";
 import type { MealPlan, MealPlanDirective } from "@/modules/meal-plan/types";
 
 export type OpinionCheckStatus = "ok" | "attention";
@@ -48,6 +49,8 @@ export interface NutritionistOpinion {
   menuRationale: string[];
   respects: OpinionCheck[];
   risks: OpinionRisk[];
+  /** Memória do aluno — o que o histórico ensinou (Fatia C). */
+  memory: MemoryNarrative;
   nextSteps: string[];
 }
 
@@ -72,6 +75,8 @@ export interface NutritionistOpinionInput {
   emphasizeSatiety: boolean;
   emphasizePracticality: boolean;
   budgetTight: boolean;
+  /** Memória do aluno (histórico de acompanhamentos). */
+  memory: MemoryNarrative;
 }
 
 const kcal = (n: number) => `${Math.round(n).toLocaleString("pt-BR")} kcal`;
@@ -281,6 +286,7 @@ export function buildNutritionistOpinion(input: NutritionistOpinionInput): Nutri
     menuRationale: buildMenuRationale(input),
     respects: buildRespects(input),
     risks: buildRisks(input),
+    memory: input.memory,
     nextSteps: buildNextSteps(input),
   };
 }

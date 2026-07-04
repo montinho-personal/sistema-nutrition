@@ -6,9 +6,12 @@ import {
   AlertTriangleIcon,
   ArrowRightIcon,
   CheckCircle2Icon,
+  HistoryIcon,
   ShieldCheckIcon,
   StethoscopeIcon,
   TargetIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
   UtensilsCrossedIcon,
 } from "lucide-react";
 
@@ -50,6 +53,30 @@ function Bullets({ items }: { items: string[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+function LearningList({
+  icon,
+  title,
+  items,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  items: string[];
+}) {
+  return (
+    <div className="flex flex-col gap-1 rounded-lg bg-muted/50 p-2.5">
+      <span className="flex items-center gap-1.5 text-xs font-medium">
+        {icon}
+        {title}
+      </span>
+      <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+        {items.map((it) => (
+          <li key={it}>{it}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -140,6 +167,37 @@ export function NutritionistOpinion({ opinion }: { opinion: NutritionistOpinion 
               ))}
             </ul>
           )}
+        </SubSection>
+
+        <SubSection icon={<HistoryIcon className="size-3.5" />} title="Memória e evolução">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">{opinion.memory.headline}</p>
+            {opinion.memory.notes.length > 0 ? <Bullets items={opinion.memory.notes} /> : null}
+            {opinion.memory.whatWorked.length > 0 || opinion.memory.whatFailed.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {opinion.memory.whatWorked.length > 0 ? (
+                  <LearningList
+                    icon={<ThumbsUpIcon className="size-3.5 text-success" />}
+                    title="Funcionou"
+                    items={opinion.memory.whatWorked}
+                  />
+                ) : null}
+                {opinion.memory.whatFailed.length > 0 ? (
+                  <LearningList
+                    icon={<ThumbsDownIcon className="size-3.5 text-warning" />}
+                    title="Não funcionou"
+                    items={opinion.memory.whatFailed}
+                  />
+                ) : null}
+              </div>
+            ) : null}
+            {opinion.memory.recommendation ? (
+              <p className="flex items-start gap-1.5 text-sm">
+                <ArrowRightIcon className="mt-0.5 size-3.5 shrink-0 text-gold" />
+                <span>{opinion.memory.recommendation}</span>
+              </p>
+            ) : null}
+          </div>
         </SubSection>
 
         <SubSection icon={<ArrowRightIcon className="size-3.5" />} title="Próximos passos">

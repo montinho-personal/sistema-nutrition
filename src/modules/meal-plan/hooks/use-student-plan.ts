@@ -30,6 +30,8 @@ import {
 } from "@/modules/meal-plan/services";
 import { useMealPlanVariant } from "@/modules/meal-plan/hooks/use-meal-plan-variant";
 import { useMealPlanInstruction } from "@/modules/meal-plan/hooks/use-meal-plan-instruction";
+import { useFollowUps } from "@/modules/follow-ups/hooks/use-follow-ups";
+import { summarizeAdherenceSignals } from "@/modules/follow-ups/services";
 import type { MealPlan, MealPlanDirective } from "@/modules/meal-plan/types";
 
 const EMPTY_STUDENTS: Student[] = [];
@@ -66,6 +68,9 @@ export function useStudentPlan(studentId: string): StudentPlan {
   const macroParams = useMacroParams();
   const { variant, next } = useMealPlanVariant(studentId);
   const { instruction, storedDirective, setInstruction } = useMealPlanInstruction(studentId);
+  const { followUps } = useFollowUps(studentId);
+  // Memória de aderência: adaptações SEGURAS do histórico moldam o cardápio.
+  const memorySignals = React.useMemo(() => summarizeAdherenceSignals(followUps), [followUps]);
   // Usa a interpretação persistida (pode ter sido enriquecida pela IA); na
   // ausência, cai no parser determinístico (instantâneo, sem rede).
   const directive = React.useMemo(
@@ -115,8 +120,10 @@ export function useStudentPlan(studentId: string): StudentPlan {
       goal: student.mainGoal,
       mealsPerDay,
       macros: { kcal: macros.calories, protein: macros.proteinG, carbs: macros.carbG, fat: macros.fatG },
-      emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low,
-      emphasizePracticality: scores.practicality <= SCORE_THRESHOLDS.low,
+      // A anamnese OU o histórico de acompanhamentos podem pedir a adaptação.
+      emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low || memorySignals.emphasizeSatiety,
+      emphasizePracticality:
+        scores.practicality <= SCORE_THRESHOLDS.low || memorySignals.emphasizePracticality,
       budgetTight: session.answers.budget === "apertado",
       restrictions,
       variant,
@@ -125,7 +132,7 @@ export function useStudentPlan(studentId: string): StudentPlan {
     // A instrução do treinador ajusta o contexto — a estratégia continua a base.
     const ctx = applyDirective(baseCtx, directive);
     return { strategy, macros, scores, plan: buildMealPlan(curatedFoods, ctx), mealsPerDay };
-  }, [student, session, input, restrictions, variant, macroParams, directive]);
+  }, [student, session, input, restrictions, variant, macroParams, directive, memorySignals]);
 
   return {
     student,

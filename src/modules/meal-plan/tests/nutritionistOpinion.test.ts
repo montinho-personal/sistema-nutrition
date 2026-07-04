@@ -17,6 +17,7 @@ import {
   resolveMacros,
 } from "@/modules/strategy/services";
 import { DEFAULT_MACRO_PARAMS, SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
+import { buildMemoryNarrative } from "@/modules/follow-ups/services";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import { buildMealPlan, emptyDirective, parseDirective } from "@/modules/meal-plan/services";
 import {
@@ -136,6 +137,7 @@ function assemble(directiveText = ""): NutritionistOpinionInput {
     emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low,
     emphasizePracticality: scores.practicality <= SCORE_THRESHOLDS.low,
     budgetTight: false,
+    memory: buildMemoryNarrative([], null),
   };
 }
 
@@ -185,5 +187,11 @@ describe("buildNutritionistOpinion — parecer individualizado", () => {
 
   it("sempre há próximos passos", () => {
     expect(buildNutritionistOpinion(assemble()).nextSteps.length).toBeGreaterThan(0);
+  });
+
+  it("sem histórico, a memória sinaliza a primeira consulta", () => {
+    const op = buildNutritionistOpinion(assemble());
+    expect(op.memory.hasHistory).toBe(false);
+    expect(op.memory.headline.toLowerCase()).toContain("primeira consulta");
   });
 });
