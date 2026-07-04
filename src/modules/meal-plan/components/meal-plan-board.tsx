@@ -13,7 +13,12 @@ import { LoadingScreen } from "@/shared/components/loading-screen";
 import { SectionHeader } from "@/shared/components/section-header";
 import { MetricCard } from "@/shared/components/metric-card";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
-import { buildSwapItem, parseDirective, sumItems } from "@/modules/meal-plan/services";
+import {
+  buildItemWithGrams,
+  buildSwapItem,
+  parseDirective,
+  sumItems,
+} from "@/modules/meal-plan/services";
 import { interpretMealInstructionAction } from "@/modules/meal-plan/services/interpretMealInstruction.action";
 import { MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
@@ -35,14 +40,18 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
   const { plan: basePlan, restrictions, input, nextVariant, instruction, directive, setInstruction } =
     useStudentPlan(studentId);
   const opinion = useNutritionistOpinion(studentId);
-  const [swaps, setSwaps] = React.useState<Record<string, string>>({});
+  // Override do treinador por item: troca o alimento (foodId) e, opcionalmente,
+  // fixa a quantidade em gramas (grams != null = porção manual).
+  const [overrides, setOverrides] = React.useState<
+    Record<string, { foodId: string; grams: number | null }>
+  >({});
   const [applying, setApplying] = React.useState(false);
 
   // Nova instrução recomeça do cardápio limpo (sem trocas manuais residuais). A
   // interpretação é determinística; com IA habilitada, ela enriquece o que o
   // texto esconde (degradando com elegância a qualquer falha).
   const applyInstruction = async (text: string) => {
-    setSwaps({});
+    setOverrides({});
     if (!text.trim()) {
       setInstruction("", null);
       return;
@@ -70,8 +79,15 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
     if (!basePlan) return null;
     const meals = basePlan.meals.map((meal) => {
       const items = meal.items.map((item) => {
-        const food = foodById.get(swaps[`${meal.slot}:${item.role}`] ?? "");
-        return food ? buildSwapItem(food, item.role, item) : item;
+        const ov = overrides[`${meal.slot}:${item.role}`];
+        if (!ov) return item;
+        const food = foodById.get(ov.foodId);
+        if (!food) return item;
+        // Porção manual quando o treinador digitou; senão, porção que preserva
+        // a contribuição do papel (troca inteligente).
+        return ov.grams != null
+          ? buildItemWithGrams(food, item.role, ov.grams)
+          : buildSwapItem(food, item.role, item);
       });
       return { ...meal, items, totals: sumItems(items) };
     });
@@ -96,20 +112,32 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
         fat: pct(totals.fat, t.fat),
       },
     };
-  }, [basePlan, swaps]);
+  }, [basePlan, overrides]);
 
-  const swappedKeys = React.useMemo(() => new Set(Object.keys(swaps)), [swaps]);
+  const swappedKeys = React.useMemo(() => new Set(Object.keys(overrides)), [overrides]);
 
+  // Trocar o alimento — porção automática (preserva a contribuição do papel).
   const onSwap = (slot: MealSlot, role: FoodRole, foodId: string) =>
-    setSwaps((prev) => ({ ...prev, [`${slot}:${role}`]: foodId }));
+    setOverrides((prev) => ({ ...prev, [`${slot}:${role}`]: { foodId, grams: null } }));
+  // Fixar a quantidade em gramas — mantém o alimento atual (ou o original).
+  const onSetGrams = (slot: MealSlot, role: FoodRole, grams: number) =>
+    setOverrides((prev) => {
+      const key = `${slot}:${role}`;
+      const baseId = basePlan?.meals
+        .find((m) => m.slot === slot)
+        ?.items.find((i) => i.role === role)?.foodId;
+      const foodId = prev[key]?.foodId ?? baseId;
+      if (!foodId) return prev;
+      return { ...prev, [key]: { foodId, grams } };
+    });
   const onReset = (slot: MealSlot, role: FoodRole) =>
-    setSwaps((prev) => {
-      const nextSwaps = { ...prev };
-      delete nextSwaps[`${slot}:${role}`];
-      return nextSwaps;
+    setOverrides((prev) => {
+      const next = { ...prev };
+      delete next[`${slot}:${role}`];
+      return next;
     });
   const regenerate = () => {
-    setSwaps({});
+    setOverrides({});
     nextVariant();
   };
 
@@ -170,6 +198,7 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
               restrictions={restrictions}
               swappedKeys={swappedKeys}
               onSwap={onSwap}
+              onSetGrams={onSetGrams}
               onReset={onReset}
             />
           ))}

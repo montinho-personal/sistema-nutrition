@@ -6,6 +6,7 @@ export {
   isTimingAppropriate,
   findFoodSwaps,
   buildSwapItem,
+  buildItemWithGrams,
   sumItems,
   type MealPlanContext,
 } from "./mealPlanEngine";
