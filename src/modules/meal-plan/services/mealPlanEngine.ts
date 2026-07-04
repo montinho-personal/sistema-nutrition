@@ -38,6 +38,7 @@ import type {
   MacroTotals,
   MealItem,
   MealPlan,
+  MealSlot,
   PlannedMeal,
 } from "@/modules/meal-plan/types";
 
@@ -56,6 +57,11 @@ export interface MealPlanContext {
   habitualFoodIds?: string[];
   /** "Zero carboidrato à noite": jantar/ceia sem carbo — a gordura fecha a energia. */
   noCarbAtNight?: boolean;
+  /**
+   * Alimentos pedidos por refeição (nomes livres do treinador). A refeição é
+   * montada EXATAMENTE com esses alimentos, escalados para bater as calorias.
+   */
+  pinnedFoodNames?: Partial<Record<MealSlot, string[]>>;
 }
 
 /** Objetivo do aluno → objetivo do Banco de Alimentos (que tem menos opções). */
@@ -77,6 +83,58 @@ function round(value: number, step = 1): number {
 
 /** Grupo do Banco de Alimentos que reúne feijões e leguminosas. */
 const LEGUME_FOOD_GROUP = "Leguminosas";
+
+/** Termos genéricos → um representante concreto do banco. */
+const GENERIC_FOOD_ALIASES: Record<string, string> = {
+  legume: "brocolis",
+  legumes: "brocolis",
+  verdura: "couve",
+  verduras: "couve",
+  salada: "alface",
+  carne: "patinho",
+  frango: "frango peito",
+};
+
+function normText(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
+/** Singular simples (ovos → ovo, legumes → legume) para casar nomes. */
+function singular(token: string): string {
+  return token.length > 3 && token.endsWith("s") ? token.slice(0, -1) : token;
+}
+
+/**
+ * Resolve um nome livre ("pasta de amendoim", "whey", "ovos") para o melhor
+ * alimento do banco. Casa por tokens (singularizados), com apelidos genéricos
+ * para "legumes"/"salada"/etc. Retorna null se nada bater.
+ */
+export function resolveFoodName(foods: Food[], name: string): Food | null {
+  const raw = normText(name).trim();
+  if (!raw) return null;
+  const query = GENERIC_FOOD_ALIASES[raw] ?? raw;
+  const tokens = query.split(/\s+/).map(singular).filter((t) => t.length >= 3);
+  if (tokens.length === 0) return null;
+  const scored = foods
+    .map((f) => {
+      // Casa por NOME e sinônimos (nunca por categoria — "Carnes e ovos" faria
+      // toda carne casar com "ovo"). Preferência a quem casa no nome e começa
+      // com o termo (ex.: "ovo" → "Ovo de galinha", não "Clara de ovo").
+      const nameNorm = normText(f.name);
+      const synNorm = normText((f.synonyms ?? []).join(" "));
+      const total = tokens.filter((t) => nameNorm.includes(t) || synNorm.includes(t)).length;
+      const nameHits = tokens.filter((t) => nameNorm.includes(t)).length;
+      const starts = nameNorm.startsWith(tokens[0]) ? 1 : 0;
+      return { f, ok: total === tokens.length, rank: nameHits * 10 + starts * 5, len: f.name.length };
+    })
+    .filter((x) => x.ok);
+  if (scored.length === 0) return null;
+  scored.sort((a, b) => b.rank - a.rank || a.len - b.len || a.f.id.localeCompare(b.f.id));
+  return scored[0].f;
+}
 
 /** Papel do alimento por dominância de macro (Documento 08 — regra). */
 export function classifyRole(food: Food): FoodRole {
@@ -237,6 +295,71 @@ function toItem(food: Food, role: FoodRole, grams: number): MealItem {
   };
 }
 
+function mealTotals(items: MealItem[]): MacroTotals {
+  return items.reduce(
+    (acc, i) => addMacros(acc, { kcal: i.kcal, protein: i.protein, carbs: i.carbs, fat: i.fat }),
+    { ...EMPTY_MACROS },
+  );
+}
+
+/**
+ * Monta a refeição EXATAMENTE com os alimentos pedidos pelo treinador. Parte da
+ * medida caseira de cada um e escala tudo por um fator único para bater as
+ * calorias-alvo da refeição — porções naturais, os alimentos são os escolhidos.
+ */
+function buildPinnedMeal(
+  template: MealTemplate,
+  target: MacroTotals,
+  foods: Food[],
+  ctx: MealPlanContext,
+  names: string[],
+  usedDay: Set<string>,
+): PlannedMeal {
+  const allowed = buildDietaryFilter(ctx.restrictions);
+  const pool = foods.filter(allowed);
+  const resolved = names
+    .map((n) => resolveFoodName(pool, n))
+    .filter((f): f is Food => Boolean(f));
+  if (resolved.length === 0) return buildMeal(template, target, foods, ctx, usedDay);
+
+  const bases = resolved.map((f) => ({
+    food: f,
+    role: classifyRole(f),
+    grams: f.portions[0]?.grams ?? 100,
+  }));
+  const baseKcal = bases.reduce((s, b) => s + scaleFood(b.food, b.grams).kcal, 0);
+  const factor = baseKcal > 0 ? Math.min(3, Math.max(0.4, target.kcal / baseKcal)) : 1;
+
+  const items = bases.map((b) => {
+    const limits = PORTION_LIMITS[b.role];
+    const grams = Math.min(
+      limits.max,
+      Math.max(limits.min, round(b.grams * factor, GRAMS_ROUNDING)),
+    );
+    usedDay.add(b.food.id);
+    return toItem(b.food, b.role, grams);
+  });
+
+  return {
+    slot: template.slot,
+    title: template.title,
+    timing: template.timing,
+    target: {
+      kcal: round(target.kcal),
+      protein: round(target.protein),
+      carbs: round(target.carbs),
+      fat: round(target.fat),
+    },
+    items,
+    totals: {
+      kcal: round(mealTotals(items).kcal),
+      protein: round(mealTotals(items).protein),
+      carbs: round(mealTotals(items).carbs),
+      fat: round(mealTotals(items).fat),
+    },
+  };
+}
+
 /** Monta uma refeição: escolhe os alimentos e resolve as porções. */
 function buildMeal(
   template: MealTemplate,
@@ -245,6 +368,11 @@ function buildMeal(
   ctx: MealPlanContext,
   usedDay: Set<string>,
 ): PlannedMeal {
+  const pinned = ctx.pinnedFoodNames?.[template.slot];
+  if (pinned && pinned.length > 0) {
+    return buildPinnedMeal(template, target, foods, ctx, pinned, usedDay);
+  }
+
   const usedMeal = new Set<string>();
   const selected = new Map<FoodRole, Food>();
 
@@ -406,6 +534,11 @@ function buildNotes(
   if (ctx.noCarbAtNight)
     notes.push(
       "Instrução do treinador: jantar e ceia sem carboidrato — a gordura fecha a energia da noite.",
+    );
+
+  if (ctx.pinnedFoodNames && Object.keys(ctx.pinnedFoodNames).length > 0)
+    notes.push(
+      "Refeições montadas com os alimentos que você pediu, ajustando só as porções para as calorias.",
     );
 
   notes.push(

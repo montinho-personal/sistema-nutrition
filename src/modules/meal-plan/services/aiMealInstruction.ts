@@ -78,6 +78,7 @@ export function parseInstructionResponse(text: string): MealPlanDirective | null
     emphasizeSatiety: r.emphasizeSatiety,
     noCarbAtNight: r.noCarbAtNight,
     addRestrictions: Array.from(new Set(r.addRestrictions.filter((x) => ALLOWED_RESTRICTIONS.has(x)))),
+    mealFoods: {},
     recognized: [],
     unsupported: r.unsupported
       .filter((x) => !RESTRICTION_LABELS[x]) // ruído: rótulos já viram restrição

@@ -4,6 +4,7 @@ export {
   buildMealPlan,
   classifyRole,
   isTimingAppropriate,
+  resolveFoodName,
   findFoodSwaps,
   buildSwapItem,
   buildItemWithGrams,

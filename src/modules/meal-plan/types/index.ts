@@ -100,6 +100,12 @@ export interface MealPlanDirective {
   noCarbAtNight: boolean;
   /** Restrições adicionadas pela instrução (ex.: "sem lactose"). */
   addRestrictions: string[];
+  /**
+   * Alimentos pedidos por refeição (nomes livres). Ex.: "Café: aveia, whey e
+   * pasta de amendoim" → { breakfast: ["aveia","whey","pasta de amendoim"] }. A
+   * refeição é montada exatamente com esses alimentos (o motor resolve os nomes).
+   */
+  mealFoods: Partial<Record<MealSlot, string[]>>;
   /** Frases reconhecidas, para transparência na interface. */
   recognized: string[];
   /**

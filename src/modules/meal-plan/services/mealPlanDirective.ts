@@ -9,13 +9,23 @@
  * devolvendo a MESMA estrutura — o motor é agnóstico à origem.
  */
 
-import type { MacroTotals, MealPlanDirective } from "@/modules/meal-plan/types";
+import type { MacroTotals, MealPlanDirective, MealSlot } from "@/modules/meal-plan/types";
 import type { MealPlanContext } from "@/modules/meal-plan/services/mealPlanEngine";
 import { RESTRICTION_LABELS } from "@/modules/meal-plan/services/dietaryFilters";
 import { DIRECTIVE_LIMITS } from "@/modules/meal-plan/constants/parameters";
 
 /** Atwater — kcal por grama, para redistribuir os macros ao trocar as calorias. */
 const KCAL_PER_G = { protein: 4, carb: 4, fat: 9 } as const;
+
+/** Rótulo curto de cada refeição, para os chips "Café: aveia, whey...". */
+const MEAL_SLOT_SHORT: Record<MealSlot, string> = {
+  breakfast: "Café",
+  morning_snack: "Lanche da manhã",
+  lunch: "Almoço",
+  afternoon_snack: "Lanche da tarde",
+  dinner: "Jantar",
+  supper: "Ceia",
+};
 
 /** Diretiva vazia (nada reconhecido). */
 export function emptyDirective(): MealPlanDirective {
@@ -27,6 +37,7 @@ export function emptyDirective(): MealPlanDirective {
     emphasizeSatiety: false,
     noCarbAtNight: false,
     addRestrictions: [],
+    mealFoods: {},
     recognized: [],
     unsupported: [],
   };
@@ -46,6 +57,10 @@ export function describeDirective(d: MealPlanDirective): string[] {
   if (d.emphasizePracticality) out.push("refeições rápidas");
   if (d.emphasizeSatiety) out.push("mais saciedade");
   for (const r of d.addRestrictions) out.push(RESTRICTION_LABELS[r] ?? r);
+  for (const [slot, foods] of Object.entries(d.mealFoods)) {
+    if (foods && foods.length > 0)
+      out.push(`${MEAL_SLOT_SHORT[slot as MealSlot]}: ${foods.join(", ")}`);
+  }
   return out;
 }
 
@@ -58,7 +73,8 @@ export function hasDirective(d: MealPlanDirective): boolean {
     d.emphasizePracticality ||
     d.emphasizeSatiety ||
     d.noCarbAtNight ||
-    d.addRestrictions.length > 0
+    d.addRestrictions.length > 0 ||
+    Object.keys(d.mealFoods).length > 0
   );
 }
 
@@ -72,6 +88,38 @@ function normalize(text: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "");
+}
+
+/** Descobre a refeição a partir do rótulo antes dos dois-pontos ("Café", "Janta"). */
+function mealSlotFromLabel(labelNorm: string): MealSlot | null {
+  if (/lanche.*manh|manh.*lanche/.test(labelNorm)) return "morning_snack";
+  if (/lanche|tarde/.test(labelNorm)) return "afternoon_snack";
+  if (/caf|desjejum|manh/.test(labelNorm)) return "breakfast";
+  if (/almoc/.test(labelNorm)) return "lunch";
+  if (/jant|noite/.test(labelNorm)) return "dinner";
+  if (/ceia/.test(labelNorm)) return "supper";
+  return null;
+}
+
+/**
+ * Extrai os alimentos pedidos por refeição de linhas "Refeição: a, b e c".
+ * Preserva os nomes como o treinador escreveu (o motor resolve para o banco).
+ */
+function parseMealFoods(text: string): Partial<Record<MealSlot, string[]>> {
+  const out: Partial<Record<MealSlot, string[]>> = {};
+  for (const line of text.split(/\r?\n/)) {
+    const idx = line.indexOf(":");
+    if (idx < 0) continue;
+    const slot = mealSlotFromLabel(normalize(line.slice(0, idx)));
+    if (!slot) continue;
+    const foods = line
+      .slice(idx + 1)
+      .split(/\s*,\s*|\s+e\s+|\s*;\s*/i)
+      .map((s) => s.trim())
+      .filter((s) => s.length >= 2);
+    if (foods.length > 0) out[slot] = foods;
+  }
+  return out;
 }
 
 /**
@@ -120,6 +168,10 @@ export function parseDirective(text: string): MealPlanDirective {
   if (/vegan/.test(t)) d.addRestrictions.push("vegano");
   else if (/vegetarian/.test(t)) d.addRestrictions.push("vegetariano");
 
+  // Alimentos por refeição ("Café: aveia, whey e pasta de amendoim") — usa o
+  // texto original para preservar os nomes como o treinador escreveu.
+  d.mealFoods = parseMealFoods(text);
+
   d.recognized = describeDirective(d);
   return d;
 }
@@ -142,6 +194,9 @@ export function mergeDirectives(
     emphasizeSatiety: base.emphasizeSatiety || ai.emphasizeSatiety,
     noCarbAtNight: base.noCarbAtNight || ai.noCarbAtNight,
     addRestrictions: Array.from(new Set([...base.addRestrictions, ...ai.addRestrictions])),
+    // Alimentos por refeição: o determinístico é soberano por slot; a IA
+    // completa os slots que o texto estruturado não trouxe.
+    mealFoods: { ...ai.mealFoods, ...base.mealFoods },
     recognized: [],
     unsupported: Array.from(new Set([...base.unsupported, ...ai.unsupported])),
   };
@@ -184,5 +239,6 @@ export function applyDirective(ctx: MealPlanContext, d: MealPlanDirective): Meal
   if (d.addRestrictions.length > 0) {
     next.restrictions = Array.from(new Set([...ctx.restrictions, ...d.addRestrictions]));
   }
+  if (Object.keys(d.mealFoods).length > 0) next.pinnedFoodNames = d.mealFoods;
   return next;
 }

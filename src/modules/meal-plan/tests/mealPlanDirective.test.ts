@@ -6,6 +6,7 @@ import {
   buildMealPlan,
   overrideCalories,
   parseDirective,
+  resolveFoodName,
   type MealPlanContext,
 } from "@/modules/meal-plan/services";
 
@@ -97,5 +98,54 @@ describe("applyDirective + motor — a instrução muda o cardápio", () => {
   it("instrução vazia mantém o cardápio padrão", () => {
     const ctx = applyDirective(BASE_CTX, parseDirective(""));
     expect(ctx).toEqual(BASE_CTX);
+  });
+});
+
+describe("alimentos por refeição — o cardápio usa o que o treinador pediu", () => {
+  const INSTRUCTION = `Quero uma dieta de 1800 calorias. Quero 4 refeicoes e que contenham esses alimentos:
+Cafe da manha: aveia, whey e pasta de amendoim
+Almoco: arroz, legumes e frango
+Tarde: Pao, ovos, whey e banana
+Janta: Arroz, legume e frango`;
+
+  it("parseDirective extrai os alimentos de cada refeição", () => {
+    const d = parseDirective(INSTRUCTION);
+    expect(d.caloriesOverride).toBe(1800);
+    expect(d.mealsPerDay).toBe(4);
+    expect(d.mealFoods.breakfast).toEqual(["aveia", "whey", "pasta de amendoim"]);
+    expect(d.mealFoods.lunch).toEqual(["arroz", "legumes", "frango"]);
+    expect(d.mealFoods.afternoon_snack).toEqual(["Pao", "ovos", "whey", "banana"]);
+    expect(d.mealFoods.dinner).toEqual(["Arroz", "legume", "frango"]);
+  });
+
+  it("resolveFoodName casa nomes livres (ovos→Ovo, legumes→vegetal, sem cair na categoria)", () => {
+    expect(resolveFoodName(curatedFoods, "ovos")!.name).toMatch(/^Ovo/);
+    expect(resolveFoodName(curatedFoods, "whey")!.name.toLowerCase()).toContain("whey");
+    expect(resolveFoodName(curatedFoods, "pasta de amendoim")!.name.toLowerCase()).toContain(
+      "pasta de amendoim",
+    );
+    // "legumes" vira um vegetal (não uma carne da categoria "Carnes e ovos").
+    const legume = resolveFoodName(curatedFoods, "legumes")!;
+    expect(legume.foodGroup).not.toBe("Carnes");
+  });
+
+  it("cada refeição contém os alimentos pedidos e o dia bate as calorias", () => {
+    const ctx = applyDirective(
+      { ...BASE_CTX, mealsPerDay: 4 },
+      parseDirective(INSTRUCTION),
+    );
+    const plan = buildMealPlan(curatedFoods, ctx);
+    const named = (slot: string) =>
+      plan.meals.find((m) => m.slot === slot)!.items.map((i) => i.foodName.toLowerCase());
+
+    expect(named("breakfast").some((n) => n.includes("aveia"))).toBe(true);
+    expect(named("breakfast").some((n) => n.includes("whey"))).toBe(true);
+    expect(named("breakfast").some((n) => n.includes("amendoim"))).toBe(true);
+    expect(named("lunch").some((n) => n.includes("arroz"))).toBe(true);
+    expect(named("lunch").some((n) => n.includes("frango"))).toBe(true);
+    expect(named("afternoon_snack").some((n) => n.startsWith("ovo"))).toBe(true);
+
+    expect(plan.accuracy.kcal).toBeGreaterThanOrEqual(90);
+    expect(plan.notes.some((n) => n.includes("os alimentos que você pediu"))).toBe(true);
   });
 });
