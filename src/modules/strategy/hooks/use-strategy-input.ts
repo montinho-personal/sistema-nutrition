@@ -24,5 +24,5 @@ export function useStrategyInput(studentId: string) {
     [studentId],
   );
 
-  return { input: record?.input ?? null, save };
+  return { input: record?.input ?? null, record, save };
 }

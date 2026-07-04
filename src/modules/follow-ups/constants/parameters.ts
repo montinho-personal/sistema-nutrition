@@ -87,6 +87,20 @@ export const PREDICTION = {
   confidenceWeeksWeight: 40,
 } as const;
 
+/**
+ * Limiares da Memória de Aderência (Personal Nutrition AI — Fatia C). A partir
+ * do histórico, o cardápio adapta-se com segurança: pouca aderência pede
+ * praticidade; fome alta pede saciedade. Escala 0–10.
+ */
+export const ADHERENCE_MEMORY_THRESHOLDS = {
+  /** Aderência média ≤ isto → simplificar (priorizar praticidade). */
+  lowAdherence: 5,
+  /** Fome média ≥ isto → reforçar saciedade. */
+  highHunger: 7,
+  /** Quantas anotações de "funcionou/não funcionou" trazer ao parecer. */
+  maxLearnings: 3,
+} as const;
+
 /** Rótulos pt-BR dos status de evolução. */
 export const STATUS_LABELS: Record<string, string> = {
   on_track: "No ritmo esperado",

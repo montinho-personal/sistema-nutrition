@@ -16,8 +16,15 @@ import {
 } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
+import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import type { MacroContext } from "@/modules/strategy/types";
+import { useFollowUps } from "@/modules/follow-ups/hooks/use-follow-ups";
+import {
+  buildMemoryNarrative,
+  computeEvolution,
+  expectedWeeklyKgFromMacros,
+} from "@/modules/follow-ups/services";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
 import {
   buildNutritionistOpinion,
@@ -33,6 +40,8 @@ export function useNutritionistOpinion(studentId: string): NutritionistOpinion |
   const { student, session, input, strategy, macros, scores, plan, restrictions, directive } =
     useStudentPlan(studentId);
   const macroParams = useMacroParams();
+  const { record } = useStrategyInput(studentId);
+  const { followUps } = useFollowUps(studentId);
 
   return React.useMemo(() => {
     if (!student?.mainGoal || !session || !input || !strategy || !macros || !scores || !plan) {
@@ -90,6 +99,18 @@ export function useNutritionistOpinion(studentId: string): NutritionistOpinion |
     const planFoodIds = new Set(plan.meals.flatMap((m) => m.items.map((it) => it.foodId)));
     const habitualInPlan = [...habitualIds].filter((id) => planFoodIds.has(id)).length;
 
+    // Memória de aderência: o histórico de acompanhamentos ensina o parecer.
+    const evolution =
+      followUps.length > 0 && record
+        ? computeEvolution(
+            input.currentWeightKg,
+            record.createdAt.slice(0, 10),
+            followUps,
+            expectedWeeklyKgFromMacros(strategy.direction, macros.tdee, macros.calories),
+          )
+        : null;
+    const memory = buildMemoryNarrative(followUps, evolution);
+
     return buildNutritionistOpinion({
       student,
       goalLabel,
@@ -110,6 +131,20 @@ export function useNutritionistOpinion(studentId: string): NutritionistOpinion |
       emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low,
       emphasizePracticality: scores.practicality <= SCORE_THRESHOLDS.low,
       budgetTight: answers.budget === "apertado",
+      memory,
     });
-  }, [student, session, input, strategy, macros, scores, plan, restrictions, directive, macroParams]);
+  }, [
+    student,
+    session,
+    input,
+    strategy,
+    macros,
+    scores,
+    plan,
+    restrictions,
+    directive,
+    macroParams,
+    record,
+    followUps,
+  ]);
 }
