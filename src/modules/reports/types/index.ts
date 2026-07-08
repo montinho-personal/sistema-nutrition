@@ -9,6 +9,7 @@ import type { DiagnosisScore, ExecutiveSummary, Hypothesis } from "@/modules/dia
 import type { MacroTargets, NutritionStrategy } from "@/modules/strategy/types";
 import type { MealPlan } from "@/modules/meal-plan/types";
 import type { Evolution, EvolutionInsight } from "@/modules/follow-ups/types";
+import type { WeightProjection } from "@/modules/follow-ups/services";
 import type { Roadmap } from "@/modules/roadmap/types";
 
 export interface ReportMeta {
@@ -36,6 +37,8 @@ export interface ReportModel {
   strategy: NutritionStrategy;
   macros: MacroTargets;
   mealPlan: MealPlan;
+  /** Projeção de peso — plano × realidade (gráfico do documento). */
+  weightProjection: WeightProjection;
   evolution: Evolution | null;
   evolutionInsights: EvolutionInsight[];
   roadmap: Roadmap;

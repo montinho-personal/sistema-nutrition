@@ -82,6 +82,14 @@ describe("buildStudentReport", () => {
     expect(report!.evolution).toBeNull();
   });
 
+  it("a projeção de peso entra no relatório, coerente com os macros", () => {
+    const report = buildStudentReport(input)!;
+    expect(report.weightProjection.startKg).toBe(92);
+    expect(report.weightProjection.weeklyKg).toBeLessThan(0); // déficit → perda
+    expect(report.weightProjection.actual).toHaveLength(1); // sem acompanhamentos
+    expect(report.weightProjection.last).toBeNull();
+  });
+
   it("a capa recebe a meta da Definição Estratégica (quando houver)", () => {
     const noTarget = buildStudentReport(input)!;
     expect(noTarget.meta.targetChangeKg).toBeNull();

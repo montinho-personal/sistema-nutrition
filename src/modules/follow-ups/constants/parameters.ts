@@ -29,6 +29,18 @@ export const RATE_BANDS = {
 /** Tolerância de manutenção: variação semanal aceita como estável (kg). */
 export const MAINTENANCE_TOLERANCE_KG = 0.25;
 
+/** Projeção de peso — o gráfico plano × realidade do Relatório. */
+export const WEIGHT_PROJECTION = {
+  /** Margem esperada em torno do ritmo previsto (fração — flutuar aqui é normal). */
+  bandPct: 0.2,
+  /** Horizonte padrão quando não há prazo definido na meta (semanas). */
+  defaultWeeks: 12,
+  /** Meia-largura da faixa na manutenção, em kg (o ritmo planejado é zero). */
+  maintenanceBandKg: 1,
+  /** Mudança planejada mínima acumulada para avaliar o ritmo (kg). */
+  minPlannedChangeForVerdictKg: 0.5,
+} as const;
+
 /** Mínimo de dias entre o início e o último ponto para calcular ritmo. */
 export const MIN_DAYS_FOR_RATE = 3;
 

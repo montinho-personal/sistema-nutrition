@@ -25,6 +25,7 @@ import type { MealPlanPref } from "@/modules/meal-plan/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
 import {
   buildEvolutionInsights,
+  buildWeightProjection,
   computeEvolution,
   expectedWeeklyKgFromMacros,
 } from "@/modules/follow-ups/services";
@@ -96,6 +97,19 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
       : null;
   const evolutionInsights = evolution ? buildEvolutionInsights(evolution) : [];
 
+  // Projeção de peso: plano × realidade, com o MESMO ritmo/calorias do resto
+  // do documento (macros efetivos da fonte única).
+  const weightProjection = buildWeightProjection({
+    startWeightKg: record.input.currentWeightKg,
+    startDate,
+    direction: strategy.direction,
+    tdee: macros.tdee,
+    calories: macros.calories,
+    targetChangeKg: record.input.targetChangeKg ?? null,
+    targetWeeks: record.input.targetWeeks ?? null,
+    followUps,
+  });
+
   const roadmapCtx: RoadmapContext = {
     hasDiagnosis: true,
     hasStrategy: true,
@@ -130,6 +144,7 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
     strategy,
     macros,
     mealPlan,
+    weightProjection,
     evolution,
     evolutionInsights,
     roadmap,
