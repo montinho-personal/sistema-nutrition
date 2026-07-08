@@ -107,6 +107,11 @@ describe("buildStudentReport", () => {
 
     // A instrução vale (alvo calórico) e as edições aparecem no relatório.
     expect(report.mealPlan.target.kcal).toBe(1700);
+    // Os cards de Macros mostram a MESMA conta do cardápio (nunca divergem).
+    expect(report.macros.calories).toBe(1700);
+    expect(report.macros.proteinG).toBe(report.mealPlan.target.protein);
+    expect(report.macros.carbG).toBe(report.mealPlan.target.carbs);
+    expect(report.macros.fatG).toBe(report.mealPlan.target.fat);
     const items = report.mealPlan.meals[0].items;
     expect(items.some((i) => i.role === removedItem.role)).toBe(false);
     expect(items.find((i) => i.role === adjustedItem.role)?.grams).toBe(123);

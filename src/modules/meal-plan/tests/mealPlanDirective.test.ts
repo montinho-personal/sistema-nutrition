@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import {
   applyDirective,
+  applyDirectiveToMacros,
   buildMealPlan,
   overrideCalories,
   parseDirective,
   resolveFoodName,
   type MealPlanContext,
 } from "@/modules/meal-plan/services";
+import type { MacroTargets } from "@/modules/strategy/types";
 
 const BASE_CTX: MealPlanContext = {
   goal: "weight_loss",
@@ -65,6 +67,48 @@ describe("overrideCalories — ancora a proteína, flexibiliza carbo/gordura", (
     expect(out.protein).toBe(176);
     const kcal = out.protein * 4 + out.carbs * 4 + out.fat * 9;
     expect(Math.abs(kcal - 1700)).toBeLessThanOrEqual(10);
+  });
+});
+
+describe("applyDirectiveToMacros — os cards de Macros seguem a instrução", () => {
+  const MACROS: MacroTargets = {
+    bmr: 1785,
+    bmrMethod: "mifflin",
+    activityFactor: 1.519,
+    tdee: 2712,
+    calories: 2200,
+    proteinG: 165,
+    carbG: 237,
+    fatG: 66,
+    proteinKcal: 660,
+    carbKcal: 948,
+    fatKcal: 594,
+    justifications: ["Ajuste manual do treinador: 2200 kcal (cálculo automático sobrescrito)."],
+    manual: true,
+  };
+
+  it("com '1800 kcal', mostra 1800 preservando a proteína — a mesma conta do cardápio", () => {
+    const out = applyDirectiveToMacros(MACROS, parseDirective("1800 kcal"));
+    expect(out.calories).toBe(1800);
+    expect(out.proteinG).toBe(MACROS.proteinG);
+    const kcal = out.proteinG * 4 + out.carbG * 4 + out.fatG * 9;
+    expect(Math.abs(kcal - 1800)).toBeLessThanOrEqual(10);
+    // Barras e chips usam os kcal por macro — recalculados.
+    expect(out.carbKcal).toBe(out.carbG * 4);
+    expect(out.fatKcal).toBe(out.fatG * 9);
+    // A justificativa explica a origem do número (transparência — Documento 02)
+    // e as linhas de gramas são regeneradas — nunca citam os valores antigos.
+    const joined = out.justifications.join(" ");
+    expect(joined).toContain("Instrução do cardápio: 1800 kcal");
+    expect(joined).toContain(`Carboidrato ${out.carbG} g`);
+    expect(joined).not.toContain("Carboidrato 237 g");
+    // TDEE/BMR são contexto fisiológico — não mudam com a instrução.
+    expect(out.tdee).toBe(MACROS.tdee);
+  });
+
+  it("sem calorias na instrução (ou iguais), devolve os macros intactos", () => {
+    expect(applyDirectiveToMacros(MACROS, parseDirective("dieta barata"))).toBe(MACROS);
+    expect(applyDirectiveToMacros(MACROS, parseDirective("2200 kcal"))).toBe(MACROS);
   });
 });
 

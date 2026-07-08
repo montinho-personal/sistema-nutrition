@@ -30,7 +30,7 @@ import type { FollowUp } from "@/modules/follow-ups/types";
 import { summarizeAdherenceSignals } from "@/modules/follow-ups/services";
 import type { Food } from "@/modules/foods/types";
 import { buildMealPlan, type MealPlanContext } from "./mealPlanEngine";
-import { applyDirective } from "./mealPlanDirective";
+import { applyDirective, applyDirectiveToMacros } from "./mealPlanDirective";
 import { applyPlanEdits } from "./mealPlanEdits";
 import type {
   EditedMealPlan,
@@ -84,7 +84,10 @@ export function deriveStudentPlan(src: StudentPlanSources): DerivedStudentPlan |
     trains: (answers.trains as string | undefined) ?? null,
     ...readTrainingContext(answers),
   };
-  const macros = resolveMacros(goal, strategy, macroCtx, src.macroParams, input);
+  const resolvedMacros = resolveMacros(goal, strategy, macroCtx, src.macroParams, input);
+  // A instrução do treinador ("1800 kcal") vale para TODOS os números exibidos:
+  // os cards de Macros mostram a MESMA conta que o cardápio segue.
+  const macros = applyDirectiveToMacros(resolvedMacros, src.directive);
   const approach = resolveDietApproach(input.dietApproach ?? null, goal);
   const mealsPerDay = approach.meals ?? strategy.mealsPerDay;
 
@@ -94,10 +97,17 @@ export function deriveStudentPlan(src: StudentPlanSources): DerivedStudentPlan |
     ? (answers.restrictions as string[])
     : [];
 
+  // O contexto parte dos macros da estratégia; o `applyDirective` aplica a
+  // mesma sobrescrita de calorias — alvo do cardápio ≡ cards de Macros.
   const baseCtx: MealPlanContext = {
     goal,
     mealsPerDay,
-    macros: { kcal: macros.calories, protein: macros.proteinG, carbs: macros.carbG, fat: macros.fatG },
+    macros: {
+      kcal: resolvedMacros.calories,
+      protein: resolvedMacros.proteinG,
+      carbs: resolvedMacros.carbG,
+      fat: resolvedMacros.fatG,
+    },
     // A anamnese OU o histórico de acompanhamentos podem pedir a adaptação.
     emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low || memorySignals.emphasizeSatiety,
     emphasizePracticality:

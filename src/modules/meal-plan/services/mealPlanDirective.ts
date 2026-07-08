@@ -15,6 +15,7 @@ import type {
   MealPlanPref,
   MealSlot,
 } from "@/modules/meal-plan/types";
+import type { MacroTargets } from "@/modules/strategy/types";
 import type { MealPlanContext } from "@/modules/meal-plan/services/mealPlanEngine";
 import { RESTRICTION_LABELS } from "@/modules/meal-plan/services/dietaryFilters";
 import { DIRECTIVE_LIMITS } from "@/modules/meal-plan/constants/parameters";
@@ -237,6 +238,47 @@ export function overrideCalories(macros: MacroTotals, kcal: number): MacroTotals
     protein: macros.protein,
     carbs: Math.round((remaining * carbShare) / KCAL_PER_G.carb),
     fat: Math.round((remaining * (1 - carbShare)) / KCAL_PER_G.fat),
+  };
+}
+
+/**
+ * Reflete a instrução do treinador nos macros EXIBIDOS (Estratégia → cards de
+ * Macros do Relatório, Documento e Parecer). Usa a MESMA conta do cardápio
+ * (`overrideCalories`) — os cards de Macros e o alvo do cardápio nunca
+ * divergem. Sem calorias na instrução, devolve os macros intactos.
+ */
+export function applyDirectiveToMacros(
+  macros: MacroTargets,
+  d: MealPlanDirective,
+): MacroTargets {
+  if (!d.caloriesOverride || d.caloriesOverride === macros.calories) return macros;
+  const totals = overrideCalories(
+    { kcal: macros.calories, protein: macros.proteinG, carbs: macros.carbG, fat: macros.fatG },
+    d.caloriesOverride,
+  );
+  const kcal = totals.kcal;
+  const pct = (macroKcal: number) => Math.round((macroKcal / kcal) * 100);
+  const proteinKcal = totals.protein * KCAL_PER_G.protein;
+  const carbKcal = totals.carbs * KCAL_PER_G.carb;
+  const fatKcal = totals.fat * KCAL_PER_G.fat;
+  return {
+    ...macros,
+    calories: kcal,
+    proteinG: totals.protein,
+    carbG: totals.carbs,
+    fatG: totals.fat,
+    proteinKcal,
+    carbKcal,
+    fatKcal,
+    justifications: [
+      // As linhas de gramas por macro são regeneradas — os números citados
+      // nunca contradizem os cards (Documento 02 — coerência).
+      ...macros.justifications.filter((j) => !/^(Proteína|Carboidrato|Gordura) \d/.test(j)),
+      `Instrução do cardápio: ${kcal} kcal (sobrescreve as calorias-alvo).`,
+      `Proteína ${totals.protein} g — ${pct(proteinKcal)}% das calorias (preservada da estratégia).`,
+      `Carboidrato ${totals.carbs} g — ${pct(carbKcal)}% das calorias (reajustado pela instrução).`,
+      `Gordura ${totals.fat} g — ${pct(fatKcal)}% das calorias (reajustada pela instrução).`,
+    ],
   };
 }
 
