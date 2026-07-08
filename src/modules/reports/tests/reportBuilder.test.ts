@@ -82,6 +82,29 @@ describe("buildStudentReport", () => {
     expect(report!.evolution).toBeNull();
   });
 
+  it("o nº de refeições do controle e o nome/horário editados valem no relatório", () => {
+    const mealPref: MealPlanPref = {
+      studentId: "s1",
+      variant: 0,
+      instruction: "4 refeições",
+      directive: null,
+      // O controle do quadro (5) vence a instrução (4).
+      mealsPerDay: 5,
+      edits: {
+        overrides: {},
+        removed: [],
+        extras: {},
+        meals: { breakfast: { title: "Café reforçado", time: "07:30" } },
+      },
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    };
+    const report = buildStudentReport({ ...input, mealPref })!;
+    expect(report.mealPlan.meals).toHaveLength(5);
+    const breakfast = report.mealPlan.meals.find((m) => m.slot === "breakfast")!;
+    expect(breakfast.title).toBe("Café reforçado");
+    expect(breakfast.time).toBe("07:30");
+  });
+
   it("a projeção de peso entra no relatório, coerente com os macros", () => {
     const report = buildStudentReport(input)!;
     expect(report.weightProjection.startKg).toBe(92);

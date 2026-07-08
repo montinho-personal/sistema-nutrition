@@ -14,6 +14,7 @@ import {
   resolveFoodName,
   restoreFood,
   setFoodGrams,
+  setMealDetails,
   swapFood,
   type MealPlanContext,
 } from "@/modules/meal-plan/services";
@@ -99,6 +100,35 @@ describe("applyPlanEdits — o cardápio editado é recalculado por inteiro", ()
     const cleaned = applyPlanEdits(plan, without, curatedFoods);
     expect(cleaned.meals[0].entries.filter((e) => !e.base)).toHaveLength(1);
     expect(cleaned.meals[0].removedBase).toHaveLength(0);
+  });
+
+  it("nome e horário editados aparecem na refeição (vazio volta ao padrão)", () => {
+    let edits = setMealDetails(emptyEdits(), meal.slot, { title: "Pré-treino", time: "07:30" });
+    let out = applyPlanEdits(plan, edits, curatedFoods);
+    expect(out.meals[0].title).toBe("Pré-treino");
+    expect(out.meals[0].time).toBe("07:30");
+    // As demais refeições seguem intactas, sem horário.
+    expect(out.meals[1].title).toBe(plan.meals[1].title);
+    expect(out.meals[1].time).toBeNull();
+
+    // Limpar o nome volta ao título padrão; limpar o horário o remove.
+    edits = setMealDetails(edits, meal.slot, { title: "  " });
+    out = applyPlanEdits(plan, edits, curatedFoods);
+    expect(out.meals[0].title).toBe(plan.meals[0].title);
+    expect(out.meals[0].time).toBe("07:30");
+    edits = setMealDetails(edits, meal.slot, { time: "" });
+    expect(hasPlanEdits(edits)).toBe(false);
+  });
+
+  it("edições persistidas antes do campo `meals` continuam funcionando", () => {
+    // Simula um registro antigo no localStorage (sem a chave `meals`).
+    const legacy = { overrides: {}, removed: [key], extras: {} } as ReturnType<typeof emptyEdits>;
+    const out = applyPlanEdits(plan, legacy, curatedFoods);
+    expect(out.meals[0].entries.some((e) => e.key === key)).toBe(false);
+    expect(hasPlanEdits(legacy)).toBe(true);
+    // E dá para editar o nome a partir dele.
+    const renamed = setMealDetails(legacy, meal.slot, { title: "Café reforçado" });
+    expect(applyPlanEdits(plan, renamed, curatedFoods).meals[0].title).toBe("Café reforçado");
   });
 
   it("chaves órfãs (de um cardápio antigo) são ignoradas sem quebrar", () => {

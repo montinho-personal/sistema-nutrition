@@ -3,7 +3,10 @@
 import * as React from "react";
 
 import { useLocalCollection } from "@/shared/hooks/use-local-collection";
-import { setMealPlanInstruction } from "@/modules/meal-plan/services/mealPlanRepository";
+import {
+  setMealPlanInstruction,
+  setMealPlanMealsPerDay,
+} from "@/modules/meal-plan/services/mealPlanRepository";
 import type { MealPlanDirective, MealPlanPref } from "@/modules/meal-plan/types";
 
 const EMPTY: MealPlanPref[] = [];
@@ -27,9 +30,17 @@ export function useMealPlanInstruction(studentId: string) {
     [studentId],
   );
 
+  const setMealsPerDay = React.useCallback(
+    (mealsPerDay: number | null) => setMealPlanMealsPerDay(studentId, mealsPerDay),
+    [studentId],
+  );
+
   return {
     instruction: pref?.instruction ?? "",
     storedDirective: pref?.directive ?? null,
     setInstruction,
+    /** Nº de refeições do controle do quadro (null = segue estratégia/instrução). */
+    mealsPerDay: pref?.mealsPerDay ?? null,
+    setMealsPerDay,
   };
 }

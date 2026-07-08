@@ -4,8 +4,10 @@ import * as React from "react";
 import {
   BackpackIcon,
   BadgeDollarSignIcon,
+  CheckIcon,
   ClockIcon,
   HandPlatterIcon,
+  PencilIcon,
   PlusIcon,
   RepeatIcon,
   RotateCcwIcon,
@@ -243,6 +245,8 @@ interface MealCardProps {
   onRemove?: (key: string) => void;
   onRestore?: (key: string) => void;
   onAddFood?: (slot: MealSlot, foodId: string) => void;
+  /** Edita nome e horário da refeição (modo edição). */
+  onEditMeal?: (slot: MealSlot, patch: { title?: string | null; time?: string | null }) => void;
 }
 
 /** Uma refeição do cardápio: objetivo, alvo, itens (trocar, quantidade, remover,
@@ -261,21 +265,70 @@ export function MealCard({
   onRemove,
   onRestore,
   onAddFood,
+  onEditMeal,
 }: MealCardProps) {
   const [openKey, setOpenKey] = React.useState<string | null>(null);
   const [adding, setAdding] = React.useState(false);
+  const [editingHeader, setEditingHeader] = React.useState(false);
 
   const list: MealEntry[] =
     entries ?? meal.items.map((it) => ({ key: `${meal.slot}:${it.role}`, item: it, base: true }));
   const canSwap = Boolean(foods && onSwap);
   const canRemove = Boolean(onRemove);
   const canAdd = Boolean(foods && onAddFood);
+  const canEditMeal = Boolean(onEditMeal);
 
   return (
     <Card className="gap-0 py-0">
       <CardHeader className="flex flex-row items-start justify-between gap-2 border-b px-4 py-3">
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold">{meal.title}</span>
+        <div className="flex min-w-0 flex-col gap-0.5">
+          {canEditMeal && editingHeader ? (
+            <div className="flex flex-wrap items-center gap-1.5 py-0.5">
+              <Input
+                defaultValue={meal.title}
+                aria-label="Nome da refeição"
+                className="h-8 w-40"
+                autoFocus
+                onChange={(e) => onEditMeal?.(meal.slot, { title: e.target.value })}
+              />
+              <Input
+                type="time"
+                defaultValue={meal.time ?? ""}
+                aria-label="Horário da refeição"
+                className="h-8 w-28"
+                onChange={(e) => onEditMeal?.(meal.slot, { time: e.target.value })}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8"
+                title="Concluir edição"
+                onClick={() => setEditingHeader(false)}
+              >
+                <CheckIcon className="size-4" />
+              </Button>
+            </div>
+          ) : (
+            <span className="flex items-center gap-1.5 text-sm font-semibold">
+              <span className="truncate">{meal.title}</span>
+              {meal.time ? (
+                <span className="flex shrink-0 items-center gap-1 text-xs font-normal text-muted-foreground">
+                  <ClockIcon className="size-3" />
+                  {meal.time}
+                </span>
+              ) : null}
+              {canEditMeal ? (
+                <button
+                  type="button"
+                  title="Editar nome e horário"
+                  onClick={() => setEditingHeader(true)}
+                  className="shrink-0 rounded p-0.5 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <PencilIcon className="size-3" />
+                </button>
+              ) : null}
+            </span>
+          )}
           {objective ? <span className="text-xs text-gold">{objective}</span> : null}
           <span className="text-xs text-muted-foreground">
             Alvo {meal.target.kcal} kcal · P{meal.target.protein} C{meal.target.carbs} G

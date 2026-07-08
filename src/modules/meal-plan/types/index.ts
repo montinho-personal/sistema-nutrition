@@ -49,6 +49,8 @@ export interface PlannedMeal {
   slot: MealSlot;
   title: string;
   timing: MealTiming;
+  /** Horário sugerido pelo treinador ("07:30") — edição manual, opcional. */
+  time?: string | null;
   target: MacroTotals;
   items: MealItem[];
   totals: MacroTotals;
@@ -91,6 +93,11 @@ export interface MealPlanEdits {
   removed: string[];
   /** Alimentos adicionados por refeição. */
   extras: Partial<Record<MealSlot, ExtraFood[]>>;
+  /**
+   * Detalhes editados por refeição: nome e horário. Campo opcional para
+   * compatibilidade com edições persistidas antes desta versão.
+   */
+  meals?: Partial<Record<MealSlot, { title: string | null; time: string | null }>>;
 }
 
 /** Um item exibido no cardápio, com chave estável (base ou adicionado). */
@@ -127,6 +134,11 @@ export interface MealPlanPref {
    * "Gerar outra opção" recomeçam do cardápio limpo (as chaves ficariam órfãs).
    */
   edits?: MealPlanEdits | null;
+  /**
+   * Nº de refeições escolhido no controle do quadro (vence a instrução e a
+   * estratégia). Null = segue a estratégia/instrução.
+   */
+  mealsPerDay?: number | null;
   updatedAt: string;
 }
 

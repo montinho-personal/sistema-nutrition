@@ -37,7 +37,7 @@ const EXTRA_KEY_PREFIX = "x:";
 
 /** Sem nenhuma edição. */
 export function emptyEdits(): MealPlanEdits {
-  return { overrides: {}, removed: [], extras: {} };
+  return { overrides: {}, removed: [], extras: {}, meals: {} };
 }
 
 /** true se o treinador editou algo (aciona o aviso "salvo automaticamente"). */
@@ -46,7 +46,8 @@ export function hasPlanEdits(edits: MealPlanEdits | null | undefined): boolean {
   return (
     Object.keys(edits.overrides).length > 0 ||
     edits.removed.length > 0 ||
-    Object.values(edits.extras).some((list) => (list ?? []).length > 0)
+    Object.values(edits.extras).some((list) => (list ?? []).length > 0) ||
+    Object.values(edits.meals ?? {}).some((m) => m && (m.title !== null || m.time !== null))
   );
 }
 
@@ -123,6 +124,31 @@ export function restoreFood(edits: MealPlanEdits, key: string): MealPlanEdits {
   return { ...edits, removed: edits.removed.filter((k) => k !== key) };
 }
 
+/**
+ * Edita nome e/ou horário de uma refeição. Nome vazio ou horário vazio voltam
+ * a null (usa o padrão / sem horário); sem nada editado, a entrada some.
+ */
+export function setMealDetails(
+  edits: MealPlanEdits,
+  slot: MealSlot,
+  patch: { title?: string | null; time?: string | null },
+): MealPlanEdits {
+  const meals = { ...(edits.meals ?? {}) };
+  const current = meals[slot] ?? { title: null, time: null };
+  const normalize = (v: string | null | undefined, fallback: string | null) => {
+    if (v === undefined) return fallback;
+    const trimmed = v?.trim() ?? "";
+    return trimmed ? trimmed : null;
+  };
+  const next = {
+    title: normalize(patch.title, current.title),
+    time: normalize(patch.time, current.time),
+  };
+  if (next.title === null && next.time === null) delete meals[slot];
+  else meals[slot] = next;
+  return { ...edits, meals };
+}
+
 /** Adiciona um alimento a uma refeição, com a porção sugerida e id sequencial. */
 export function addFood(edits: MealPlanEdits, slot: MealSlot, food: Food): MealPlanEdits {
   const maxId = Object.values(edits.extras)
@@ -190,7 +216,17 @@ export function applyPlanEdits(
     const removedBase = meal.items
       .filter((it) => removed.has(baseItemKey(meal.slot, it.role)))
       .map((it) => ({ key: baseItemKey(meal.slot, it.role), foodName: it.foodName }));
-    return { ...meal, items, totals: sumItems(items), entries, removedBase };
+    // Nome e horário editados pelo treinador (nome vazio mantém o padrão).
+    const details = e.meals?.[meal.slot];
+    return {
+      ...meal,
+      title: details?.title ?? meal.title,
+      time: details?.time ?? null,
+      items,
+      totals: sumItems(items),
+      entries,
+      removedBase,
+    };
   });
 
   const totals = meals.reduce(

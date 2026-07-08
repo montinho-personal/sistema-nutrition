@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { CheckCircle2Icon, RefreshCwIcon, RotateCcwIcon, TargetIcon } from "lucide-react";
+import { CheckCircle2Icon, MinusIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, TargetIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { isAiEnabled } from "@/config/env";
@@ -21,12 +21,13 @@ import {
   resetOverride,
   restoreFood,
   setFoodGrams,
+  setMealDetails,
   setMealPlanEdits,
   swapFood,
   updateMealPlanEdits,
 } from "@/modules/meal-plan/services";
 import { interpretMealInstructionAction } from "@/modules/meal-plan/services/interpretMealInstruction.action";
-import { MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
+import { DIRECTIVE_LIMITS, MEAL_OBJECTIVES } from "@/modules/meal-plan/constants/parameters";
 import { useStudentPlan } from "@/modules/meal-plan/hooks/use-student-plan";
 import { useNutritionistOpinion } from "@/modules/meal-plan/hooks/use-nutritionist-opinion";
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
@@ -43,8 +44,17 @@ const foodById = new Map(curatedFoods.map((f) => [f.id, f]));
  * mesmo cardápio editado alimenta o Parecer, o Documento e o Relatório.
  */
 export function MealPlanBoard({ studentId }: { studentId: string }) {
-  const { plan, restrictions, input, nextVariant, instruction, directive, setInstruction, edits } =
-    useStudentPlan(studentId);
+  const {
+    plan,
+    restrictions,
+    input,
+    nextVariant,
+    instruction,
+    directive,
+    setInstruction,
+    edits,
+    setMealsPerDay,
+  } = useStudentPlan(studentId);
   const opinion = useNutritionistOpinion(studentId);
   const [applying, setApplying] = React.useState(false);
   const edited = hasPlanEdits(edits);
@@ -98,6 +108,14 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
     const food = foodById.get(foodId);
     if (food) updateMealPlanEdits(studentId, (prev) => addFood(prev, slot, food));
   };
+  const onEditMeal = (slot: MealSlot, patch: { title?: string | null; time?: string | null }) =>
+    updateMealPlanEdits(studentId, (prev) => setMealDetails(prev, slot, patch));
+  const changeMealCount = (delta: number) => {
+    if (!plan) return;
+    const next = plan.meals.length + delta;
+    if (next < DIRECTIVE_LIMITS.minMeals || next > DIRECTIVE_LIMITS.maxMeals) return;
+    setMealsPerDay(next);
+  };
   const discardEdits = () => {
     setMealPlanEdits(studentId, null);
     toast.info("Edições descartadas — cardápio original restaurado.");
@@ -143,12 +161,40 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <SectionHeader title="Cardápio" description="Toque em Trocar para ver equivalentes — a conta se ajusta sozinha." />
-          <Button variant="outline" size="sm" onClick={nextVariant}>
-            <RefreshCwIcon className="size-4" />
-            Gerar outra opção
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Nº de refeições — controle direto, salvo por aluno. */}
+            <div className="flex items-center gap-1 rounded-lg border px-1.5 py-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6"
+                title="Menos refeições"
+                disabled={plan.meals.length <= DIRECTIVE_LIMITS.minMeals}
+                onClick={() => changeMealCount(-1)}
+              >
+                <MinusIcon className="size-3.5" />
+              </Button>
+              <span className="min-w-20 text-center text-xs font-medium tabular-nums">
+                {plan.meals.length} refeições
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6"
+                title="Mais refeições"
+                disabled={plan.meals.length >= DIRECTIVE_LIMITS.maxMeals}
+                onClick={() => changeMealCount(1)}
+              >
+                <PlusIcon className="size-3.5" />
+              </Button>
+            </div>
+            <Button variant="outline" size="sm" onClick={nextVariant}>
+              <RefreshCwIcon className="size-4" />
+              Gerar outra opção
+            </Button>
+          </div>
         </div>
         {edited ? (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/40 bg-gold/5 px-3 py-2">
@@ -185,6 +231,7 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
               onRemove={onRemove}
               onRestore={onRestore}
               onAddFood={onAddFood}
+              onEditMeal={onEditMeal}
             />
           ))}
         </div>

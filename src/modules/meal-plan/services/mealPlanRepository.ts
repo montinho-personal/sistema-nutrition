@@ -69,7 +69,23 @@ export function setMealPlanInstruction(
   instruction: string | null,
   directive: MealPlanDirective | null,
 ): void {
-  upsert(studentId, { instruction, directive, edits: null });
+  // A instrução redefine a base — o nº de refeições do controle também zera
+  // (senão um "5 refeições" antigo do stepper venceria a instrução nova).
+  upsert(studentId, { instruction, directive, edits: null, mealsPerDay: null });
+}
+
+/** Nº de refeições do controle do quadro (null = segue estratégia/instrução). */
+export function getMealPlanMealsPerDay(studentId: string): number | null {
+  return readAll().find((p) => p.studentId === studentId)?.mealsPerDay ?? null;
+}
+
+/**
+ * Grava o nº de refeições escolhido no controle. As edições por item são
+ * preservadas: as chaves são por refeição/papel, e as que ficarem órfãs numa
+ * estrutura menor são ignoradas sem quebrar.
+ */
+export function setMealPlanMealsPerDay(studentId: string, mealsPerDay: number | null): void {
+  upsert(studentId, { mealsPerDay });
 }
 
 /** Edições manuais do cardápio de um aluno (ou null, sem edições). */
