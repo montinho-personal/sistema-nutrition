@@ -35,6 +35,8 @@
   --gold: oklch(0.72 0.11 85);
   --gold-foreground: oklch(0.24 0.04 85);
   --gold-muted: oklch(0.95 0.03 85);
+  /* Traço de dados dourado (linhas de gráfico): mais escuro para contraste/impressão */
+  --gold-strong: oklch(0.58 0.105 85);
 
   /* Semáforo de indicadores (scores, riscos) */
   --success: oklch(0.62 0.15 150);
@@ -83,6 +85,7 @@
   --gold: oklch(0.78 0.11 85);
   --gold-foreground: oklch(0.22 0.04 85);
   --gold-muted: oklch(0.28 0.04 85);
+  --gold-strong: oklch(0.78 0.11 85);
 
   --success: oklch(0.7 0.15 150);
   --warning: oklch(0.78 0.14 70);
@@ -128,6 +131,7 @@
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
   --color-gold-muted: var(--gold-muted);
+  --color-gold-strong: var(--gold-strong);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);

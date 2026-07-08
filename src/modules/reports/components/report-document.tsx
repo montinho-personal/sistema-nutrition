@@ -15,6 +15,7 @@ import { MealCard } from "@/modules/meal-plan/components/meal-card";
 import { EvolutionSummary } from "@/modules/follow-ups/components/evolution-summary";
 import { TransformationPanel } from "@/modules/roadmap/components/transformation-panel";
 import { ReportCover } from "@/modules/reports/components/report-cover";
+import { WeightProjectionChart } from "@/modules/reports/components/weight-projection-chart";
 import type { ReportModel } from "@/modules/reports/types";
 
 const dimensionToKind: Record<Hypothesis["dimension"], InsightKind> = {
@@ -100,6 +101,17 @@ export function ReportDocument({ report }: { report: ReportModel }) {
             />
           ))}
         </div>
+      </Section>
+
+      <Separator />
+
+      {/* Projeção de peso — plano × realidade */}
+      <Section>
+        <SectionHeader
+          title="Projeção de peso"
+          description="Para onde o plano leva, semana a semana — e o caminho real percorrido."
+        />
+        <WeightProjectionChart projection={report.weightProjection} />
       </Section>
 
       <Separator />

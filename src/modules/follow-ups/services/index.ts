@@ -14,3 +14,10 @@ export {
   type AdherenceSignals,
   type MemoryNarrative,
 } from "./adherenceMemory";
+export {
+  buildWeightProjection,
+  type WeightProjection,
+  type WeightProjectionInput,
+  type WeightProjectionPoint,
+  type ProjectionPace,
+} from "./weightProjection";
