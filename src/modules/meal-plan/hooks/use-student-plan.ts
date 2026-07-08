@@ -43,6 +43,8 @@ export interface StudentPlan {
   directive: MealPlanDirective;
   /** Edições manuais persistidas (null = cardápio como gerado). */
   edits: MealPlanEdits | null;
+  /** Define o nº de refeições pelo controle do quadro (null = automático). */
+  setMealsPerDay: (mealsPerDay: number | null) => void;
 }
 
 /**
@@ -56,7 +58,8 @@ export function useStudentPlan(studentId: string): StudentPlan {
   const { input } = useStrategyInput(studentId);
   const macroParams = useMacroParams();
   const { variant, next } = useMealPlanVariant(studentId);
-  const { instruction, storedDirective, setInstruction } = useMealPlanInstruction(studentId);
+  const { instruction, storedDirective, setInstruction, mealsPerDay: mealsPerDayOverride, setMealsPerDay } =
+    useMealPlanInstruction(studentId);
   const edits = useMealPlanEdits(studentId);
   const { followUps } = useFollowUps(studentId);
   // Usa a interpretação persistida (pode ter sido enriquecida pela IA); na
@@ -97,8 +100,9 @@ export function useStudentPlan(studentId: string): StudentPlan {
         variant,
         directive,
         edits,
+        mealsPerDayOverride,
       }) ?? { strategy: null, macros: null, scores: null, plan: null, mealsPerDay: null },
-    [student, session, input, followUps, macroParams, variant, directive, edits],
+    [student, session, input, followUps, macroParams, variant, directive, edits, mealsPerDayOverride],
   );
 
   return {
@@ -112,6 +116,7 @@ export function useStudentPlan(studentId: string): StudentPlan {
     setInstruction,
     directive,
     edits,
+    setMealsPerDay,
     ...derived,
   };
 }

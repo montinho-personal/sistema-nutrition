@@ -29,6 +29,7 @@ import type {
 import type { FollowUp } from "@/modules/follow-ups/types";
 import { summarizeAdherenceSignals } from "@/modules/follow-ups/services";
 import type { Food } from "@/modules/foods/types";
+import { DIRECTIVE_LIMITS } from "@/modules/meal-plan/constants/parameters";
 import { buildMealPlan, type MealPlanContext } from "./mealPlanEngine";
 import { applyDirective, applyDirectiveToMacros } from "./mealPlanDirective";
 import { applyPlanEdits } from "./mealPlanEdits";
@@ -50,6 +51,8 @@ export interface StudentPlanSources {
   variant: number;
   directive: MealPlanDirective;
   edits: MealPlanEdits | null;
+  /** Nº de refeições do controle do quadro — vence a instrução e a estratégia. */
+  mealsPerDayOverride?: number | null;
 }
 
 export interface DerivedStudentPlan {
@@ -118,9 +121,20 @@ export function deriveStudentPlan(src: StudentPlanSources): DerivedStudentPlan |
     habitualFoodIds: extractHabitualFoodIds(answers),
   };
   // A instrução do treinador ajusta o contexto — a estratégia continua a base.
-  const ctx = applyDirective(baseCtx, src.directive);
+  let ctx = applyDirective(baseCtx, src.directive);
+  // O controle do quadro é a escolha mais direta do treinador: vence a
+  // instrução e a estratégia no nº de refeições.
+  if (src.mealsPerDayOverride) {
+    ctx = {
+      ...ctx,
+      mealsPerDay: Math.min(
+        DIRECTIVE_LIMITS.maxMeals,
+        Math.max(DIRECTIVE_LIMITS.minMeals, src.mealsPerDayOverride),
+      ),
+    };
+  }
   // E as edições manuais têm a palavra final sobre o cardápio gerado.
   const plan = applyPlanEdits(buildMealPlan(src.foods, ctx), src.edits, src.foods);
 
-  return { scores, strategy, macros, mealsPerDay, plan };
+  return { scores, strategy, macros, mealsPerDay: ctx.mealsPerDay, plan };
 }

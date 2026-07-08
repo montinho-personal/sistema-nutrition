@@ -21,6 +21,8 @@ export {
   getMealPlanEdits,
   setMealPlanEdits,
   updateMealPlanEdits,
+  getMealPlanMealsPerDay,
+  setMealPlanMealsPerDay,
 } from "./mealPlanRepository";
 export {
   parseDirective,
@@ -44,6 +46,7 @@ export {
   removeFood,
   restoreFood,
   addFood,
+  setMealDetails,
 } from "./mealPlanEdits";
 export {
   deriveStudentPlan,

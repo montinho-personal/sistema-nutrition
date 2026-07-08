@@ -81,6 +81,7 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
     variant: mealPref?.variant ?? 0,
     directive: resolveStoredDirective(mealPref),
     edits: mealPref?.edits ?? null,
+    mealsPerDayOverride: mealPref?.mealsPerDay ?? null,
   });
   if (!chain) return null;
   const { strategy, macros, plan: mealPlan } = chain;
