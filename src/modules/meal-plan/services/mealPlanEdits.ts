@@ -88,6 +88,22 @@ export function swapFood(edits: MealPlanEdits, key: string, food: Food): MealPla
   return { ...edits, overrides: { ...edits.overrides, [key]: { foodId: food.id, grams: null } } };
 }
 
+/**
+ * Troca o alimento E fixa a quantidade exata em gramas, num único passo —
+ * usado pelo Motor de Substituição (o modal já calculou a porção do modo
+ * escolhido; grava alimento e gramas juntos para não perder consistência
+ * entre duas atualizações separadas).
+ */
+export function replaceFood(edits: MealPlanEdits, key: string, food: Food, grams: number): MealPlanEdits {
+  if (isExtraKey(key)) {
+    const { slot, id } = parseExtraKey(key);
+    return updateExtras(edits, slot, (list) =>
+      list.map((a) => (a.id === id ? { ...a, foodId: food.id, grams } : a)),
+    );
+  }
+  return { ...edits, overrides: { ...edits.overrides, [key]: { foodId: food.id, grams } } };
+}
+
 /** Fixa a quantidade em gramas — mantém o alimento atual do item. */
 export function setFoodGrams(edits: MealPlanEdits, key: string, grams: number): MealPlanEdits {
   if (isExtraKey(key)) {

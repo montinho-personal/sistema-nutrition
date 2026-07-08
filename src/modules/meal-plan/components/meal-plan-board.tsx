@@ -16,14 +16,14 @@ import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import {
   addFood,
   hasPlanEdits,
+  logSwap,
   parseDirective,
   removeFood,
+  replaceFood,
   resetOverride,
   restoreFood,
-  setFoodGrams,
   setMealDetails,
   setMealPlanEdits,
-  swapFood,
   updateMealPlanEdits,
 } from "@/modules/meal-plan/services";
 import { interpretMealInstructionAction } from "@/modules/meal-plan/services/interpretMealInstruction.action";
@@ -33,7 +33,7 @@ import { useNutritionistOpinion } from "@/modules/meal-plan/hooks/use-nutritioni
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
 import { MealInstruction } from "@/modules/meal-plan/components/meal-instruction";
 import { NutritionistOpinion } from "@/modules/meal-plan/components/nutritionist-opinion";
-import type { MealSlot } from "@/modules/meal-plan/types";
+import type { MealSlot, ReplacementComparison } from "@/modules/meal-plan/types";
 
 const foodById = new Map(curatedFoods.map((f) => [f.id, f]));
 
@@ -45,6 +45,7 @@ const foodById = new Map(curatedFoods.map((f) => [f.id, f]));
  */
 export function MealPlanBoard({ studentId }: { studentId: string }) {
   const {
+    student,
     plan,
     restrictions,
     input,
@@ -92,12 +93,43 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
 
   // Cada edição é uma transição pura gravada no repositório (salvamento
   // automático) — o Relatório e o Documento refletem na hora.
-  const onSwap = (key: string, foodId: string) => {
-    const food = foodById.get(foodId);
-    if (food) updateMealPlanEdits(studentId, (prev) => swapFood(prev, key, food));
+  // A troca vem do Motor de Substituição já com a comparação inteira calculada
+  // (Documento 08 — o número nunca é recalculado na interface): grava a edição
+  // e registra a auditoria (Documento 00 — toda troca é rastreável).
+  const onConfirmReplace = (slot: MealSlot, key: string, comparison: ReplacementComparison) => {
+    updateMealPlanEdits(studentId, (prev) =>
+      replaceFood(prev, key, comparison.replacementFood, comparison.replacementItem.grams),
+    );
+    logSwap({
+      studentId,
+      slot,
+      key,
+      mode: comparison.mode,
+      originalFoodId: comparison.originalFood.id,
+      originalFoodName: comparison.originalFood.name,
+      originalGrams: comparison.originalItem.grams,
+      replacementFoodId: comparison.replacementFood.id,
+      replacementFoodName: comparison.replacementFood.name,
+      replacementGrams: comparison.replacementItem.grams,
+      before: {
+        kcal: comparison.originalItem.kcal,
+        protein: comparison.originalItem.protein,
+        carbs: comparison.originalItem.carbs,
+        fat: comparison.originalItem.fat,
+      },
+      after: {
+        kcal: comparison.replacementItem.kcal,
+        protein: comparison.replacementItem.protein,
+        carbs: comparison.replacementItem.carbs,
+        fat: comparison.replacementItem.fat,
+      },
+      goal: student?.mainGoal ?? null,
+      rationale: comparison.decision.justification,
+    });
+    toast.success(
+      `Trocado por ${comparison.replacementFood.name.split(",")[0]} — ${comparison.replacementItem.grams} g.`,
+    );
   };
-  const onSetGrams = (key: string, grams: number) =>
-    updateMealPlanEdits(studentId, (prev) => setFoodGrams(prev, key, grams));
   const onReset = (key: string) =>
     updateMealPlanEdits(studentId, (prev) => resetOverride(prev, key));
   const onRemove = (key: string) =>
@@ -225,8 +257,10 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
               entries={meal.entries}
               removedBase={meal.removedBase}
               swappedKeys={swappedKeys}
-              onSwap={onSwap}
-              onSetGrams={onSetGrams}
+              goal={student?.mainGoal ?? undefined}
+              dayTotals={plan.totals}
+              dayTarget={plan.target}
+              onConfirmReplace={(key, comparison) => onConfirmReplace(meal.slot, key, comparison)}
               onReset={onReset}
               onRemove={onRemove}
               onRestore={onRestore}
