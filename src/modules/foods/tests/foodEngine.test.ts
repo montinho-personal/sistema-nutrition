@@ -20,6 +20,22 @@ function food(id: string): Food {
   return f;
 }
 
+describe("curatedFoods — completude dos dados", () => {
+  it("todo alimento tem ao menos uma medida caseira (Relatório sempre mostra ≈X unidade)", () => {
+    const missing = curatedFoods.filter((f) => !f.portions || f.portions.length === 0);
+    expect(missing.map((f) => f.name)).toEqual([]);
+  });
+
+  it("toda medida caseira tem gramas positivas e nome não vazio", () => {
+    for (const f of curatedFoods) {
+      for (const portion of f.portions) {
+        expect(portion.grams).toBeGreaterThan(0);
+        expect(portion.name.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
 describe("foodMetrics", () => {
   it("mapeia score para nível qualitativo", () => {
     expect(scoreToLevel(85)).toBe("very_high");
