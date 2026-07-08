@@ -31,6 +31,7 @@ export {
   describeDirective,
   mergeDirectives,
   resolveStoredDirective,
+  applyDirectiveToMacros,
 } from "./mealPlanDirective";
 export {
   applyPlanEdits,
