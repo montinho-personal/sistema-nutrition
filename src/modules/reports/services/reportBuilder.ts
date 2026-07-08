@@ -121,6 +121,8 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
       confidence: computeOverallConfidence(answers),
       startWeightKg: record.input.currentWeightKg,
       bodyFatPct: record.input.bodyFatPct,
+      targetChangeKg: record.input.targetChangeKg ?? null,
+      targetWeeks: record.input.targetWeeks ?? null,
     },
     summary,
     scores,

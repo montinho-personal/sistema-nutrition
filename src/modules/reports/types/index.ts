@@ -21,6 +21,10 @@ export interface ReportMeta {
   confidence: number;
   startWeightKg: number;
   bodyFatPct: number | null;
+  /** Meta de mudança de peso (kg, magnitude) da Definição Estratégica — capa. */
+  targetChangeKg: number | null;
+  /** Prazo da meta (semanas). */
+  targetWeeks: number | null;
 }
 
 /** Documento consolidado do aluno (resumo, estratégia, macros, plano, evolução, jornada). */
