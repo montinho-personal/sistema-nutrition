@@ -9,7 +9,12 @@
  * devolvendo a MESMA estrutura — o motor é agnóstico à origem.
  */
 
-import type { MacroTotals, MealPlanDirective, MealSlot } from "@/modules/meal-plan/types";
+import type {
+  MacroTotals,
+  MealPlanDirective,
+  MealPlanPref,
+  MealSlot,
+} from "@/modules/meal-plan/types";
 import type { MealPlanContext } from "@/modules/meal-plan/services/mealPlanEngine";
 import { RESTRICTION_LABELS } from "@/modules/meal-plan/services/dietaryFilters";
 import { DIRECTIVE_LIMITS } from "@/modules/meal-plan/constants/parameters";
@@ -174,6 +179,17 @@ export function parseDirective(text: string): MealPlanDirective {
 
   d.recognized = describeDirective(d);
   return d;
+}
+
+/**
+ * Diretiva efetiva de uma preferência persistida: usa a interpretação gravada
+ * (pode ter sido enriquecida pela IA); na ausência, o parser determinístico
+ * sobre o texto cru — mesma regra em todos os consumidores (hook e Relatório).
+ */
+export function resolveStoredDirective(
+  pref: Pick<MealPlanPref, "instruction" | "directive"> | null,
+): MealPlanDirective {
+  return pref?.directive ?? parseDirective(pref?.instruction ?? "");
 }
 
 /**

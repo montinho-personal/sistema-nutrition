@@ -15,16 +15,13 @@ import {
   buildExecutiveSummary,
   computeHypotheses,
   computeOverallConfidence,
-  computeScoreMap,
   computeScores,
-  extractHabitualFoodIds,
-  readTrainingContext,
 } from "@/modules/diagnosis/services";
-import { DEFAULT_MACRO_PARAMS, SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
-import { buildStrategy, computeMacros } from "@/modules/strategy/services";
-import type { MacroContext, MacroParams, StrategyRecord } from "@/modules/strategy/types";
+import { DEFAULT_MACRO_PARAMS } from "@/modules/strategy/constants/parameters";
+import type { MacroParams, StrategyRecord } from "@/modules/strategy/types";
 import type { Food } from "@/modules/foods/types";
-import { buildMealPlan, type MealPlanContext } from "@/modules/meal-plan/services";
+import { deriveStudentPlan, resolveStoredDirective } from "@/modules/meal-plan/services";
+import type { MealPlanPref } from "@/modules/meal-plan/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
 import {
   buildEvolutionInsights,
@@ -44,6 +41,12 @@ export interface BuildReportInput {
   generatedAt: string;
   /** Parâmetros de macro (Configurações); padrão quando omitido. */
   macroParams?: MacroParams;
+  /**
+   * Preferências do cardápio (variante, instrução, edições manuais). Quando
+   * presentes, o relatório mostra EXATAMENTE o cardápio que o treinador vê e
+   * editou no Plano Alimentar — nunca uma segunda versão.
+   */
+  mealPref?: MealPlanPref | null;
 }
 
 /**
@@ -60,45 +63,26 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
   const ageYears = ageFromBirthDate(student.birthDate);
   const goalLabel = STUDENT_GOAL_LABELS[goal];
 
-  const scoreMap = computeScoreMap(answers);
   const scores = computeScores(answers);
   const hypotheses = computeHypotheses(answers);
   const summary = buildExecutiveSummary(answers, { goalLabel, ageYears });
 
-  const strategy = buildStrategy(goal, scoreMap, answers);
-
-  const macroCtx: MacroContext = {
-    weightKg: record.input.currentWeightKg,
-    bodyFatPct: record.input.bodyFatPct,
-    heightCm: student.heightCm,
-    ageYears,
-    sex: student.sex,
-    activity: (answers.activity as string | undefined) ?? null,
-    trains: (answers.trains as string | undefined) ?? null,
-    ...readTrainingContext(answers),
-  };
-  const macros = computeMacros(goal, strategy.direction, strategy.velocity, macroCtx, macroParams);
-
-  const restrictions = Array.isArray(answers.restrictions)
-    ? (answers.restrictions as string[])
-    : [];
-  const mealCtx: MealPlanContext = {
-    goal,
-    mealsPerDay: strategy.mealsPerDay,
-    macros: {
-      kcal: macros.calories,
-      protein: macros.proteinG,
-      carbs: macros.carbG,
-      fat: macros.fatG,
-    },
-    emphasizeSatiety: scoreMap.hungerControl <= SCORE_THRESHOLDS.low,
-    emphasizePracticality: scoreMap.practicality <= SCORE_THRESHOLDS.low,
-    budgetTight: answers.budget === "apertado",
-    restrictions,
-    variant: 0,
-    habitualFoodIds: extractHabitualFoodIds(answers),
-  };
-  const mealPlan = buildMealPlan(foods, mealCtx);
+  // Fonte única da cadeia Estratégia → Macros → Cardápio (a MESMA do Plano
+  // Alimentar): variante, instrução e edições manuais valem também aqui.
+  const mealPref = input.mealPref ?? null;
+  const chain = deriveStudentPlan({
+    student,
+    session,
+    input: record.input,
+    followUps,
+    foods,
+    macroParams,
+    variant: mealPref?.variant ?? 0,
+    directive: resolveStoredDirective(mealPref),
+    edits: mealPref?.edits ?? null,
+  });
+  if (!chain) return null;
+  const { strategy, macros, plan: mealPlan } = chain;
 
   const expectedWeeklyKg = expectedWeeklyKgFromMacros(
     strategy.direction,

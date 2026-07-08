@@ -66,7 +66,52 @@ export interface MealPlan {
   variant: number;
 }
 
-/** Preferência persistida (local-first): variante e instrução do treinador. */
+/** Um alimento adicionado manualmente pelo treinador a uma refeição. */
+export interface ExtraFood {
+  /** Id sequencial estável (persiste entre sessões — a chave da entry depende dele). */
+  id: string;
+  foodId: string;
+  grams: number;
+}
+
+/**
+ * Edições manuais do treinador sobre o cardápio gerado — troca, quantidade,
+ * remoção e adição. Persistidas por aluno e reaplicadas de forma pura em TODOS
+ * os lugares que exibem o cardápio (quadro, Parecer, Documento Premium,
+ * Relatório) — fonte única (Documento 17).
+ */
+export interface MealPlanEdits {
+  /**
+   * Troca e/ou quantidade manual por item-base (chave `${slot}:${role}`).
+   * `foodId` null mantém o alimento original; `grams` null usa a porção
+   * automática equivalente do alimento trocado.
+   */
+  overrides: Record<string, { foodId: string | null; grams: number | null }>;
+  /** Chaves dos itens-base removidos do cardápio. */
+  removed: string[];
+  /** Alimentos adicionados por refeição. */
+  extras: Partial<Record<MealSlot, ExtraFood[]>>;
+}
+
+/** Um item exibido no cardápio, com chave estável (base ou adicionado). */
+export interface MealEntry {
+  key: string;
+  item: MealItem;
+  base: boolean;
+}
+
+/** Refeição com as edições aplicadas: entries com chave estável + removidos. */
+export interface EditedMeal extends PlannedMeal {
+  entries: MealEntry[];
+  removedBase: { key: string; foodName: string }[];
+}
+
+/** Plano com as edições do treinador aplicadas — estruturalmente um MealPlan. */
+export interface EditedMealPlan extends Omit<MealPlan, "meals"> {
+  meals: EditedMeal[];
+}
+
+/** Preferência persistida (local-first): variante, instrução e edições. */
 export interface MealPlanPref {
   studentId: string;
   variant: number;
@@ -77,6 +122,11 @@ export interface MealPlanPref {
    * IA). Persistir evita reinterpretar — e chamar a IA — a cada carregamento.
    */
   directive?: MealPlanDirective | null;
+  /**
+   * Edições manuais do cardápio (salvas automaticamente). Nova instrução ou
+   * "Gerar outra opção" recomeçam do cardápio limpo (as chaves ficariam órfãs).
+   */
+  edits?: MealPlanEdits | null;
   updatedAt: string;
 }
 

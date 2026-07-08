@@ -1,11 +1,13 @@
 /**
  * Persistência do Plano Alimentar — local-first. O cardápio é derivado
- * deterministicamente; persistimos apenas as escolhas do treinador: a variante e
- * a instrução em linguagem natural (Documento 17 — evoluir, nunca duplicar).
+ * deterministicamente; persistimos apenas as escolhas do treinador: a variante,
+ * a instrução em linguagem natural e as edições manuais (Documento 17 —
+ * evoluir, nunca duplicar).
  */
 
 import { readLocal, writeLocal } from "@/shared/lib/local-store";
-import type { MealPlanDirective, MealPlanPref } from "@/modules/meal-plan/types";
+import { emptyEdits } from "@/modules/meal-plan/services/mealPlanEdits";
+import type { MealPlanDirective, MealPlanEdits, MealPlanPref } from "@/modules/meal-plan/types";
 
 const STORAGE_KEY = "meal_plan_prefs";
 
@@ -37,9 +39,13 @@ export function getMealPlanVariant(studentId: string): number {
   return readAll().find((p) => p.studentId === studentId)?.variant ?? 0;
 }
 
-/** Grava a variante escolhida (upsert, preservando a instrução). */
+/**
+ * Grava a variante escolhida (upsert, preservando a instrução). "Gerar outra
+ * opção" recomeça do cardápio limpo: as edições manuais são descartadas (as
+ * chaves apontariam para itens de outro cardápio).
+ */
 export function setMealPlanVariant(studentId: string, variant: number): void {
-  upsert(studentId, { variant });
+  upsert(studentId, { variant, edits: null });
 }
 
 /** Instrução em linguagem natural do treinador (ou null). */
@@ -55,12 +61,35 @@ export function getMealPlanDirective(studentId: string): MealPlanDirective | nul
 /**
  * Grava a instrução do treinador e sua interpretação (upsert, preservando a
  * variante). Persistir a diretiva evita reinterpretar — e chamar a IA — a cada
- * carregamento.
+ * carregamento. Nova instrução recomeça do cardápio limpo (sem edições
+ * manuais residuais de um cardápio que já não existe).
  */
 export function setMealPlanInstruction(
   studentId: string,
   instruction: string | null,
   directive: MealPlanDirective | null,
 ): void {
-  upsert(studentId, { instruction, directive });
+  upsert(studentId, { instruction, directive, edits: null });
+}
+
+/** Edições manuais do cardápio de um aluno (ou null, sem edições). */
+export function getMealPlanEdits(studentId: string): MealPlanEdits | null {
+  return readAll().find((p) => p.studentId === studentId)?.edits ?? null;
+}
+
+/** Grava as edições manuais (null descarta todas — "voltar ao original"). */
+export function setMealPlanEdits(studentId: string, edits: MealPlanEdits | null): void {
+  upsert(studentId, { edits });
+}
+
+/**
+ * Atualiza as edições a partir do valor atual (leitura síncrona da store) com
+ * uma transição pura de `mealPlanEdits.ts` — salvamento automático: cada toque
+ * do treinador já vale no Relatório e no Documento.
+ */
+export function updateMealPlanEdits(
+  studentId: string,
+  mutate: (prev: MealPlanEdits) => MealPlanEdits,
+): void {
+  upsert(studentId, { edits: mutate(getMealPlanEdits(studentId) ?? emptyEdits()) });
 }
