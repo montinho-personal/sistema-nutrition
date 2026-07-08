@@ -47,9 +47,23 @@ export {
   restoreFood,
   addFood,
   setMealDetails,
+  replaceFood,
 } from "./mealPlanEdits";
 export {
   deriveStudentPlan,
   type StudentPlanSources,
   type DerivedStudentPlan,
 } from "./studentPlan";
+export {
+  buildReplacementComparison,
+  generateReplacementWarnings,
+  isWithinTolerance,
+  rankReplacementCandidates,
+  type BuildReplacementComparisonInput,
+  type RankReplacementCandidatesInput,
+} from "./foodSubstitution";
+export {
+  listSwapHistory,
+  logSwap,
+  type LogSwapInput,
+} from "./swapHistoryRepository";

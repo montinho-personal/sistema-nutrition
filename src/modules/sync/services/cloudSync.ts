@@ -21,6 +21,7 @@ const SYNCED_COLLECTIONS: { key: string; kind: "array" | "object" }[] = [
   { key: "strategy_records", kind: "array" },
   { key: "followups", kind: "array" },
   { key: "meal_plan_prefs", kind: "array" },
+  { key: "meal_plan_swap_history", kind: "array" },
   { key: "settings", kind: "object" },
 ];
 

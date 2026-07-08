@@ -4,7 +4,8 @@
  * Macros + Banco de Alimentos (Documento 08 — regra, não IA).
  */
 
-import type { MealTiming } from "@/modules/foods/types";
+import type { Food, MealTiming } from "@/modules/foods/types";
+import type { StudentGoal } from "@/modules/students/types";
 
 /**
  * Papel de um alimento na montagem da refeição (por dominância de macro).
@@ -140,6 +141,81 @@ export interface MealPlanPref {
    */
   mealsPerDay?: number | null;
   updatedAt: string;
+}
+
+// ── Motor Inteligente de Substituição Alimentar ────────────────────────────
+
+/**
+ * Modo de equivalência da troca — o treinador escolhe o que preservar. A
+ * arquitetura já prevê os modos futuros (Modo 5–8) como extensão deste union.
+ */
+export type ReplacementMode = "smart" | "match_calories" | "match_protein" | "match_quantity";
+
+/** Severidade de um alerta de troca — nunca apenas avisa, sempre orienta. */
+export type ReplacementWarningLevel = "info" | "attention" | "high_impact";
+
+export interface ReplacementWarning {
+  level: ReplacementWarningLevel;
+  message: string;
+}
+
+/** Explicação estruturada da troca — o "porquê" no estilo do NDE. */
+export interface ReplacementDecision {
+  headline: string;
+  justification: string;
+  /** null quando não há risco relevante — nunca inventar um risco. */
+  risk: string | null;
+  /** Sugestão de ajuste quando um risco foi identificado. */
+  alternative: string | null;
+}
+
+/** Antes/depois de uma troca — refeição e dia, item a item. */
+export interface ReplacementComparison {
+  mode: ReplacementMode;
+  originalFood: Food;
+  originalItem: MealItem;
+  replacementFood: Food;
+  replacementItem: MealItem;
+  mealBefore: MacroTotals;
+  mealAfter: MacroTotals;
+  dayBefore: MacroTotals;
+  dayAfter: MacroTotals;
+  dayTarget: MacroTotals;
+  /** replacementItem − originalItem (kcal/proteína/carbo/gordura do item). */
+  delta: MacroTotals;
+  warnings: ReplacementWarning[];
+  decision: ReplacementDecision;
+}
+
+/** Um candidato ranqueado no painel de troca, com a porção já calculada. */
+export interface ReplacementCandidate {
+  food: Food;
+  item: MealItem;
+  score: number;
+  /** Motivos curtos do ranking, para transparência (Documento 00). */
+  reasons: string[];
+}
+
+/** Registro de auditoria de uma troca confirmada (Documento 00 — auditável). */
+export interface SwapHistoryEntry {
+  id: string;
+  studentId: string;
+  slot: MealSlot;
+  /** Chave estável do item trocado no cardápio. */
+  key: string;
+  mode: ReplacementMode;
+  originalFoodId: string;
+  originalFoodName: string;
+  originalGrams: number;
+  replacementFoodId: string;
+  replacementFoodName: string;
+  replacementGrams: number;
+  /** Totais do ITEM antes/depois (kcal/macros). */
+  before: MacroTotals;
+  after: MacroTotals;
+  goal: StudentGoal | null;
+  rationale: string;
+  createdAt: string;
 }
 
 /**
