@@ -3,7 +3,6 @@
 import { AlertTriangleIcon, LightbulbIcon, TargetIcon } from "lucide-react";
 
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { Badge } from "@/shared/components/ui/badge";
 import { Separator } from "@/shared/components/ui/separator";
 import { ScoreCard } from "@/shared/components/score-card";
 import { InsightCard, type InsightKind } from "@/shared/components/insight-card";
@@ -15,6 +14,7 @@ import { MacroSummary } from "@/modules/strategy/components/macro-summary";
 import { MealCard } from "@/modules/meal-plan/components/meal-card";
 import { EvolutionSummary } from "@/modules/follow-ups/components/evolution-summary";
 import { TransformationPanel } from "@/modules/roadmap/components/transformation-panel";
+import { ReportCover } from "@/modules/reports/components/report-cover";
 import type { ReportModel } from "@/modules/reports/types";
 
 const dimensionToKind: Record<Hypothesis["dimension"], InsightKind> = {
@@ -24,40 +24,18 @@ const dimensionToKind: Record<Hypothesis["dimension"], InsightKind> = {
   advantage: "opportunity",
 };
 
-function formatDate(iso: string): string {
-  const [y, m, d] = iso.split("-");
-  if (!y || !m || !d) return iso;
-  return `${d}/${m}/${y}`;
-}
-
 function Section({ children }: { children: React.ReactNode }) {
   return <section className="flex flex-col gap-4 print:break-inside-avoid">{children}</section>;
 }
 
 /** Documento consolidado do aluno — padrão de consultoria (Documento 02). */
 export function ReportDocument({ report }: { report: ReportModel }) {
-  const { meta, summary } = report;
+  const { summary } = report;
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Capa */}
-      <div className="flex flex-col gap-2 border-b pb-6">
-        <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          <span className="flex size-5 items-center justify-center rounded bg-gold text-[10px] font-bold text-gold-foreground">
-            M
-          </span>
-          Montinho Nutrition Strategy · Relatório estratégico
-        </div>
-        <h1 className="text-2xl font-semibold tracking-tight">{meta.studentName}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          {meta.goalLabel ? <Badge variant="secondary">{meta.goalLabel}</Badge> : null}
-          {meta.ageYears ? <span>{meta.ageYears} anos</span> : null}
-          <span>· Peso inicial {meta.startWeightKg.toFixed(1).replace(".", ",")} kg</span>
-          {meta.bodyFatPct ? <span>· {meta.bodyFatPct}% de gordura</span> : null}
-          <span>· Gerado em {formatDate(meta.generatedAt)}</span>
-          <span>· Confiança do diagnóstico {meta.confidence}%</span>
-        </div>
-      </div>
+      {/* Capa premium — na impressão, a página 1 inteira. */}
+      <ReportCover report={report} />
 
       {/* Resumo executivo */}
       <Section>

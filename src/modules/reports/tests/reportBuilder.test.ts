@@ -82,6 +82,19 @@ describe("buildStudentReport", () => {
     expect(report!.evolution).toBeNull();
   });
 
+  it("a capa recebe a meta da Definição Estratégica (quando houver)", () => {
+    const noTarget = buildStudentReport(input)!;
+    expect(noTarget.meta.targetChangeKg).toBeNull();
+    expect(noTarget.meta.targetWeeks).toBeNull();
+
+    const withTarget = buildStudentReport({
+      ...input,
+      record: { ...record, input: { ...record.input, targetChangeKg: 6, targetWeeks: 12 } },
+    })!;
+    expect(withTarget.meta.targetChangeKg).toBe(6);
+    expect(withTarget.meta.targetWeeks).toBe(12);
+  });
+
   it("o cardápio do relatório respeita a instrução e as edições do treinador", () => {
     // Sem preferências: cardápio padrão.
     const base = buildStudentReport(input)!;
