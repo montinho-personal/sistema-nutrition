@@ -5,34 +5,20 @@ import * as React from "react";
 import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession, ScoreKey } from "@/modules/diagnosis/types";
-import {
-  ageFromBirthDate,
-  computeScoreMap,
-  extractHabitualFoodIds,
-  readTrainingContext,
-} from "@/modules/diagnosis/services";
-import { buildStrategy, resolveDietApproach, resolveMacros } from "@/modules/strategy/services";
-import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
 import { useStrategyInput } from "@/modules/strategy/hooks/use-strategy-input";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
-import type {
-  MacroContext,
-  MacroTargets,
-  NutritionStrategy,
-  StrategyInput,
-} from "@/modules/strategy/types";
+import type { MacroTargets, NutritionStrategy, StrategyInput } from "@/modules/strategy/types";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
-import {
-  applyDirective,
-  buildMealPlan,
-  parseDirective,
-  type MealPlanContext,
-} from "@/modules/meal-plan/services";
+import { deriveStudentPlan, parseDirective } from "@/modules/meal-plan/services";
 import { useMealPlanVariant } from "@/modules/meal-plan/hooks/use-meal-plan-variant";
 import { useMealPlanInstruction } from "@/modules/meal-plan/hooks/use-meal-plan-instruction";
+import { useMealPlanEdits } from "@/modules/meal-plan/hooks/use-meal-plan-edits";
 import { useFollowUps } from "@/modules/follow-ups/hooks/use-follow-ups";
-import { summarizeAdherenceSignals } from "@/modules/follow-ups/services";
-import type { MealPlan, MealPlanDirective } from "@/modules/meal-plan/types";
+import type {
+  EditedMealPlan,
+  MealPlanDirective,
+  MealPlanEdits,
+} from "@/modules/meal-plan/types";
 
 const EMPTY_STUDENTS: Student[] = [];
 const EMPTY_SESSIONS: DiagnosisSession[] = [];
@@ -44,7 +30,8 @@ export interface StudentPlan {
   strategy: NutritionStrategy | null;
   macros: MacroTargets | null;
   scores: Record<ScoreKey, number> | null;
-  plan: MealPlan | null;
+  /** O cardápio final (motor + instrução + edições manuais do treinador). */
+  plan: EditedMealPlan | null;
   restrictions: string[];
   mealsPerDay: number | null;
   variant: number;
@@ -54,12 +41,14 @@ export interface StudentPlan {
   setInstruction: (text: string, directive: MealPlanDirective | null) => void;
   /** O que a instrução foi entendida como (para transparência na interface). */
   directive: MealPlanDirective;
+  /** Edições manuais persistidas (null = cardápio como gerado). */
+  edits: MealPlanEdits | null;
 }
 
 /**
  * Cadeia Diagnóstico → Estratégia → Macros → Cardápio de um aluno, reativa e
- * determinística. Fonte única reaproveitada pelo Plano Alimentar e pela
- * Validação (nunca recalculam de formas diferentes).
+ * determinística. Delega ao `deriveStudentPlan` (fonte única, também usada pelo
+ * Relatório) — o Plano, a Validação e o Documento nunca recalculam diferente.
  */
 export function useStudentPlan(studentId: string): StudentPlan {
   const students = useLocalCollection<Student[]>("students", EMPTY_STUDENTS);
@@ -68,9 +57,8 @@ export function useStudentPlan(studentId: string): StudentPlan {
   const macroParams = useMacroParams();
   const { variant, next } = useMealPlanVariant(studentId);
   const { instruction, storedDirective, setInstruction } = useMealPlanInstruction(studentId);
+  const edits = useMealPlanEdits(studentId);
   const { followUps } = useFollowUps(studentId);
-  // Memória de aderência: adaptações SEGURAS do histórico moldam o cardápio.
-  const memorySignals = React.useMemo(() => summarizeAdherenceSignals(followUps), [followUps]);
   // Usa a interpretação persistida (pode ter sido enriquecida pela IA); na
   // ausência, cai no parser determinístico (instantâneo, sem rede).
   const directive = React.useMemo(
@@ -97,42 +85,21 @@ export function useStudentPlan(studentId: string): StudentPlan {
     [session],
   );
 
-  const derived = React.useMemo(() => {
-    if (!student?.mainGoal || !session || session.status !== "completed" || !input) {
-      return { strategy: null, macros: null, scores: null, plan: null, mealsPerDay: null };
-    }
-    const scores = computeScoreMap(session.answers);
-    const strategy = buildStrategy(student.mainGoal, scores, session.answers);
-    const macroCtx: MacroContext = {
-      weightKg: input.currentWeightKg,
-      bodyFatPct: input.bodyFatPct,
-      heightCm: student.heightCm,
-      ageYears: ageFromBirthDate(student.birthDate),
-      sex: student.sex,
-      activity: (session.answers.activity as string | undefined) ?? null,
-      trains: (session.answers.trains as string | undefined) ?? null,
-      ...readTrainingContext(session.answers),
-    };
-    const macros = resolveMacros(student.mainGoal, strategy, macroCtx, macroParams, input);
-    const approach = resolveDietApproach(input.dietApproach ?? null, student.mainGoal);
-    const mealsPerDay = approach.meals ?? strategy.mealsPerDay;
-    const baseCtx: MealPlanContext = {
-      goal: student.mainGoal,
-      mealsPerDay,
-      macros: { kcal: macros.calories, protein: macros.proteinG, carbs: macros.carbG, fat: macros.fatG },
-      // A anamnese OU o histórico de acompanhamentos podem pedir a adaptação.
-      emphasizeSatiety: scores.hungerControl <= SCORE_THRESHOLDS.low || memorySignals.emphasizeSatiety,
-      emphasizePracticality:
-        scores.practicality <= SCORE_THRESHOLDS.low || memorySignals.emphasizePracticality,
-      budgetTight: session.answers.budget === "apertado",
-      restrictions,
-      variant,
-      habitualFoodIds: extractHabitualFoodIds(session.answers),
-    };
-    // A instrução do treinador ajusta o contexto — a estratégia continua a base.
-    const ctx = applyDirective(baseCtx, directive);
-    return { strategy, macros, scores, plan: buildMealPlan(curatedFoods, ctx), mealsPerDay };
-  }, [student, session, input, restrictions, variant, macroParams, directive, memorySignals]);
+  const derived = React.useMemo(
+    () =>
+      deriveStudentPlan({
+        student,
+        session,
+        input,
+        followUps,
+        foods: curatedFoods,
+        macroParams,
+        variant,
+        directive,
+        edits,
+      }) ?? { strategy: null, macros: null, scores: null, plan: null, mealsPerDay: null },
+    [student, session, input, followUps, macroParams, variant, directive, edits],
+  );
 
   return {
     student,
@@ -144,6 +111,7 @@ export function useStudentPlan(studentId: string): StudentPlan {
     instruction,
     setInstruction,
     directive,
+    edits,
     ...derived,
   };
 }

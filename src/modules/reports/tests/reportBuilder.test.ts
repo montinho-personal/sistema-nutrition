@@ -6,6 +6,7 @@ import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
+import type { MealPlanPref } from "@/modules/meal-plan/types";
 
 const student: Student = {
   id: "s1",
@@ -79,6 +80,38 @@ describe("buildStudentReport", () => {
     expect(report!.roadmap.phases).toHaveLength(7);
     // sem acompanhamentos ainda
     expect(report!.evolution).toBeNull();
+  });
+
+  it("o cardápio do relatório respeita a instrução e as edições do treinador", () => {
+    // Sem preferências: cardápio padrão.
+    const base = buildStudentReport(input)!;
+    const meal = base.mealPlan.meals[0];
+    const removedItem = meal.items[0];
+    const adjustedItem = meal.items[1];
+
+    // Preferências do Plano Alimentar: instrução "1700 kcal" + edições manuais
+    // (um item removido, outro com gramas fixadas pelo treinador).
+    const mealPref: MealPlanPref = {
+      studentId: "s1",
+      variant: 0,
+      instruction: "1700 kcal",
+      directive: null,
+      edits: {
+        overrides: { [`${meal.slot}:${adjustedItem.role}`]: { foodId: null, grams: 123 } },
+        removed: [`${meal.slot}:${removedItem.role}`],
+        extras: {},
+      },
+      updatedAt: "2026-06-01T00:00:00.000Z",
+    };
+    const report = buildStudentReport({ ...input, mealPref })!;
+
+    // A instrução vale (alvo calórico) e as edições aparecem no relatório.
+    expect(report.mealPlan.target.kcal).toBe(1700);
+    const items = report.mealPlan.meals[0].items;
+    expect(items.some((i) => i.role === removedItem.role)).toBe(false);
+    expect(items.find((i) => i.role === adjustedItem.role)?.grams).toBe(123);
+    // E os totais são recalculados sobre o cardápio editado.
+    expect(report.mealPlan.totals.kcal).not.toBe(base.mealPlan.totals.kcal);
   });
 
   it("inclui evolução quando há acompanhamentos", () => {

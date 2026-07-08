@@ -26,7 +26,9 @@ import {
 } from "@/modules/meal-plan/services";
 import { matchesQuery } from "@/modules/foods/services";
 import type { CostRange, Food, MealTiming } from "@/modules/foods/types";
-import type { FoodRole, MealItem, MealSlot, PlannedMeal } from "@/modules/meal-plan/types";
+import type { FoodRole, MealEntry, MealItem, MealSlot, PlannedMeal } from "@/modules/meal-plan/types";
+
+export type { MealEntry };
 
 const ROLE_DOT: Record<FoodRole, string> = {
   protein: "bg-gold",
@@ -221,13 +223,6 @@ function AddFoodPanel({
       ) : null}
     </div>
   );
-}
-
-/** Um item exibido no cardápio, com chave estável (base ou adicionado). */
-export interface MealEntry {
-  key: string;
-  item: MealItem;
-  base: boolean;
 }
 
 interface MealCardProps {

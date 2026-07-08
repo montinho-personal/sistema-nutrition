@@ -18,6 +18,9 @@ export {
   getMealPlanInstruction,
   getMealPlanDirective,
   setMealPlanInstruction,
+  getMealPlanEdits,
+  setMealPlanEdits,
+  updateMealPlanEdits,
 } from "./mealPlanRepository";
 export {
   parseDirective,
@@ -27,4 +30,22 @@ export {
   hasDirective,
   describeDirective,
   mergeDirectives,
+  resolveStoredDirective,
 } from "./mealPlanDirective";
+export {
+  applyPlanEdits,
+  emptyEdits,
+  hasPlanEdits,
+  baseItemKey,
+  swapFood,
+  setFoodGrams,
+  resetOverride,
+  removeFood,
+  restoreFood,
+  addFood,
+} from "./mealPlanEdits";
+export {
+  deriveStudentPlan,
+  type StudentPlanSources,
+  type DerivedStudentPlan,
+} from "./studentPlan";

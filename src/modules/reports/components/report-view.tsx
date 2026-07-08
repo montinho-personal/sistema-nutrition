@@ -13,6 +13,7 @@ import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
+import type { MealPlanPref } from "@/modules/meal-plan/types";
 import { curatedFoods } from "@/modules/foods/data/curatedFoods";
 import { buildStudentReport } from "@/modules/reports/services";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
@@ -22,6 +23,7 @@ const EMPTY_STUDENTS: Student[] = [];
 const EMPTY_SESSIONS: DiagnosisSession[] = [];
 const EMPTY_RECORDS: StrategyRecord[] = [];
 const EMPTY_FOLLOWUPS: FollowUp[] = [];
+const EMPTY_PREFS: MealPlanPref[] = [];
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -33,6 +35,7 @@ export function ReportView({ studentId }: { studentId: string }) {
   const sessions = useLocalCollection<DiagnosisSession[]>("diagnosis_sessions", EMPTY_SESSIONS);
   const records = useLocalCollection<StrategyRecord[]>("strategy_records", EMPTY_RECORDS);
   const allFollowUps = useLocalCollection<FollowUp[]>("followups", EMPTY_FOLLOWUPS);
+  const mealPrefs = useLocalCollection<MealPlanPref[]>("meal_plan_prefs", EMPTY_PREFS);
   const macroParams = useMacroParams();
 
   const student = React.useMemo(
@@ -58,6 +61,11 @@ export function ReportView({ studentId }: { studentId: string }) {
     [allFollowUps, studentId],
   );
 
+  const mealPref = React.useMemo(
+    () => mealPrefs.find((p) => p.studentId === studentId) ?? null,
+    [mealPrefs, studentId],
+  );
+
   const report = React.useMemo(() => {
     if (!student) return null;
     return buildStudentReport({
@@ -68,8 +76,11 @@ export function ReportView({ studentId }: { studentId: string }) {
       foods: curatedFoods,
       generatedAt: todayIso(),
       macroParams,
+      // O relatório mostra o MESMO cardápio do Plano Alimentar (variante,
+      // instrução e edições manuais do treinador incluídas).
+      mealPref,
     });
-  }, [student, session, record, followUps, macroParams]);
+  }, [student, session, record, followUps, macroParams, mealPref]);
 
   if (typeof window === "undefined") {
     return <LoadingScreen messages={["Preparando o relatório..."]} />;
