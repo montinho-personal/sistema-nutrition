@@ -47,6 +47,8 @@ interface StrategyMacrosSectionProps {
   strategy: NutritionStrategy;
   scores: Record<ScoreKey, number>;
   input: StrategyInput | null;
+  /** Peso relatado na anamnese — pré-preenche o formulário na primeira vez. */
+  suggestedWeightKg?: number | null;
   macros: MacroTargets | null;
   macroParams: MacroParams;
   alerts: StrategyAlert[];
@@ -68,6 +70,7 @@ export function StrategyMacrosSection({
   strategy,
   scores,
   input,
+  suggestedWeightKg,
   macros,
   macroParams,
   alerts,
@@ -85,6 +88,7 @@ export function StrategyMacrosSection({
     return (
       <AnthropometricsForm
         initial={input}
+        suggestedWeightKg={suggestedWeightKg}
         onSubmit={(values) => {
           onSaveAnthropometrics(values);
           setEditing(false);

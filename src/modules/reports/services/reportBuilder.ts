@@ -11,8 +11,8 @@ import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import {
-  ageFromBirthDate,
   buildExecutiveSummary,
+  resolveAgeYears,
   computeHypotheses,
   computeOverallConfidence,
   computeScores,
@@ -61,7 +61,7 @@ export function buildStudentReport(input: BuildReportInput): ReportModel | null 
 
   const goal = student.mainGoal;
   const answers = session.answers;
-  const ageYears = ageFromBirthDate(student.birthDate);
+  const ageYears = resolveAgeYears(student, answers);
   const goalLabel = STUDENT_GOAL_LABELS[goal];
 
   const scores = computeScores(answers);

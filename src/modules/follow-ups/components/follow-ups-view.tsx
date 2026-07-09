@@ -12,7 +12,7 @@ import { useLocalCollection } from "@/shared/hooks/use-local-collection";
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
-import { ageFromBirthDate, computeScoreMap, readTrainingContext } from "@/modules/diagnosis/services";
+import { computeScoreMap, readTrainingContext, resolveAgeYears, resolveHeightCm } from "@/modules/diagnosis/services";
 import { buildStrategy, computeMacros } from "@/modules/strategy/services";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import type { MacroContext } from "@/modules/strategy/types";
@@ -72,8 +72,8 @@ export function FollowUpsView({ studentId }: { studentId: string }) {
     const macroCtx: MacroContext = {
       weightKg: record.input.currentWeightKg,
       bodyFatPct: record.input.bodyFatPct,
-      heightCm: student.heightCm,
-      ageYears: ageFromBirthDate(student.birthDate),
+      heightCm: resolveHeightCm(student, session.answers),
+      ageYears: resolveAgeYears(student, session.answers),
       sex: student.sex,
       activity: (session.answers.activity as string | undefined) ?? null,
       trains: (session.answers.trains as string | undefined) ?? null,

@@ -113,6 +113,20 @@ describe("buildStudentReport", () => {
     expect(report.weightProjection.last).toBeNull();
   });
 
+  it("cadastro sem altura/nascimento: a antropometria da anamnese sustenta o cálculo", () => {
+    const bareStudent: Student = { ...student, birthDate: null, heightCm: null };
+    const richSession: DiagnosisSession = {
+      ...session,
+      answers: { ...session.answers, current_weight_kg: 92, height_cm: 178, age_years: 36 },
+    };
+    const report = buildStudentReport({ ...input, student: bareStudent, session: richSession })!;
+    expect(report).not.toBeNull();
+    // A idade da capa vem da anamnese; o BMR usa a fórmula completa, não o
+    // fallback por peso (que só existe quando faltam altura/idade/sexo).
+    expect(report.meta.ageYears).toBe(36);
+    expect(report.macros.bmrMethod).not.toBe("fallback");
+  });
+
   it("a capa recebe a meta da Definição Estratégica (quando houver)", () => {
     const noTarget = buildStudentReport(input)!;
     expect(noTarget.meta.targetChangeKg).toBeNull();

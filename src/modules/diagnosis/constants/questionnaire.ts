@@ -108,6 +108,36 @@ export const QUESTIONS: Question[] = [
   },
 
   // ── Histórico corporal ──────────────────────────────────────────────────────
+  // Antropometria essencial: peso, altura e idade abrem a etapa. Complementam o
+  // cadastro (que passa a ser opcional nesses campos) — o cálculo dos macros usa
+  // o cadastro quando existir e cai nestas respostas quando não existir.
+  {
+    key: "current_weight_kg",
+    block: "corporal",
+    type: "number",
+    label: "Qual é o seu peso atual?",
+    help: "O peso de hoje (ou o mais recente que você souber). É a base de todos os cálculos do plano.",
+    unit: "kg",
+    placeholder: "Ex.: 82",
+  },
+  {
+    key: "height_cm",
+    block: "corporal",
+    type: "number",
+    label: "Qual é a sua altura?",
+    help: "Em centímetros. Junto com o peso, define o seu gasto calórico de repouso.",
+    unit: "cm",
+    placeholder: "Ex.: 172",
+  },
+  {
+    key: "age_years",
+    block: "corporal",
+    type: "number",
+    label: "Quantos anos você tem?",
+    help: "A idade entra na fórmula do metabolismo — cada década muda o cálculo.",
+    unit: "anos",
+    placeholder: "Ex.: 34",
+  },
   {
     key: "weight_history",
     block: "corporal",

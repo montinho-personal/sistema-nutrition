@@ -13,7 +13,7 @@ import { AnamneseDeepening } from "@/modules/diagnosis/components/anamnese-deepe
 import { EnergyExpenditure } from "@/modules/diagnosis/components/energy-expenditure";
 import { DiagnosisDashboard } from "@/modules/diagnosis/components/diagnosis-dashboard";
 import {
-  ageFromBirthDate,
+  resolveAgeYears,
   buildAnamnesePortrait,
   buildExecutiveSummary,
   computeHypotheses,
@@ -40,7 +40,7 @@ export function DiagnosisSummary({ answers, student }: { answers: AnswerMap; stu
     () =>
       buildExecutiveSummary(answers, {
         goalLabel: student.mainGoal ? STUDENT_GOAL_LABELS[student.mainGoal] : null,
-        ageYears: ageFromBirthDate(student.birthDate),
+        ageYears: resolveAgeYears(student, answers),
       }),
     [answers, student],
   );

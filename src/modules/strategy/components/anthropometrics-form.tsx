@@ -21,6 +21,8 @@ import type { StrategyInput } from "@/modules/strategy/types";
 
 interface AnthropometricsFormProps {
   initial: StrategyInput | null;
+  /** Peso relatado na anamnese — pré-preenche o campo na primeira vez. */
+  suggestedWeightKg?: number | null;
   onSubmit: (input: StrategyInput) => void;
   submitLabel?: string;
 }
@@ -29,11 +31,11 @@ interface AnthropometricsFormProps {
  * Coleta os únicos dados que a anamnese não captura e que os macros exigem:
  * peso atual e (opcional) % de gordura. O resto vem do diagnóstico.
  */
-export function AnthropometricsForm({ initial, onSubmit, submitLabel }: AnthropometricsFormProps) {
+export function AnthropometricsForm({ initial, suggestedWeightKg, onSubmit, submitLabel }: AnthropometricsFormProps) {
   const form = useForm<StrategyInputValues>({
     resolver: zodResolver(strategyInputSchema),
     defaultValues: {
-      currentWeightKg: initial?.currentWeightKg ?? ("" as unknown as number),
+      currentWeightKg: initial?.currentWeightKg ?? suggestedWeightKg ?? ("" as unknown as number),
       bodyFatPct: initial?.bodyFatPct ?? null,
     },
   });

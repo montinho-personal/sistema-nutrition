@@ -11,7 +11,7 @@ import {
 
 import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/components/ui/badge";
-import { ageFromBirthDate } from "@/modules/diagnosis/services";
+import { resolveAgeYears, resolveHeightCm } from "@/modules/diagnosis/services";
 import { STUDENT_GOAL_LABELS } from "@/modules/students/constants";
 import {
   DIRECTION_LABELS,
@@ -48,14 +48,15 @@ function Line({ label, value }: { label: string; value: string }) {
  */
 export function StrategyRail({ data, studentId }: { data: FlowData; studentId: string }) {
   const { input } = useStrategyInput(studentId);
-  const { student, strategy, macros, alerts } = data;
+  const { student, session, strategy, macros, alerts } = data;
   if (!student) return null;
 
-  const age = ageFromBirthDate(student.birthDate);
+  const age = resolveAgeYears(student, session?.answers);
+  const heightCm = resolveHeightCm(student, session?.answers);
   const bodyBits = [
     input?.currentWeightKg ? `${input.currentWeightKg} kg` : null,
     age ? `${age} anos` : null,
-    student.heightCm ? `${student.heightCm} cm` : null,
+    heightCm ? `${heightCm} cm` : null,
   ].filter(Boolean);
 
   return (
