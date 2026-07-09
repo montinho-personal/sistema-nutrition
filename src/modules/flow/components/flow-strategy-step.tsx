@@ -10,6 +10,7 @@ import { useMacroControls } from "@/modules/strategy/hooks/use-macro-controls";
 import { useMacroParams } from "@/modules/settings/hooks/use-macro-params";
 import { StrategyResult } from "@/modules/strategy/components/strategy-result";
 import { StrategyMacrosSection } from "@/modules/strategy/components/strategy-macros-section";
+import { readAnthropometry } from "@/modules/diagnosis/services";
 import type { FlowData } from "@/modules/flow/hooks/use-flow-data";
 
 /**
@@ -59,6 +60,7 @@ export function FlowStrategyStep({ data, studentId }: { data: FlowData; studentI
         strategy={strategy}
         scores={scores}
         input={input}
+        suggestedWeightKg={session ? readAnthropometry(session.answers).weightKg : null}
         macros={macros}
         macroParams={macroParams}
         alerts={alerts}

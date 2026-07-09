@@ -17,7 +17,8 @@ import {
 } from "@/modules/strategy/constants/parameters";
 import { RESTRICTION_LABELS } from "@/modules/meal-plan/services/dietaryFilters";
 import {
-  ageFromBirthDate,
+  resolveAgeYears,
+  resolveHeightCm,
   buildExecutiveSummary,
   extractHabitualFoodIds,
   readTrainingContext,
@@ -351,14 +352,14 @@ export interface OpinionSources {
  */
 export function buildOpinionInput(s: OpinionSources): NutritionistOpinionInput {
   const goal = s.strategy.goal;
-  const ageYears = ageFromBirthDate(s.student.birthDate);
+  const ageYears = resolveAgeYears(s.student, s.answers);
   const goalLabel = STUDENT_GOAL_LABELS[goal];
   const trainsRegularly = s.answers.trains === "regular";
 
   const macroCtx: MacroContext = {
     weightKg: s.strategyInput.currentWeightKg,
     bodyFatPct: s.strategyInput.bodyFatPct,
-    heightCm: s.student.heightCm,
+    heightCm: resolveHeightCm(s.student, s.answers),
     ageYears,
     sex: s.student.sex,
     activity: (s.answers.activity as string | undefined) ?? null,

@@ -17,6 +17,17 @@ export const SCORE_BASELINE: Record<ScoreKey, number> = {
 /** Scores cuja leitura é invertida (maior = pior). */
 export const INVERTED_SCORES: ScoreKey[] = ["abandonmentRisk"];
 
+/**
+ * Faixas de sanidade da antropometria da anamnese (Documento 08 — nenhum
+ * número mágico). Fora da faixa, a resposta é tratada como ausente — um erro
+ * de digitação (peso "8200") nunca contamina o cálculo dos macros.
+ */
+export const ANTHROPOMETRY_LIMITS = {
+  weightKg: { min: 30, max: 300 },
+  heightCm: { min: 100, max: 250 },
+  ageYears: { min: 10, max: 100 },
+} as const;
+
 /** Rótulos pt-BR dos scores. */
 export const SCORE_LABELS: Record<ScoreKey, string> = {
   adherence: "Aderência",

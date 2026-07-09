@@ -6,7 +6,7 @@ import { PrinterIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { EmptyState } from "@/shared/components/empty-state";
 import { LockIcon } from "lucide-react";
-import { ageFromBirthDate, buildDiagnosisDashboard } from "@/modules/diagnosis/services";
+import { buildDiagnosisDashboard, resolveAgeYears, resolveHeightCm } from "@/modules/diagnosis/services";
 import {
   DIRECTION_LABELS,
   VELOCITY_LABELS,
@@ -309,7 +309,7 @@ function DocBody({ doc, opinion, studentName, goalLabel, dateLabel }: {
  * orientações). Imprimir isola só o documento.
  */
 export function PremiumDocument({ studentId }: { studentId: string }) {
-  const { student, input, strategy, macros, scores, plan, mealsPerDay } =
+  const { student, session, input, strategy, macros, scores, plan, mealsPerDay } =
     useStudentPlan(studentId);
   const opinion = useNutritionistOpinion(studentId);
 
@@ -323,12 +323,12 @@ export function PremiumDocument({ studentId }: { studentId: string }) {
       return null;
     }
     const dashboard = buildDiagnosisDashboard({
-      answers: {},
+      answers: session?.answers ?? {},
       scores,
       goal: student.mainGoal,
-      ageYears: ageFromBirthDate(student.birthDate),
+      ageYears: resolveAgeYears(student, session?.answers),
       weightKg: input.currentWeightKg,
-      heightCm: student.heightCm,
+      heightCm: resolveHeightCm(student, session?.answers),
       tdee: macros.tdee,
     });
     const approach = resolveDietApproach(input.dietApproach ?? null, student.mainGoal);
@@ -336,7 +336,7 @@ export function PremiumDocument({ studentId }: { studentId: string }) {
       firstName: student.fullName.trim().split(/\s+/)[0] ?? "",
       studentName: student.fullName,
       goalLabel: STUDENT_GOAL_LABELS[student.mainGoal],
-      ageYears: ageFromBirthDate(student.birthDate),
+      ageYears: resolveAgeYears(student, session?.answers),
       generatedAt: dateLabel,
       velocityLabel: VELOCITY_LABELS[strategy.velocity],
       directionLabel: DIRECTION_LABELS[strategy.direction],
@@ -353,7 +353,7 @@ export function PremiumDocument({ studentId }: { studentId: string }) {
       plan,
       foods: curatedFoods,
     });
-  }, [student, strategy, macros, scores, plan, input, mealsPerDay, dateLabel]);
+  }, [student, session, strategy, macros, scores, plan, input, mealsPerDay, dateLabel]);
 
   if (!doc || !student) {
     return (

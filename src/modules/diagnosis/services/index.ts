@@ -26,6 +26,7 @@ export {
   ageFromBirthDate,
   type StudentSummaryContext,
 } from "./executiveSummary";
+export { readAnthropometry, resolveAgeYears, resolveHeightCm } from "./anthropometry";
 export {
   getSessionForStudent,
   getOrCreateSession,

@@ -14,7 +14,9 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { SectionHeader } from "@/shared/components/section-header";
 import {
-  ageFromBirthDate,
+  readAnthropometry,
+  resolveAgeYears,
+  resolveHeightCm,
   buildDiagnosisDashboard,
   computeScoreMap,
   readTrainingContext,
@@ -86,7 +88,8 @@ function Chips({ items }: { items: string[] }) {
  */
 export function DiagnosisDashboard({ student, answers }: { student: Student; answers: AnswerMap }) {
   const { input } = useStrategyInput(student.id);
-  const weightKg = input?.currentWeightKg ?? null;
+  // Peso: Definição Estratégica quando existe; senão, o relatado na anamnese.
+  const weightKg = input?.currentWeightKg ?? readAnthropometry(answers).weightKg;
 
   const scores = React.useMemo(() => computeScoreMap(answers), [answers]);
   const tdee = React.useMemo(() => {
@@ -94,8 +97,8 @@ export function DiagnosisDashboard({ student, answers }: { student: Student; ans
     const ctx: MacroContext = {
       weightKg,
       bodyFatPct: input?.bodyFatPct ?? null,
-      heightCm: student.heightCm,
-      ageYears: ageFromBirthDate(student.birthDate),
+      heightCm: resolveHeightCm(student, answers),
+      ageYears: resolveAgeYears(student, answers),
       sex: student.sex,
       activity: (answers.activity as string | undefined) ?? null,
       trains: (answers.trains as string | undefined) ?? null,
@@ -110,9 +113,9 @@ export function DiagnosisDashboard({ student, answers }: { student: Student; ans
         answers,
         scores,
         goal: student.mainGoal,
-        ageYears: ageFromBirthDate(student.birthDate),
+        ageYears: resolveAgeYears(student, answers),
         weightKg,
-        heightCm: student.heightCm,
+        heightCm: resolveHeightCm(student, answers),
         tdee,
       }),
     [answers, scores, student, weightKg, tdee],

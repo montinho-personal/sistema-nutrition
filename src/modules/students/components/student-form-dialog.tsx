@@ -71,7 +71,8 @@ export function StudentFormDialog({ open, onOpenChange, onSubmit }: StudentFormD
         <DialogHeader>
           <DialogTitle>Novo aluno</DialogTitle>
           <DialogDescription>
-            Cadastre o aluno para iniciar o Diagnóstico Estratégico.
+            Só o nome é obrigatório — peso, altura e idade também são
+            perguntados na anamnese.
           </DialogDescription>
         </DialogHeader>
 
@@ -155,7 +156,7 @@ export function StudentFormDialog({ open, onOpenChange, onSubmit }: StudentFormD
                 name="birthDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nascimento</FormLabel>
+                    <FormLabel>Nascimento (opcional)</FormLabel>
                     <FormControl>
                       <Input
                         type="date"
@@ -173,7 +174,7 @@ export function StudentFormDialog({ open, onOpenChange, onSubmit }: StudentFormD
                 name="heightCm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Altura (cm)</FormLabel>
+                    <FormLabel>Altura (cm, opcional)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"

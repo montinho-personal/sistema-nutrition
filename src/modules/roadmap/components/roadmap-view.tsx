@@ -15,7 +15,8 @@ import type { DiagnosisSession } from "@/modules/diagnosis/types";
 import type { StrategyRecord } from "@/modules/strategy/types";
 import type { FollowUp } from "@/modules/follow-ups/types";
 import {
-  ageFromBirthDate,
+  resolveAgeYears,
+  resolveHeightCm,
   buildExecutiveSummary,
   computeScoreMap,
   readTrainingContext,
@@ -87,7 +88,7 @@ export function RoadmapView({ studentId }: { studentId: string }) {
     if (hasDiagnosis && session && student.mainGoal) {
       const summary = buildExecutiveSummary(session.answers, {
         goalLabel: STUDENT_GOAL_LABELS[student.mainGoal],
-        ageYears: ageFromBirthDate(student.birthDate),
+        ageYears: resolveAgeYears(student, session.answers),
       });
       ctx.mainChallenge = summary.mainDifficulty;
       ctx.mainOpportunity = summary.mainOpportunity;
@@ -102,8 +103,8 @@ export function RoadmapView({ studentId }: { studentId: string }) {
         const macroCtx: MacroContext = {
           weightKg: record.input.currentWeightKg,
           bodyFatPct: record.input.bodyFatPct,
-          heightCm: student.heightCm,
-          ageYears: ageFromBirthDate(student.birthDate),
+          heightCm: resolveHeightCm(student, session.answers),
+          ageYears: resolveAgeYears(student, session.answers),
           sex: student.sex,
           activity: (session.answers.activity as string | undefined) ?? null,
           trains: (session.answers.trains as string | undefined) ?? null,

@@ -12,10 +12,11 @@
 import type { Student } from "@/modules/students/types";
 import type { DiagnosisSession, ScoreKey } from "@/modules/diagnosis/types";
 import {
-  ageFromBirthDate,
   computeScoreMap,
   extractHabitualFoodIds,
   readTrainingContext,
+  resolveAgeYears,
+  resolveHeightCm,
 } from "@/modules/diagnosis/services";
 import { buildStrategy, resolveDietApproach, resolveMacros } from "@/modules/strategy/services";
 import { SCORE_THRESHOLDS } from "@/modules/strategy/constants/parameters";
@@ -80,8 +81,9 @@ export function deriveStudentPlan(src: StudentPlanSources): DerivedStudentPlan |
   const macroCtx: MacroContext = {
     weightKg: input.currentWeightKg,
     bodyFatPct: input.bodyFatPct,
-    heightCm: student.heightCm,
-    ageYears: ageFromBirthDate(student.birthDate),
+    // Cadastro quando existe; anamnese quando não (antropometria essencial).
+    heightCm: resolveHeightCm(student, answers),
+    ageYears: resolveAgeYears(student, answers),
     sex: student.sex,
     activity: (answers.activity as string | undefined) ?? null,
     trains: (answers.trains as string | undefined) ?? null,
