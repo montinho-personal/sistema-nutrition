@@ -10,6 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:test": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/database.test.sql",
+    "db:test:sync": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/cloud_sync.test.sql",
     "test": "vitest run",
     "test:watch": "vitest"
   },
