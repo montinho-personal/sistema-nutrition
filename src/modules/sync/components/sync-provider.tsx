@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { useSupabaseSession } from "@/modules/sync/hooks/use-supabase-session";
 import { configureSync, hydrateFromCloud, setSyncEnabled } from "@/modules/sync/services/cloudSync";
+import { StorageAlerts } from "@/modules/sync/components/storage-alerts";
 
 /**
  * Liga a sincronização na nuvem quando há sessão (Sprint A). Aditivo: se não
@@ -25,5 +26,10 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <>{children}</>;
+  return (
+    <>
+      <StorageAlerts />
+      {children}
+    </>
+  );
 }

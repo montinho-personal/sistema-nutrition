@@ -75,6 +75,15 @@ Ou cole o conteúdo de cada migração (em ordem) no **SQL Editor** do painel do
 npm run db:test          # usa $DATABASE_URL
 ```
 
+`tests/cloud_sync.test.sql` — 6 testes da sincronização multi-dispositivo (fusão no push:
+dois dispositivos criando registros diferentes, atualização do mesmo registro, proteção
+contra push com dado desatualizado, primeiro envio, coleção tipo objeto e isolamento por
+usuário):
+
+```bash
+npm run db:test:sync     # usa $DATABASE_URL
+```
+
 Para rodar em PostgreSQL puro (sem Supabase), aplique antes `tests/local-bootstrap.sql`,
 que emula o schema `auth` e os papéis (`anon`/`authenticated`/`service_role`) mínimos.
 **Nunca** aplicar o bootstrap em um projeto Supabase real.

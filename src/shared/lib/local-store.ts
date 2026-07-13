@@ -31,6 +31,19 @@ export function onLocalWrite(listener: (key: string, value: unknown) => void): (
   return () => writeListeners.delete(listener);
 }
 
+// Observadores de FALHA de escrita — antes a falha só ia para o console
+// (invisível ao treinador); uma mudança real podia "sumir" sem explicação
+// nenhuma (cota de armazenamento estourada, navegação privada). Um componente
+// de interface se registra aqui para avisar de verdade (Documento 02: nunca
+// esconder um risco do usuário).
+const writeErrorListeners = new Set<(key: string, error: unknown) => void>();
+
+/** Registra um observador de falhas de escrita (retorna a função para cancelar). */
+export function onLocalWriteError(listener: (key: string, error: unknown) => void): () => void {
+  writeErrorListeners.add(listener);
+  return () => writeErrorListeners.delete(listener);
+}
+
 /** Assina mudanças da store (mesma aba e entre abas). */
 export function subscribeLocal(listener: () => void): () => void {
   listeners.add(listener);
@@ -77,7 +90,8 @@ export function writeLocal<T>(key: string, value: T): void {
     cache.set(key, { raw, value });
     emit();
     for (const listener of writeListeners) listener(key, value);
-  } catch {
+  } catch (error) {
     logger.error("Falha ao gravar armazenamento local", { key });
+    for (const listener of writeErrorListeners) listener(key, error);
   }
 }
