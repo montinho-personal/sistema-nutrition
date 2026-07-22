@@ -22,6 +22,7 @@ import {
   replaceFood,
   resetOverride,
   restoreFood,
+  setFoodGrams,
   setMealDetails,
   setMealPlanEdits,
   updateMealPlanEdits,
@@ -136,6 +137,8 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
     updateMealPlanEdits(studentId, (prev) => removeFood(prev, key));
   const onRestore = (key: string) =>
     updateMealPlanEdits(studentId, (prev) => restoreFood(prev, key));
+  const onSetGrams = (key: string, grams: number) =>
+    updateMealPlanEdits(studentId, (prev) => setFoodGrams(prev, key, grams));
   const onAddFood = (slot: MealSlot, foodId: string) => {
     const food = foodById.get(foodId);
     if (food) updateMealPlanEdits(studentId, (prev) => addFood(prev, slot, food));
@@ -266,6 +269,7 @@ export function MealPlanBoard({ studentId }: { studentId: string }) {
               onRestore={onRestore}
               onAddFood={onAddFood}
               onEditMeal={onEditMeal}
+              onSetGrams={onSetGrams}
             />
           ))}
         </div>

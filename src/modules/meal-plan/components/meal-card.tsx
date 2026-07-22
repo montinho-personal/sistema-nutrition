@@ -114,6 +114,8 @@ interface MealCardProps {
   onRemove?: (key: string) => void;
   onRestore?: (key: string) => void;
   onAddFood?: (slot: MealSlot, foodId: string) => void;
+  /** Ajusta a quantidade (g) de um item diretamente na linha, sem abrir a troca. */
+  onSetGrams?: (key: string, grams: number) => void;
   /** Edita nome e horário da refeição (modo edição). */
   onEditMeal?: (slot: MealSlot, patch: { title?: string | null; time?: string | null }) => void;
 }
@@ -137,6 +139,7 @@ export function MealCard({
   onRestore,
   onAddFood,
   onEditMeal,
+  onSetGrams,
 }: MealCardProps) {
   const [openKey, setOpenKey] = React.useState<string | null>(null);
   const [adding, setAdding] = React.useState(false);
@@ -236,10 +239,6 @@ export function MealCard({
                         </span>
                       ) : null}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {item.grams} g{item.portionLabel ? ` · ${item.portionLabel}` : ""} ·{" "}
-                      {ROLE_LABELS[item.role]}
-                    </span>
                   </div>
                   <div className="shrink-0 text-right text-xs text-muted-foreground tabular-nums">
                     <div className="text-sm font-medium text-foreground">{item.kcal} kcal</div>
@@ -280,6 +279,37 @@ export function MealCard({
                       <Trash2Icon className="size-4" />
                     </Button>
                   ) : null}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-1 pl-5 text-xs text-muted-foreground">
+                  {onSetGrams ? (
+                    <span className="flex items-center gap-0.5">
+                      <Input
+                        type="number"
+                        min={1}
+                        step={1}
+                        defaultValue={item.grams}
+                        key={`${key}:${item.grams}`}
+                        aria-label={`Quantidade de ${item.foodName} em gramas`}
+                        className="h-6 w-16 px-1.5 text-right text-xs tabular-nums"
+                        onBlur={(e) => {
+                          const grams = Math.round(Number(e.target.value));
+                          if (Number.isFinite(grams) && grams > 0 && grams !== item.grams) {
+                            onSetGrams(key, grams);
+                          } else {
+                            e.target.value = String(item.grams);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") e.currentTarget.blur();
+                        }}
+                      />
+                      g
+                    </span>
+                  ) : (
+                    <span>{item.grams} g</span>
+                  )}
+                  {item.portionLabel ? <span>· {item.portionLabel}</span> : null}
+                  <span>· {ROLE_LABELS[item.role]}</span>
                 </div>
               </div>
             );
